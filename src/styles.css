@@ -1,0 +1,119 @@
+@import "tailwindcss";
+
+@theme {
+  /* Paleta de colores café */
+  --color-primary: #D4A574;
+  --color-coffee-light: #D4A574;
+  --color-coffee-medium: #B8956A;
+  --color-coffee-dark: #8B6F47;
+  --color-coffee-darker: #3E2723;
+  --color-beige-light: #F5F1EB;
+  --color-beige-medium: #E8DCC6;
+  
+  /* Breakpoints */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+}
+
+:root {
+  /* Variables CSS para gradientes y utilidades */
+  --gradient-coffee: linear-gradient(135deg, #D4A574 0%, #B8956A 100%);
+  --gradient-coffee-light: linear-gradient(135deg, #F5F1EB 0%, #E8DCC6 100%);
+  --gradient-coffee-dark: linear-gradient(135deg, #8B6F47 0%, #3E2723 100%);
+}
+
+body {
+  @apply m-0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-beige-light);
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+
+/* Utilidades personalizadas */
+.bg-gradient-coffee {
+  background: var(--gradient-coffee);
+}
+
+.bg-gradient-coffee-light {
+  background: var(--gradient-coffee-light);
+}
+
+.bg-gradient-coffee-dark {
+  background: var(--gradient-coffee-dark);
+}
+
+.shadow-coffee {
+  box-shadow: 0 4px 6px -1px rgba(163, 124, 82, 0.1), 0 2px 4px -1px rgba(163, 124, 82, 0.06);
+}
+
+.shadow-coffee-md {
+  box-shadow: 0 10px 15px -3px rgba(163, 124, 82, 0.1), 0 4px 6px -2px rgba(163, 124, 82, 0.05);
+}
+
+.shadow-coffee-lg {
+  box-shadow: 0 20px 25px -5px rgba(163, 124, 82, 0.1), 0 10px 10px -5px rgba(163, 124, 82, 0.04);
+}
+
+/* Clases de utilidad para colores café */
+.text-coffee-light {
+  color: var(--color-coffee-light);
+}
+
+.text-coffee-medium {
+  color: var(--color-coffee-medium);
+}
+
+.text-coffee-dark {
+  color: var(--color-coffee-dark);
+}
+
+.text-coffee-darker {
+  color: var(--color-coffee-darker);
+}
+
+.bg-coffee-light {
+  background-color: var(--color-coffee-light);
+}
+
+.bg-coffee-medium {
+  background-color: var(--color-coffee-medium);
+}
+
+.bg-coffee-dark {
+  background-color: var(--color-coffee-dark);
+}
+
+.bg-coffee-darker {
+  background-color: var(--color-coffee-darker);
+}
+
+.bg-beige-light {
+  background-color: var(--color-beige-light);
+}
+
+.bg-beige-medium {
+  background-color: var(--color-beige-medium);
+}
+
+.border-coffee-light {
+  border-color: var(--color-coffee-light);
+}
+
+.border-coffee-medium {
+  border-color: var(--color-coffee-medium);
+}
+
+.border-coffee-dark {
+  border-color: var(--color-coffee-dark);
+}
