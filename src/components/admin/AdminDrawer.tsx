@@ -1,10 +1,20 @@
 import { useState } from 'react'
 import { Drawer, Tabs } from 'antd'
-import { BarChart3, Package, ShoppingBag, Tag } from 'lucide-react'
+import {
+  BarChart3,
+  FolderOpen,
+  List,
+  Package,
+  ShoppingBag,
+  Tag,
+  Users,
+} from 'lucide-react'
+import { Link } from '@tanstack/react-router'
 import DashboardStats from './tabs/DashboardStats'
 import CreateProduct from './tabs/CreateProduct'
 import CreateCategory from './tabs/CreateCategory'
 import AdminOrders from './tabs/AdminOrders'
+import AdminUsers from './tabs/AdminUsers'
 
 interface AdminDrawerProps {
   isOpen: boolean
@@ -36,6 +46,43 @@ export default function AdminDrawer({ isOpen, onClose }: AdminDrawerProps) {
       children: <AdminOrders />,
     },
     {
+      key: 'users',
+      label: (
+        <span className="flex items-center gap-2">
+          <Users size={18} />
+          Usuarios
+        </span>
+      ),
+      children: <AdminUsers />,
+    },
+    {
+      key: 'products-list',
+      label: (
+        <Link
+          to="/dashboard/products"
+          className="flex items-center gap-2 text-inherit hover:text-blue-600"
+          onClick={onClose}
+        >
+          <List size={18} />
+          Lista de Productos
+        </Link>
+      ),
+      children: (
+        <div className="p-6 text-center">
+          <p className="text-gray-600 mb-4">
+            Redirigiendo a la lista de productos...
+          </p>
+          <Link
+            to="/dashboard/products"
+            className="text-blue-600 hover:text-blue-800 underline"
+            onClick={onClose}
+          >
+            Ir a Lista de Productos
+          </Link>
+        </div>
+      ),
+    },
+    {
       key: 'products',
       label: (
         <span className="flex items-center gap-2">
@@ -44,6 +91,33 @@ export default function AdminDrawer({ isOpen, onClose }: AdminDrawerProps) {
         </span>
       ),
       children: <CreateProduct />,
+    },
+    {
+      key: 'categories-list',
+      label: (
+        <Link
+          to="/dashboard/categories"
+          className="flex items-center gap-2 text-inherit hover:text-green-600"
+          onClick={onClose}
+        >
+          <FolderOpen size={18} />
+          Lista de Categorías
+        </Link>
+      ),
+      children: (
+        <div className="p-6 text-center">
+          <p className="text-gray-600 mb-4">
+            Redirigiendo a la lista de categorías...
+          </p>
+          <Link
+            to="/dashboard/categories"
+            className="text-green-600 hover:text-green-800 underline"
+            onClick={onClose}
+          >
+            Ir a Lista de Categorías
+          </Link>
+        </div>
+      ),
     },
     {
       key: 'categories',

@@ -1,25 +1,55 @@
 import { Link } from '@tanstack/react-router'
 import { ShoppingCart } from 'lucide-react'
 import { Button } from 'antd'
+import { useEffect, useState } from 'react'
 import type { Product } from '../types'
 import { useAuthStore } from '@/app/store/auth/authStore'
 import { useCartStore } from '@/app/store/cart/cartStore'
 import { useAddToCartMutation } from '@/app/features/cart/mutations/useCartMutations'
+import { sonnerResponse } from '@/app/helpers/sonnerResponse'
+import { useCurrency } from '@/app/hooks/useCurrency'
+import { formatUSD } from '@/app/services/currencyService'
 
 interface ProductCardProps {
   product: Product
 }
 
 export const ProductCard = ({ product }: ProductCardProps) => {
-  const { token } = useAuthStore()
+  const { token, roles } = useAuthStore()
   const { addItem } = useCartStore()
   const { mutateAsync: addToCart, isPending } = useAddToCartMutation()
+  const { formatPrice, currency } = useCurrency()
 
   const isAuthenticated = !!token
+  const isAdmin = roles === 'ADMIN'
   const price = Number(product.price)
   const discount = Number(product.discount)
   const finalPrice = price * (1 - discount / 100)
-  const mainImage = product.images[0].url
+  const hasMultipleImages = product.images.length > 1
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [isMounted, setIsMounted] = useState(false)
+
+  // Solo activar el carrusel después de la hidratación
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  // Carrusel automático de imágenes (solo después de montar)
+  useEffect(() => {
+    if (!isMounted || !hasMultipleImages) return
+
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % product.images.length)
+    }, 3000) // Cambiar imagen cada 3 segundos
+
+    return () => clearInterval(interval)
+  }, [isMounted, hasMultipleImages, product.images.length])
+
+  // Obtener la imagen actual de forma segura
+  const currentImage =
+    product.images.length > 0
+      ? product.images[currentImageIndex]?.url || product.images[0]?.url
+      : null
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault()
@@ -39,6 +69,9 @@ export const ProductCard = ({ product }: ProductCardProps) => {
       quantity: 1,
     })
 
+    // Mostrar notificación de éxito inmediatamente
+    sonnerResponse('Producto agregado al carrito', 'success')
+
     // Si está autenticado, también sincronizar con el backend
     if (isAuthenticated) {
       try {
@@ -46,8 +79,10 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           productId: product.id,
           quantity: 1,
         })
+        // El sonner ya se muestra en la mutación, pero lo mostramos antes para feedback inmediato
       } catch (error) {
         console.error('Error adding to cart:', error)
+        // El error ya se maneja en la mutación con sonner
       }
     }
   }
@@ -61,9 +96,9 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           className="block"
         >
           <div className="aspect-square bg-gray-100 overflow-hidden relative">
-            {mainImage ? (
+            {currentImage ? (
               <img
-                src={mainImage}
+                src={currentImage}
                 alt={product.name}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
@@ -73,8 +108,29 @@ export const ProductCard = ({ product }: ProductCardProps) => {
               </div>
             )}
             {discount > 0 && (
-              <div className="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-coffee">
+              <div className="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-coffee z-10">
                 -{discount}%
+              </div>
+            )}
+            {/* Indicadores del carrusel */}
+            {hasMultipleImages && (
+              <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex gap-1.5 z-10">
+                {product.images.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setCurrentImageIndex(index)
+                    }}
+                    className={`w-2 h-2 rounded-full transition-all ${
+                      index === currentImageIndex
+                        ? 'bg-white w-6'
+                        : 'bg-white/50 hover:bg-white/75'
+                    }`}
+                    aria-label={`Ver imagen ${index + 1}`}
+                  />
+                ))}
               </div>
             )}
           </div>
@@ -82,15 +138,29 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             <h3 className="font-semibold text-lg mb-2 line-clamp-2 text-coffee-darker group-hover:text-coffee-medium transition-colors">
               {product.name}
             </h3>
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex flex-col gap-1 mb-4">
               {discount > 0 && (
-                <span className="text-gray-400 line-through text-sm">
-                  ${price.toFixed(2)}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-400 line-through text-sm">
+                    {isAdmin ? formatUSD(price) : formatPrice(price)}
+                  </span>
+                  {isAdmin && currency === 'ARS' && (
+                    <span className="text-gray-400 line-through text-xs">
+                      {formatPrice(price)}
+                    </span>
+                  )}
+                </div>
               )}
-              <span className="text-2xl font-bold text-coffee-dark">
-                ${finalPrice.toFixed(2)}
-              </span>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-2xl font-bold text-coffee-dark">
+                  {isAdmin ? formatUSD(finalPrice) : formatPrice(finalPrice)}
+                </span>
+                {isAdmin && currency === 'ARS' && (
+                  <span className="text-lg font-semibold text-coffee-medium">
+                    / {formatPrice(finalPrice)}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </Link>

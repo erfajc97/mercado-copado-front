@@ -7,6 +7,7 @@ export const signupService = async (body: {
   password: string
   firstName: string
   lastName?: string
+  country?: string
 }) => {
   try {
     const response = await axiosInstance.post(API_ENDPOINTS.REGISTER, body)
@@ -19,4 +20,3 @@ export const signupService = async (body: {
     throw new Error('Ocurrió un error desconocido al registrarse')
   }
 }
-

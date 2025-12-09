@@ -12,6 +12,7 @@ export const useSignupHook = ({ onSuccess }: UseSignupHookProps = {}) => {
     password: string
     firstName: string
     lastName?: string
+    country?: string
   }) => {
     try {
       await signup(values)
@@ -27,4 +28,3 @@ export const useSignupHook = ({ onSuccess }: UseSignupHookProps = {}) => {
     isPending,
   }
 }
-

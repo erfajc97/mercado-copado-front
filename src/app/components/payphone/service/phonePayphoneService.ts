@@ -2,7 +2,8 @@ import axiosInstance from '@/app/config/axiosConfig'
 import { API_ENDPOINTS } from '@/app/api/endpoints'
 
 interface PhonePaymentData {
-  orderId: string
+  addressId: string
+  paymentMethodId: string
   phoneNumber: string
   clientTransactionId: string
 }

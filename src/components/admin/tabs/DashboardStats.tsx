@@ -1,6 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
 import { Card, Statistic } from 'antd'
-import { DollarSign, Package, ShoppingCart, TrendingUp } from 'lucide-react'
+import {
+  DollarSign,
+  Package,
+  ShoppingCart,
+  TrendingUp,
+  Users,
+} from 'lucide-react'
 import { dashboardStatsService } from '@/app/features/dashboard/services/dashboardStatsService'
 
 export default function DashboardStats() {
@@ -20,7 +26,7 @@ export default function DashboardStats() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card className="shadow-coffee">
           <Statistic
             title="Ventas Totales"
@@ -52,6 +58,14 @@ export default function DashboardStats() {
             title="Productos en Stock"
             value={stats?.totalProducts || 0}
             prefix={<Package size={20} className="text-coffee-medium" />}
+            valueStyle={{ color: '#8B6F47' }}
+          />
+        </Card>
+        <Card className="shadow-coffee">
+          <Statistic
+            title="Total de Usuarios"
+            value={stats?.totalUsers || 0}
+            prefix={<Users size={20} className="text-coffee-medium" />}
             valueStyle={{ color: '#8B6F47' }}
           />
         </Card>

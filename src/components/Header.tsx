@@ -1,14 +1,14 @@
 import { Link } from '@tanstack/react-router'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Button, Dropdown } from 'antd'
 import {
   LayoutDashboard,
   LogIn,
   LogOut,
-  MapPin,
+  Package,
+  Settings,
   ShoppingCart,
-  User,
   UserPlus,
 } from 'lucide-react'
 import AuthModal from './auth/AuthModal'
@@ -23,7 +23,7 @@ import { useCartQuery } from '@/app/features/cart/queries/useCartQuery'
 
 export default function Header() {
   const { token, roles } = useAuthStore()
-  const { getItemCount } = useCartStore()
+  const { items: cartItems } = useCartStore()
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const [isAdminDrawerOpen, setIsAdminDrawerOpen] = useState(false)
@@ -50,16 +50,35 @@ export default function Header() {
     enabled: isAuthenticated,
   })
 
+  // Estado para el conteo de items - inicializar en 0 para evitar errores de hidratación
+  const [itemCount, setItemCount] = useState(0)
+  const [isMounted, setIsMounted] = useState(false)
+
+  // Solo activar después de la hidratación
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
   // Calcular conteo de items: usar BD si está autenticado, sino localStorage
-  const itemCount = useMemo(() => {
+  // Escuchar cambios en el carrito local y en el carrito de BD
+  useEffect(() => {
+    if (!isMounted) return
+
     if (isAuthenticated && dbCartItems) {
-      return dbCartItems.reduce(
+      const count = dbCartItems.reduce(
         (sum: number, item: { quantity: number }) => sum + item.quantity,
         0,
       )
+      setItemCount(count)
+    } else {
+      // Calcular directamente desde cartItems para que se actualice automáticamente
+      const count = cartItems.reduce(
+        (sum: number, item: { quantity: number }) => sum + item.quantity,
+        0,
+      )
+      setItemCount(count)
     }
-    return getItemCount()
-  }, [isAuthenticated, dbCartItems, getItemCount])
+  }, [isMounted, isAuthenticated, dbCartItems, cartItems])
 
   const handleLoginClick = () => {
     setAuthMode('login')
@@ -80,7 +99,7 @@ export default function Header() {
       key: 'orders',
       label: (
         <Link to="/orders" className="flex items-center gap-2">
-          <User size={16} />
+          <Package size={16} />
           Mis Pedidos
         </Link>
       ),
@@ -89,8 +108,8 @@ export default function Header() {
       key: 'addresses',
       label: (
         <Link to="/profile" className="flex items-center gap-2">
-          <MapPin size={16} />
-          Administrar Direcciones
+          <Settings size={16} />
+          Configuraciones
         </Link>
       ),
     },

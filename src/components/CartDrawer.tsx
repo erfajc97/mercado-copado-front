@@ -11,6 +11,7 @@ import {
   useRemoveCartItemMutation,
   useUpdateCartItemMutation,
 } from '@/app/features/cart/mutations/useCartMutations'
+import { useCurrency } from '@/app/hooks/useCurrency'
 
 interface CartDrawerProps {
   isOpen: boolean
@@ -21,6 +22,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const { items: localItems, updateQuantity, removeItem } = useCartStore()
   const { token } = useAuthStore()
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
+  const { formatPrice } = useCurrency()
 
   const isAuthenticated = !!token
 
@@ -268,7 +270,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   Total:
                 </span>
                 <span className="text-xl font-bold text-coffee-dark">
-                  ${total.toFixed(2)}
+                  {formatPrice(total)}
                 </span>
               </div>
               {isAuthenticated ? (

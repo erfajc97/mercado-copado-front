@@ -1,8 +1,8 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { Link, createFileRoute } from '@tanstack/react-router'
 import { useCartQuery } from '@/app/features/cart/queries/useCartQuery'
 import {
-  useUpdateCartItemMutation,
   useRemoveCartItemMutation,
+  useUpdateCartItemMutation,
 } from '@/app/features/cart/mutations/useCartMutations'
 import { useCartStore } from '@/app/store/cart/cartStore'
 
@@ -52,12 +52,10 @@ function Cart() {
     return (
       <div className="container mx-auto px-4 py-8 text-center">
         <h1 className="text-2xl font-bold mb-4">Carrito Vacío</h1>
-        <p className="text-gray-600 mb-6">
-          No tienes productos en tu carrito
-        </p>
+        <p className="text-gray-600 mb-6">No tienes productos en tu carrito</p>
         <Link
           to="/"
-          className="inline-block bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
+          className="inline-block bg-primary text-white px-6 py-2 rounded-md hover:bg-primary-dark"
         >
           Continuar Comprando
         </Link>
@@ -167,4 +165,3 @@ function Cart() {
     </div>
   )
 }
-

@@ -48,7 +48,8 @@ export const usePhonePayphoneMutation = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (data: {
-      orderId: string
+      addressId: string
+      paymentMethodId: string
       phoneNumber: string
       clientTransactionId: string
     }) => {

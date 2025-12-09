@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useOrderQuery } from '@/app/features/orders/queries/useOrdersQuery'
+import { useCurrency } from '@/app/hooks/useCurrency'
 
 export const Route = createFileRoute('/orders/$orderId')({
   component: OrderDetail,
@@ -8,6 +9,7 @@ export const Route = createFileRoute('/orders/$orderId')({
 function OrderDetail() {
   const { orderId } = Route.useParams()
   const { data: order, isLoading } = useOrderQuery(orderId)
+  const { formatPrice } = useCurrency()
 
   const getStatusLabel = (status: string) => {
     const statusMap: Record<string, string> = {
@@ -158,12 +160,12 @@ function OrderDetail() {
             <div className="space-y-2 mb-4">
               <div className="flex justify-between text-gray-600">
                 <span>Subtotal:</span>
-                <span>${Number(order.total).toFixed(2)}</span>
+                <span>{formatPrice(Number(order.total))}</span>
               </div>
               <div className="flex justify-between font-bold text-xl pt-4 border-t border-gray-200">
                 <span className="text-coffee-darker">Total:</span>
                 <span className="text-coffee-dark">
-                  ${Number(order.total).toFixed(2)}
+                  {formatPrice(Number(order.total))}
                 </span>
               </div>
             </div>

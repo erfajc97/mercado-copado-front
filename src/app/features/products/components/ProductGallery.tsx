@@ -16,8 +16,8 @@ export const ProductGallery = ({ images }: ProductGalleryProps) => {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="aspect-square bg-gray-100 overflow-hidden rounded-lg">
+    <div className="space-y-3">
+      <div className="aspect-square bg-gray-100 overflow-hidden rounded-lg max-w-md">
         <img
           src={selectedImage}
           alt="Producto"
@@ -25,7 +25,7 @@ export const ProductGallery = ({ images }: ProductGalleryProps) => {
         />
       </div>
       {images.length > 1 && (
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-4 gap-2 max-w-md">
           {images.map((image) => (
             <button
               key={image.id}
@@ -48,4 +48,3 @@ export const ProductGallery = ({ images }: ProductGalleryProps) => {
     </div>
   )
 }
-

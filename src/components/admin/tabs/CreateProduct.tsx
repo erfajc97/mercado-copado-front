@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { Button, Form, Input, InputNumber, Select, Upload } from 'antd'
+import { Button, Card, Form, Input, InputNumber, Select, Upload } from 'antd'
 import { Upload as UploadIcon } from 'lucide-react'
 import type { UploadFile } from 'antd'
 import { useAllCategoriesQuery } from '@/app/features/categories/queries/useCategoriesQuery'
 import { useCreateProductMutation } from '@/app/features/products/mutations/useProductMutations'
+import { COUNTRIES } from '@/app/constants/countries'
 
 const { TextArea } = Input
 
@@ -31,6 +32,7 @@ export default function CreateProduct() {
         discount: values.discount ? Number(values.discount) : 0,
         categoryId: values.categoryId,
         subcategoryId: values.subcategoryId,
+        country: values.country,
         images,
       })
       form.resetFields()
@@ -46,142 +48,172 @@ export default function CreateProduct() {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-4">
       <Form
         form={form}
         layout="vertical"
         onFinish={handleSubmit}
-        className="space-y-4"
+        className="space-y-3"
       >
-        <Form.Item
-          name="name"
-          label="Nombre del Producto"
-          rules={[
-            {
-              required: true,
-              message: 'Por favor ingresa el nombre del producto',
-            },
-          ]}
-        >
-          <Input size="large" placeholder="Ej: iPhone 15 Pro" />
-        </Form.Item>
+        <Card title="Información Básica" className="shadow-sm" size="small">
+          <div className="space-y-3">
+            <Form.Item
+              name="name"
+              label="Nombre del Producto"
+              rules={[
+                {
+                  required: true,
+                  message: 'Por favor ingresa el nombre del producto',
+                },
+              ]}
+            >
+              <Input placeholder="Ej: iPhone 15 Pro" />
+            </Form.Item>
 
-        <Form.Item
-          name="description"
-          label="Descripción"
-          rules={[
-            { required: true, message: 'Por favor ingresa la descripción' },
-          ]}
-        >
-          <TextArea rows={4} placeholder="Descripción del producto..." />
-        </Form.Item>
+            <Form.Item
+              name="description"
+              label="Descripción"
+              rules={[
+                { required: true, message: 'Por favor ingresa la descripción' },
+              ]}
+            >
+              <TextArea rows={3} placeholder="Descripción del producto..." />
+            </Form.Item>
+          </div>
+        </Card>
 
-        <div className="grid grid-cols-2 gap-4">
+        <Card title="Precio y Descuento" className="shadow-sm" size="small">
+          <div className="grid grid-cols-2 gap-3">
+            <Form.Item
+              name="price"
+              label="Precio"
+              rules={[
+                { required: true, message: 'Por favor ingresa el precio' },
+              ]}
+            >
+              <InputNumber
+                min={0}
+                step={0.01}
+                prefix="$"
+                className="w-full"
+                placeholder="0.00"
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="discount"
+              label="Descuento (%)"
+              rules={[
+                { required: true, message: 'Por favor ingresa el descuento' },
+              ]}
+            >
+              <InputNumber
+                min={0}
+                max={100}
+                className="w-full"
+                placeholder="0"
+              />
+            </Form.Item>
+          </div>
+        </Card>
+
+        <Card title="Categorización" className="shadow-sm" size="small">
+          <div className="space-y-3">
+            <Form.Item
+              name="categoryId"
+              label="Categoría"
+              rules={[
+                {
+                  required: true,
+                  message: 'Por favor selecciona una categoría',
+                },
+              ]}
+            >
+              <Select
+                placeholder="Selecciona una categoría"
+                onChange={(value) => setSelectedCategory(value)}
+              >
+                {categories?.map((category: any) => (
+                  <Select.Option key={category.id} value={category.id}>
+                    {category.name}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              name="subcategoryId"
+              label="Subcategoría"
+              rules={[
+                {
+                  required: true,
+                  message: 'Por favor selecciona una subcategoría',
+                },
+              ]}
+            >
+              <Select
+                placeholder="Selecciona una subcategoría"
+                disabled={!selectedCategory || subcategories.length === 0}
+              >
+                {subcategories.map((subcat: any) => (
+                  <Select.Option key={subcat.id} value={subcat.id}>
+                    {subcat.name}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              name="country"
+              label="País"
+              rules={[
+                { required: true, message: 'Por favor selecciona un país' },
+              ]}
+            >
+              <Select
+                placeholder="Selecciona un país"
+                showSearch
+                filterOption={(input, option) =>
+                  (option?.label ?? '')
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+                }
+                options={COUNTRIES}
+              />
+            </Form.Item>
+          </div>
+        </Card>
+
+        <Card title="Imágenes del Producto" className="shadow-sm" size="small">
           <Form.Item
-            name="price"
-            label="Precio"
-            rules={[{ required: true, message: 'Por favor ingresa el precio' }]}
-          >
-            <InputNumber
-              size="large"
-              min={0}
-              step={0.01}
-              prefix="$"
-              className="w-full"
-              placeholder="0.00"
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="discount"
-            label="Descuento (%)"
+            name="images"
             rules={[
-              { required: true, message: 'Por favor ingresa el descuento' },
+              { required: true, message: 'Por favor sube al menos una imagen' },
             ]}
           >
-            <InputNumber
-              size="large"
-              min={0}
-              max={100}
-              className="w-full"
-              placeholder="0"
-            />
+            <Upload
+              listType="picture-card"
+              fileList={fileList}
+              onChange={handleUploadChange}
+              beforeUpload={() => false}
+              accept="image/*"
+              multiple
+            >
+              {fileList.length < 5 && (
+                <div>
+                  <UploadIcon size={20} />
+                  <div className="mt-2 text-xs">Subir</div>
+                </div>
+              )}
+            </Upload>
           </Form.Item>
-        </div>
-
-        <Form.Item
-          name="categoryId"
-          label="Categoría"
-          rules={[
-            { required: true, message: 'Por favor selecciona una categoría' },
-          ]}
-        >
-          <Select
-            size="large"
-            placeholder="Selecciona una categoría"
-            onChange={(value) => setSelectedCategory(value)}
-          >
-            {categories?.map((category: any) => (
-              <Select.Option key={category.id} value={category.id}>
-                {category.name}
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
-
-        <Form.Item
-          name="subcategoryId"
-          label="Subcategoría"
-          rules={[
-            {
-              required: true,
-              message: 'Por favor selecciona una subcategoría',
-            },
-          ]}
-        >
-          <Select
-            size="large"
-            placeholder="Selecciona una subcategoría"
-            disabled={!selectedCategory || subcategories.length === 0}
-          >
-            {subcategories.map((subcat: any) => (
-              <Select.Option key={subcat.id} value={subcat.id}>
-                {subcat.name}
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
-
-        <Form.Item
-          name="images"
-          label="Imágenes del Producto"
-          rules={[
-            { required: true, message: 'Por favor sube al menos una imagen' },
-          ]}
-        >
-          <Upload
-            listType="picture-card"
-            fileList={fileList}
-            onChange={handleUploadChange}
-            beforeUpload={() => false}
-            accept="image/*"
-            multiple
-          >
-            {fileList.length < 5 && (
-              <div>
-                <UploadIcon size={20} />
-                <div className="mt-2">Subir</div>
-              </div>
-            )}
-          </Upload>
-        </Form.Item>
+        </Card>
 
         <Form.Item>
           <Button
             type="primary"
             htmlType="submit"
             block
-            size="large"
             loading={isPending}
             className="bg-gradient-coffee border-none hover:opacity-90"
           >

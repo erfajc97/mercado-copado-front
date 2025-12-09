@@ -17,6 +17,7 @@ export const API_ENDPOINTS = {
   USER_INFO: '/users/me',
   USERS: '/users',
   UPDATE_USER: '/users',
+  ADMIN_USERS: '/users/admin',
 
   // Categories
   CATEGORIES: '/categories',
@@ -47,6 +48,8 @@ export const API_ENDPOINTS = {
   // Payments
   PAYMENTS: '/payments',
   CREATE_TRANSACTION: '/payments/create-transaction',
+  CREATE_TRANSACTION_WITHOUT_ORDER:
+    '/payments/create-transaction-without-order',
   PENDING_TRANSACTIONS: '/payments/my-pending-payments',
   UPDATE_TRANSACTION_STATUS: '/payments/update-status',
   DELETE_PENDING_PAYMENT: '/payments/my-pending-payments',
@@ -57,4 +60,8 @@ export const API_ENDPOINTS = {
 
   // Profile
   PROFILE: '/profile',
+
+  // Payment Methods (tarjetas guardadas del usuario)
+  PAYMENT_METHODS: '/payment-methods', // GET (listar) y POST (crear)
+  PAYMENT_METHOD_BY_ID: '/payment-methods', // Base para operaciones con ID (DELETE, PATCH)
 }

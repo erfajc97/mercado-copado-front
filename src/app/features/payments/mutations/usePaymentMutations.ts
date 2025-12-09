@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { createPaymentTransactionService } from '../services/createPaymentTransactionService'
+import { updatePaymentStatusService } from '../services/updatePaymentStatusService'
 import { sonnerResponse } from '@/app/helpers/sonnerResponse'
 
 export const useCreatePaymentTransactionMutation = () => {
@@ -15,6 +16,25 @@ export const useCreatePaymentTransactionMutation = () => {
         error instanceof Error
           ? error.message
           : 'Error al crear la transacción de pago'
+      sonnerResponse(message, 'error')
+    },
+  })
+}
+
+export const useUpdatePaymentStatusMutation = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: updatePaymentStatusService,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
+      queryClient.invalidateQueries({ queryKey: ['orders'] })
+      sonnerResponse('Estado de transacción actualizado', 'success')
+    },
+    onError: (error) => {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Error al actualizar el estado de la transacción'
       sonnerResponse(message, 'error')
     },
   })

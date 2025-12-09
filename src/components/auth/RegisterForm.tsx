@@ -1,6 +1,7 @@
-import { Button, Form, Input } from 'antd'
+import { Button, Form, Input, Select } from 'antd'
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons'
 import { useSignupHook } from '@/app/features/auth/login/hooks/useSignupHook'
+import { COUNTRIES } from '@/app/constants/countries'
 
 interface RegisterFormProps {
   onSuccess: () => void
@@ -19,6 +20,7 @@ export default function RegisterForm({
     password: string
     firstName: string
     lastName?: string
+    country?: string
   }) => {
     await handleSignup(values)
   }
@@ -62,6 +64,19 @@ export default function RegisterForm({
         <Input
           size="large"
           placeholder="correo@ejemplo.com"
+          className="rounded-lg"
+        />
+      </Form.Item>
+
+      <Form.Item name="country" label="País" initialValue="Argentina">
+        <Select
+          size="large"
+          placeholder="Selecciona un país"
+          showSearch
+          filterOption={(input, option) =>
+            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+          }
+          options={COUNTRIES}
           className="rounded-lg"
         />
       </Form.Item>

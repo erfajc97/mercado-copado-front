@@ -15,6 +15,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PayResponseIndexRouteImport } from './routes/pay-response/index'
 import { Route as ProductsProductIdRouteImport } from './routes/products.$productId'
 import { Route as OrdersOrderIdRouteImport } from './routes/orders.$orderId'
 import { Route as DashboardProductsRouteImport } from './routes/dashboard.products'
@@ -52,6 +53,11 @@ const CartRoute = CartRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PayResponseIndexRoute = PayResponseIndexRouteImport.update({
+  id: '/pay-response/',
+  path: '/pay-response/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProductsProductIdRoute = ProductsProductIdRouteImport.update({
@@ -108,6 +114,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/products': typeof DashboardProductsRouteWithChildren
   '/orders/$orderId': typeof OrdersOrderIdRoute
   '/products/$productId': typeof ProductsProductIdRoute
+  '/pay-response': typeof PayResponseIndexRoute
   '/admin/orders/$orderId': typeof AdminOrdersOrderIdRoute
   '/dashboard/products/new': typeof DashboardProductsNewRoute
 }
@@ -124,6 +131,7 @@ export interface FileRoutesByTo {
   '/dashboard/products': typeof DashboardProductsRouteWithChildren
   '/orders/$orderId': typeof OrdersOrderIdRoute
   '/products/$productId': typeof ProductsProductIdRoute
+  '/pay-response': typeof PayResponseIndexRoute
   '/admin/orders/$orderId': typeof AdminOrdersOrderIdRoute
   '/dashboard/products/new': typeof DashboardProductsNewRoute
 }
@@ -141,6 +149,7 @@ export interface FileRoutesById {
   '/dashboard/products': typeof DashboardProductsRouteWithChildren
   '/orders/$orderId': typeof OrdersOrderIdRoute
   '/products/$productId': typeof ProductsProductIdRoute
+  '/pay-response/': typeof PayResponseIndexRoute
   '/admin/orders/$orderId': typeof AdminOrdersOrderIdRoute
   '/dashboard/products/new': typeof DashboardProductsNewRoute
 }
@@ -159,6 +168,7 @@ export interface FileRouteTypes {
     | '/dashboard/products'
     | '/orders/$orderId'
     | '/products/$productId'
+    | '/pay-response'
     | '/admin/orders/$orderId'
     | '/dashboard/products/new'
   fileRoutesByTo: FileRoutesByTo
@@ -175,6 +185,7 @@ export interface FileRouteTypes {
     | '/dashboard/products'
     | '/orders/$orderId'
     | '/products/$productId'
+    | '/pay-response'
     | '/admin/orders/$orderId'
     | '/dashboard/products/new'
   id:
@@ -191,6 +202,7 @@ export interface FileRouteTypes {
     | '/dashboard/products'
     | '/orders/$orderId'
     | '/products/$productId'
+    | '/pay-response/'
     | '/admin/orders/$orderId'
     | '/dashboard/products/new'
   fileRoutesById: FileRoutesById
@@ -204,6 +216,7 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   ProductsProductIdRoute: typeof ProductsProductIdRoute
+  PayResponseIndexRoute: typeof PayResponseIndexRoute
   AdminOrdersOrderIdRoute: typeof AdminOrdersOrderIdRoute
 }
 
@@ -249,6 +262,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pay-response/': {
+      id: '/pay-response/'
+      path: '/pay-response'
+      fullPath: '/pay-response'
+      preLoaderRoute: typeof PayResponseIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/products/$productId': {
@@ -357,6 +377,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   ProductsProductIdRoute: ProductsProductIdRoute,
+  PayResponseIndexRoute: PayResponseIndexRoute,
   AdminOrdersOrderIdRoute: AdminOrdersOrderIdRoute,
 }
 export const routeTree = rootRouteImport

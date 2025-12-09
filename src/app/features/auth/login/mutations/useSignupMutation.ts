@@ -8,6 +8,7 @@ type SignupPayload = {
   password: string
   firstName: string
   lastName?: string
+  country?: string
 }
 
 export const useSignupMutation = () => {
@@ -39,4 +40,3 @@ export const useSignupMutation = () => {
     },
   })
 }
-

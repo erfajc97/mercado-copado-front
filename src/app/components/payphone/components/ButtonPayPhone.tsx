@@ -4,26 +4,25 @@ import {
   useLinkPayphoneMutation,
   usePhonePayphoneMutation,
 } from '../mutations/usePayPhoneMutation'
-import { useCreatePaymentTransactionMutation } from '@/app/features/payments/mutations/usePaymentMutations'
 
 interface ButtonPayPhoneProps {
   amount: number
-  orderId: string
+  addressId: string
+  paymentMethodId: string
+  clientTransactionId: string
   onSuccess?: () => void
   disabled?: boolean
 }
 
 export const ButtonPayPhone = ({
   amount,
-  orderId,
+  addressId,
+  paymentMethodId,
+  clientTransactionId,
   onSuccess,
   disabled,
 }: ButtonPayPhoneProps) => {
   const { mutateAsync: linkPayphone, isPending } = useLinkPayphoneMutation()
-  const {
-    mutateAsync: createTransaction,
-    isPending: isPendingCreateTransaction,
-  } = useCreatePaymentTransactionMutation()
   const { mutateAsync: phonePayphone, isPending: isPendingPhonePayment } =
     usePhonePayphoneMutation()
   const [showPhoneModal, setShowPhoneModal] = useState(false)
@@ -44,28 +43,18 @@ export const ButtonPayPhone = ({
       return
     }
     try {
-      const randomIdClientTransaction = Math.random()
-        .toString(36)
-        .substring(2, 15)
-
       const bodyPayphone = {
-        clientTransactionId: randomIdClientTransaction,
+        clientTransactionId: clientTransactionId,
         reference: 'Compra en Mercado Copado',
         amount: amount * 100,
-        responseUrl: `${import.meta.env.VITE_FRONTEND_URL || 'http://localhost:3000'}/pay-response`,
+        responseUrl: `${import.meta.env.VITE_FRONTEND_URL || 'http://localhost:3000'}/pay-response?id=${clientTransactionId}&clientTransactionId=${clientTransactionId}`,
         amountWithoutTax: amount * 100,
         storeId: import.meta.env.VITE_STORE_ID,
-      }
-
-      const bodyTransaction = {
-        orderId: orderId,
-        clientTransactionId: randomIdClientTransaction,
       }
 
       const response = await linkPayphone(bodyPayphone)
       if (typeof response === 'object' && response.paymentId) {
         window.open(response.payWithCard, '_blank', 'noopener')
-        await createTransaction(bodyTransaction)
         onSuccess?.()
       }
     } catch (e) {
@@ -90,21 +79,12 @@ export const ButtonPayPhone = ({
     }
 
     try {
-      const randomIdClientTransaction = Math.random()
-        .toString(36)
-        .substring(2, 15)
-
-      // Crear la transacción primero
-      await createTransaction({
-        orderId: orderId,
-        clientTransactionId: randomIdClientTransaction,
-      })
-
       // Procesar el pago por teléfono
       await phonePayphone({
-        orderId: orderId,
+        addressId,
+        paymentMethodId,
         phoneNumber: phoneNumber.replace(/\s+/g, ''),
-        clientTransactionId: randomIdClientTransaction,
+        clientTransactionId: clientTransactionId,
       })
 
       setShowPhoneModal(false)
@@ -121,12 +101,10 @@ export const ButtonPayPhone = ({
       <div className="space-y-3">
         <button
           onClick={handleLinkPayment}
-          disabled={disabled || isPending || isPendingCreateTransaction}
+          disabled={disabled || isPending}
           className="w-full bg-gradient-coffee text-white py-3 rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-coffee hover:shadow-coffee-md transition-all duration-200"
         >
-          {isPending || isPendingCreateTransaction
-            ? 'Procesando...'
-            : 'Pagar con Link de Pago'}
+          {isPending ? 'Procesando...' : 'Pagar con Link de Pago'}
         </button>
         <button
           onClick={() => setShowPhoneModal(true)}
@@ -166,12 +144,10 @@ export const ButtonPayPhone = ({
             <Button
               type="primary"
               onClick={handlePhonePayment}
-              loading={isPendingPhonePayment || isPendingCreateTransaction}
+              loading={isPendingPhonePayment}
               className="bg-gradient-coffee border-none hover:opacity-90"
             >
-              {isPendingPhonePayment || isPendingCreateTransaction
-                ? 'Procesando...'
-                : 'Confirmar Pago'}
+              {isPendingPhonePayment ? 'Procesando...' : 'Confirmar Pago'}
             </Button>
           </div>
         </div>
