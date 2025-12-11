@@ -1,18 +1,28 @@
 import { useQuery } from '@tanstack/react-query'
-import { Card, Statistic } from 'antd'
+import { Card, Statistic, Button } from 'antd'
+import { Link } from '@tanstack/react-router'
 import {
   DollarSign,
   Package,
   ShoppingCart,
   TrendingUp,
   Users,
+  Eye,
 } from 'lucide-react'
 import { dashboardStatsService } from '@/app/features/dashboard/services/dashboardStatsService'
+import { getDolarBlueRate } from '@/app/services/currencyService'
 
 export default function DashboardStats() {
   const { data: stats, isLoading } = useQuery({
     queryKey: ['dashboardStats'],
     queryFn: dashboardStatsService,
+  })
+
+  const { data: blueRate } = useQuery({
+    queryKey: ['dolarBlueRate'],
+    queryFn: getDolarBlueRate,
+    staleTime: 60 * 60 * 1000, // Cache por 1 hora
+    refetchInterval: 60 * 60 * 1000, // Refrescar cada hora
   })
 
   if (isLoading) {
@@ -23,6 +33,16 @@ export default function DashboardStats() {
       </div>
     )
   }
+
+  // Filtrar órdenes de la última semana
+  const oneWeekAgo = new Date()
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
+
+  const recentOrdersThisWeek =
+    stats?.recentOrders?.filter((order: any) => {
+      const orderDate = new Date(order.createdAt)
+      return orderDate >= oneWeekAgo
+    }) || []
 
   return (
     <div className="p-6 space-y-6">
@@ -69,17 +89,31 @@ export default function DashboardStats() {
             valueStyle={{ color: '#8B6F47' }}
           />
         </Card>
+        {blueRate && (
+          <Card className="shadow-coffee">
+            <Statistic
+              title="Dólar Blue"
+              value={blueRate}
+              prefix={<DollarSign size={20} className="text-coffee-medium" />}
+              valueStyle={{ color: '#8B6F47' }}
+              suffix="$"
+            />
+          </Card>
+        )}
       </div>
 
-      {stats?.recentOrders && stats.recentOrders.length > 0 && (
-        <Card title="Órdenes Recientes" className="shadow-coffee">
-          <div className="space-y-3">
-            {stats.recentOrders.map((order: any) => (
+      {recentOrdersThisWeek.length > 0 && (
+        <Card title="Órdenes Recientes (Última Semana)" className="shadow-coffee">
+          <div
+            className="space-y-3 max-h-96 overflow-y-auto pr-2"
+            style={{ scrollbarWidth: 'thin' }}
+          >
+            {recentOrdersThisWeek.map((order: any) => (
               <div
                 key={order.id}
                 className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
               >
-                <div>
+                <div className="flex-1">
                   <p className="font-semibold text-coffee-darker">
                     Orden #{order.id.slice(0, 8)}
                   </p>
@@ -87,12 +121,25 @@ export default function DashboardStats() {
                     {new Date(order.createdAt).toLocaleDateString()}
                   </p>
                 </div>
-                <div className="text-right">
+                <div className="text-right mr-4">
                   <p className="font-bold text-coffee-dark">
                     ${Number(order.total).toFixed(2)}
                   </p>
                   <p className="text-xs text-gray-500">{order.status}</p>
                 </div>
+                <Link
+                  to="/admin/orders/$orderId"
+                  params={{ orderId: order.id }}
+                >
+                  <Button
+                    type="primary"
+                    icon={<Eye size={16} />}
+                    size="small"
+                    className="bg-gradient-coffee border-none hover:opacity-90"
+                  >
+                    Ver Detalles
+                  </Button>
+                </Link>
               </div>
             ))}
           </div>

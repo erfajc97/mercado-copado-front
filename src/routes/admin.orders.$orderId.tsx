@@ -1,9 +1,10 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button, Select } from 'antd'
 import { ArrowLeft } from 'lucide-react'
 import { useOrderQuery } from '@/app/features/orders/queries/useOrdersQuery'
 import { useUpdateOrderStatusMutation } from '@/app/features/orders/mutations/useOrderMutations'
+import { useAuthStore } from '@/app/store/auth/authStore'
 
 export const Route = createFileRoute('/admin/orders/$orderId')({
   component: AdminOrderDetail,
@@ -22,10 +23,18 @@ const statusOptions = [
 function AdminOrderDetail() {
   const navigate = useNavigate()
   const { orderId } = Route.useParams()
+  const { roles } = useAuthStore()
   const { data: order, isLoading, refetch } = useOrderQuery(orderId)
   const { mutateAsync: updateStatus, isPending: isUpdating } =
     useUpdateOrderStatusMutation()
   const [selectedStatus, setSelectedStatus] = useState<string>('')
+
+  // Verificar acceso de admin antes de renderizar
+  useEffect(() => {
+    if (roles !== 'ADMIN') {
+      navigate({ to: '/dashboard' })
+    }
+  }, [roles, navigate])
 
   const getStatusLabel = (status: string) => {
     return statusOptions.find((opt) => opt.value === status)?.label || status
@@ -55,6 +64,20 @@ function AdminOrderDetail() {
     }
   }
 
+  if (roles !== 'ADMIN') {
+    return (
+      <div className="container mx-auto px-4 py-8 text-center">
+        <h1 className="text-2xl font-bold mb-4">Acceso Denegado</h1>
+        <p className="text-gray-600 mb-6">
+          Solo los administradores pueden acceder a esta sección
+        </p>
+        <Button onClick={() => navigate({ to: '/dashboard' })}>
+          Volver al Dashboard
+        </Button>
+      </div>
+    )
+  }
+
   if (isLoading) {
     return <div className="container mx-auto px-4 py-8">Cargando...</div>
   }
@@ -72,7 +95,7 @@ function AdminOrderDetail() {
       <Button
         icon={<ArrowLeft size={16} />}
         onClick={() => navigate({ to: '/' })}
-        className="mb-6"
+        className="mb-6 bg-gradient-coffee text-white border-none hover:opacity-90 shadow-coffee hover:shadow-coffee-md"
       >
         Volver
       </Button>

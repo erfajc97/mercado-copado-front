@@ -54,6 +54,8 @@ export const API_ENDPOINTS = {
   UPDATE_TRANSACTION_STATUS: '/payments/update-status',
   DELETE_PENDING_PAYMENT: '/payments/my-pending-payments',
   PHONE_PAYMENT: '/payments/phone-payment',
+  CREATE_ORDER_FROM_TRANSACTION: '/payments/create-order-from-transaction',
+  CASH_DEPOSIT: '/payments/cash-deposit',
 
   // Dashboard
   DASHBOARD_STATS: '/dashboard/stats',

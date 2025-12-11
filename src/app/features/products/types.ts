@@ -4,6 +4,8 @@ export interface Product {
   description: string
   price: number
   discount: number
+  isActive: boolean
+  country?: string
   categoryId: string
   subcategoryId: string
   category: {
@@ -27,5 +29,6 @@ export interface ProductFilters {
   categoryId?: string
   subcategoryId?: string
   search?: string
+  includeInactive?: boolean
 }
 

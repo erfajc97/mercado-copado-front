@@ -1,4 +1,5 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
+import { Eye } from 'lucide-react'
 import { useAllOrdersQuery } from '@/app/features/orders/queries/useOrdersQuery'
 
 export const Route = createFileRoute('/dashboard/orders')({
@@ -76,11 +77,11 @@ function DashboardOrders() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <Link
-                      to="/orders/$orderId"
+                      to="/admin/orders/$orderId"
                       params={{ orderId: order.id }}
-                      search={{ admin: 'true' }}
-                      className="text-blue-600 hover:text-blue-800"
+                      className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800"
                     >
+                      <Eye size={16} />
                       Ver
                     </Link>
                   </td>

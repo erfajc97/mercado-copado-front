@@ -6,6 +6,7 @@ export const getAllProductsService = async (params?: {
   categoryId?: string
   subcategoryId?: string
   search?: string
+  includeInactive?: boolean
 }) => {
   try {
     const queryParams = new URLSearchParams()
@@ -13,6 +14,10 @@ export const getAllProductsService = async (params?: {
     if (params?.subcategoryId)
       queryParams.append('subcategoryId', params.subcategoryId)
     if (params?.search) queryParams.append('search', params.search)
+    // Solo incluir inactivos si se solicita explícitamente (para dashboard admin)
+    if (params?.includeInactive) {
+      queryParams.append('includeInactive', 'true')
+    }
 
     const queryString = queryParams.toString()
     const url = queryString

@@ -33,13 +33,22 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'TanStack Start Starter',
+        title: 'Mercado Copado',
       },
     ],
     links: [
       {
         rel: 'stylesheet',
         href: appCss,
+      },
+      {
+        rel: 'icon',
+        type: 'image/png',
+        href: '/box.png',
+      },
+      {
+        rel: 'apple-touch-icon',
+        href: '/box.png',
       },
     ],
   }),

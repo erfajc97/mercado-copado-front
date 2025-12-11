@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, Card, Form, Input, InputNumber, Select, Upload } from 'antd'
+import { Button, Card, Form, Input, InputNumber, Select, Switch, Upload } from 'antd'
 import { Upload as UploadIcon } from 'lucide-react'
 import type { UploadFile } from 'antd'
 import { useAllCategoriesQuery } from '@/app/features/categories/queries/useCategoriesQuery'
@@ -33,6 +33,7 @@ export default function CreateProduct() {
         categoryId: values.categoryId,
         subcategoryId: values.subcategoryId,
         country: values.country,
+        isActive: values.isActive !== undefined ? values.isActive : true,
         images,
       })
       form.resetFields()
@@ -53,72 +54,85 @@ export default function CreateProduct() {
         form={form}
         layout="vertical"
         onFinish={handleSubmit}
-        className="space-y-3"
+        className="space-y-4"
       >
-        <Card title="Información Básica" className="shadow-sm" size="small">
-          <div className="space-y-3">
-            <Form.Item
-              name="name"
-              label="Nombre del Producto"
-              rules={[
-                {
-                  required: true,
-                  message: 'Por favor ingresa el nombre del producto',
-                },
-              ]}
-            >
-              <Input placeholder="Ej: iPhone 15 Pro" />
-            </Form.Item>
+        {/* Información Básica y Precio en una fila */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card title="Información Básica" className="shadow-sm" size="small">
+            <div className="space-y-3">
+              <Form.Item
+                name="name"
+                label="Nombre del Producto"
+                rules={[
+                  {
+                    required: true,
+                    message: 'Por favor ingresa el nombre del producto',
+                  },
+                ]}
+              >
+                <Input placeholder="Ej: iPhone 15 Pro" />
+              </Form.Item>
 
-            <Form.Item
-              name="description"
-              label="Descripción"
-              rules={[
-                { required: true, message: 'Por favor ingresa la descripción' },
-              ]}
-            >
-              <TextArea rows={3} placeholder="Descripción del producto..." />
-            </Form.Item>
-          </div>
-        </Card>
+              <Form.Item
+                name="description"
+                label="Descripción"
+                rules={[
+                  { required: true, message: 'Por favor ingresa la descripción' },
+                ]}
+              >
+                <TextArea rows={4} placeholder="Descripción del producto..." />
+              </Form.Item>
+            </div>
+          </Card>
 
-        <Card title="Precio y Descuento" className="shadow-sm" size="small">
-          <div className="grid grid-cols-2 gap-3">
-            <Form.Item
-              name="price"
-              label="Precio"
-              rules={[
-                { required: true, message: 'Por favor ingresa el precio' },
-              ]}
-            >
-              <InputNumber
-                min={0}
-                step={0.01}
-                prefix="$"
-                className="w-full"
-                placeholder="0.00"
-              />
-            </Form.Item>
+          <Card title="Precio y Estado" className="shadow-sm" size="small">
+            <div className="space-y-3">
+              <Form.Item
+                name="price"
+                label="Precio"
+                rules={[
+                  { required: true, message: 'Por favor ingresa el precio' },
+                ]}
+              >
+                <InputNumber
+                  min={0}
+                  step={0.01}
+                  prefix="$"
+                  className="w-full"
+                  placeholder="0.00"
+                />
+              </Form.Item>
 
-            <Form.Item
-              name="discount"
-              label="Descuento (%)"
-              rules={[
-                { required: true, message: 'Por favor ingresa el descuento' },
-              ]}
-            >
-              <InputNumber
-                min={0}
-                max={100}
-                className="w-full"
-                placeholder="0"
-              />
-            </Form.Item>
-          </div>
-        </Card>
+              <Form.Item
+                name="discount"
+                label="Descuento (%)"
+                rules={[
+                  { required: true, message: 'Por favor ingresa el descuento' },
+                ]}
+              >
+                <InputNumber
+                  min={0}
+                  max={100}
+                  className="w-full"
+                  placeholder="0"
+                />
+              </Form.Item>
 
+              <Form.Item
+                name="isActive"
+                label="Producto Activo"
+                valuePropName="checked"
+                initialValue={true}
+              >
+                <Switch checkedChildren="Activo" unCheckedChildren="Inactivo" />
+              </Form.Item>
+            </div>
+          </Card>
+        </div>
+
+        {/* Categorización en una fila */}
         <Card title="Categorización" className="shadow-sm" size="small">
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <Form.Item
               name="categoryId"
               label="Categoría"
@@ -184,6 +198,7 @@ export default function CreateProduct() {
           </div>
         </Card>
 
+        {/* Imágenes */}
         <Card title="Imágenes del Producto" className="shadow-sm" size="small">
           <Form.Item
             name="images"

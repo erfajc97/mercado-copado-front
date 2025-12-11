@@ -9,8 +9,12 @@ export default function Footer() {
           {/* Logo y descripción */}
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-                <span className="text-coffee-dark font-bold text-lg">MC</span>
+              <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center overflow-hidden">
+                <img
+                  src="/box.png"
+                  alt="Mercado Copado"
+                  className="w-full h-full object-contain p-1"
+                />
               </div>
               <span className="font-bold text-xl">Mercado Copado</span>
             </div>

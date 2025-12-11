@@ -1,5 +1,3 @@
-import { ButtonPayPhone } from '@/app/components/payphone/components/ButtonPayPhone'
-
 import type { CheckoutHookReturn } from './types'
 
 interface CheckoutSummaryProps {
@@ -82,13 +80,24 @@ export const CheckoutSummary = ({ checkout, onSuccess }: CheckoutSummaryProps) =
           </div>
         </div>
 
-        {!checkout.clientTransactionId ? (
+        {checkout.selectedPaymentProvider === 'PAYPHONE' ? (
+          <div className="space-y-4">
+            <p className="text-coffee-darker font-semibold text-center">
+              Selecciona una opción de pago arriba
+            </p>
+            <p className="text-sm text-gray-600 text-center">
+              Elige entre pagar con link o con teléfono para continuar
+            </p>
+          </div>
+        ) : !checkout.clientTransactionId ? (
           <button
             onClick={checkout.handleCreatePaymentTransaction}
             disabled={
               checkout.isPending ||
               !checkout.selectedAddressId ||
-              !checkout.selectedPaymentMethodId
+              !checkout.selectedPaymentProvider ||
+              (checkout.selectedPaymentProvider === 'CASH_DEPOSIT' &&
+                !checkout.depositImage)
             }
             className="w-full bg-gradient-coffee text-white py-3 rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold mb-4 shadow-coffee hover:shadow-coffee-md transition-all duration-200"
           >
@@ -96,16 +105,12 @@ export const CheckoutSummary = ({ checkout, onSuccess }: CheckoutSummaryProps) =
           </button>
         ) : (
           <div className="space-y-4">
-            <p className="text-green-600 font-semibold">
+            <p className="text-green-600 font-semibold text-center">
               Transacción creada exitosamente
             </p>
-            <ButtonPayPhone
-              amount={checkout.transactionTotal}
-              addressId={checkout.selectedAddressId}
-              paymentMethodId={checkout.selectedPaymentMethodId}
-              clientTransactionId={checkout.clientTransactionId}
-              onSuccess={onSuccess}
-            />
+            <p className="text-sm text-gray-600 text-center">
+              Completa el pago usando las opciones en la sección de Método de Pago
+            </p>
           </div>
         )}
       </div>

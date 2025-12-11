@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { usePaymentConfirmationByPayphoneMutation } from '@/app/components/payphone/mutations/usePayPhoneMutation'
-import { useUpdatePaymentStatusMutation } from '../mutations/usePaymentMutations'
+import { useUpdatePaymentStatusMutation } from '@/app/features/payments/mutations/usePaymentMutations'
 
 interface PayResponsePageProps {
   id: string
@@ -38,23 +38,27 @@ export const PayResponsePage = ({
       })
       const { statusCode } = response
       if (statusCode === 3) {
+        // Pago completado exitosamente
         await updateStatusTransaction({
           clientTransactionId,
           status: 'completed',
         })
+        // Redirigir a órdenes después de 2 segundos
         setTimeout(() => {
           navigate({ to: '/orders' })
         }, 2000)
       } else {
+        // Pago pendiente o en proceso
         setTimeout(() => {
-          navigate({ to: '/' })
-        }, 3000)
+          navigate({ to: '/orders' })
+        }, 2000)
       }
     } catch (error) {
       console.error('Error al confirmar el pago:', error)
+      // Aún así redirigir a órdenes para que el usuario pueda verificar el estado
       setTimeout(() => {
-        navigate({ to: '/' })
-      }, 3000)
+        navigate({ to: '/orders' })
+      }, 2000)
     }
   }
 

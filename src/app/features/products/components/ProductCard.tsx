@@ -1,7 +1,8 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { ShoppingCart } from 'lucide-react'
 import { Button } from 'antd'
 import { useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import type { Product } from '../types'
 import { useAuthStore } from '@/app/store/auth/authStore'
 import { useCartStore } from '@/app/store/cart/cartStore'
@@ -9,6 +10,7 @@ import { useAddToCartMutation } from '@/app/features/cart/mutations/useCartMutat
 import { sonnerResponse } from '@/app/helpers/sonnerResponse'
 import { useCurrency } from '@/app/hooks/useCurrency'
 import { formatUSD } from '@/app/services/currencyService'
+import { userInfoService } from '@/app/features/auth/login/services/userInfoService'
 
 interface ProductCardProps {
   product: Product
@@ -19,6 +21,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   const { addItem } = useCartStore()
   const { mutateAsync: addToCart, isPending } = useAddToCartMutation()
   const { formatPrice, currency } = useCurrency()
+  const navigate = useNavigate()
 
   const isAuthenticated = !!token
   const isAdmin = roles === 'ADMIN'
@@ -27,23 +30,30 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   const finalPrice = price * (1 - discount / 100)
   const hasMultipleImages = product.images.length > 1
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const [isMounted, setIsMounted] = useState(false)
 
-  // Solo activar el carrusel después de la hidratación
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
+  // Obtener información del usuario para comparar país
+  const { data: userInfo } = useQuery({
+    queryKey: ['userInfo'],
+    queryFn: userInfoService,
+    enabled: isAuthenticated,
+  })
 
-  // Carrusel automático de imágenes (solo después de montar)
+  // País del usuario: si está autenticado usa su país, sino usa Argentina por defecto
+  const userCountry = isAuthenticated
+    ? userInfo?.country || 'Argentina'
+    : 'Argentina'
+  const isInternational = product.country && product.country !== userCountry
+
+  // Carrusel automático de imágenes
   useEffect(() => {
-    if (!isMounted || !hasMultipleImages) return
+    if (!hasMultipleImages) return
 
     const interval = setInterval(() => {
       setCurrentImageIndex((prev) => (prev + 1) % product.images.length)
     }, 3000) // Cambiar imagen cada 3 segundos
 
     return () => clearInterval(interval)
-  }, [isMounted, hasMultipleImages, product.images.length])
+  }, [hasMultipleImages, product.images.length])
 
   // Obtener la imagen actual de forma segura
   const currentImage =
@@ -51,10 +61,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
       ? product.images[currentImageIndex]?.url || product.images[0]?.url
       : null
 
-  const handleAddToCart = async (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-
+  const addProductToCart = async () => {
     // Siempre agregar al carrito local (localStorage)
     addItem({
       id: '', // Se generará en el servidor si está autenticado
@@ -79,12 +86,23 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           productId: product.id,
           quantity: 1,
         })
-        // El sonner ya se muestra en la mutación, pero lo mostramos antes para feedback inmediato
       } catch (error) {
         console.error('Error adding to cart:', error)
-        // El error ya se maneja en la mutación con sonner
       }
     }
+  }
+
+  const handleAddToCart = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    await addProductToCart()
+  }
+
+  const handleBuyNow = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    await addProductToCart()
+    navigate({ to: '/checkout' })
   }
 
   return (
@@ -107,11 +125,29 @@ export const ProductCard = ({ product }: ProductCardProps) => {
                 <span>Sin imagen</span>
               </div>
             )}
-            {discount > 0 && (
-              <div className="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-coffee z-10">
-                -{discount}%
-              </div>
-            )}
+            {/* Contenedor de etiquetas */}
+            <div className="absolute inset-0 pointer-events-none z-30">
+              {/* Etiqueta de país - siempre en top-left */}
+              {product.country && (
+                <div className="absolute top-2 left-2 bg-blue-50/90 text-blue-700 text-xs font-medium px-2 py-1 rounded-full border border-blue-200/80 backdrop-blur-sm pointer-events-auto">
+                  {product.country}
+                </div>
+              )}
+              {/* Etiqueta Internacional - top-right si existe */}
+              {isInternational && (
+                <div className="absolute top-2 right-2 bg-purple-50/90 text-purple-700 text-xs font-medium px-2 py-1 rounded-full border border-purple-200/80 backdrop-blur-sm pointer-events-auto">
+                  Internacional
+                </div>
+              )}
+              {/* Etiqueta de descuento - top-right si no hay internacional, o debajo si hay */}
+              {discount > 0 && (
+                <div
+                  className={`absolute ${isInternational ? 'top-11' : 'top-2'} right-2 bg-red-500 text-white text-xs font-bold px-2.5 py-1.5 rounded-full shadow-lg border border-red-600 pointer-events-auto`}
+                >
+                  -{discount}%
+                </div>
+              )}
+            </div>
             {/* Indicadores del carrusel */}
             {hasMultipleImages && (
               <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex gap-1.5 z-10">
@@ -138,8 +174,8 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             <h3 className="font-semibold text-lg mb-2 line-clamp-2 text-coffee-darker group-hover:text-coffee-medium transition-colors">
               {product.name}
             </h3>
-            <div className="flex flex-col gap-1 mb-4">
-              {discount > 0 && (
+            <div className="flex flex-col gap-1 mb-4 min-h-[60px]">
+              {discount > 0 ? (
                 <div className="flex items-center gap-2">
                   <span className="text-gray-400 line-through text-sm">
                     {isAdmin ? formatUSD(price) : formatPrice(price)}
@@ -150,6 +186,8 @@ export const ProductCard = ({ product }: ProductCardProps) => {
                     </span>
                   )}
                 </div>
+              ) : (
+                <div className="h-5"></div>
               )}
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-2xl font-bold text-coffee-dark">
@@ -165,17 +203,23 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           </div>
         </Link>
 
-        {/* Botón de acción */}
-        <div className="px-4 pb-4">
+        {/* Botones de acción */}
+        <div className="px-4 pb-4 flex gap-2">
           <Button
-            type="primary"
+            type="default"
             icon={<ShoppingCart size={18} />}
             onClick={handleAddToCart}
             loading={isPending && isAuthenticated}
-            block
-            className="bg-gradient-coffee border-none hover:opacity-90 rounded-lg h-10 font-semibold"
+            className="flex-1 border-coffee-medium text-coffee-dark hover:bg-coffee-light rounded-lg h-10"
+            title="Agregar al Carrito"
+          />
+          <Button
+            type="primary"
+            onClick={handleBuyNow}
+            loading={isPending && isAuthenticated}
+            className="flex-1 bg-gradient-coffee border-none hover:opacity-90 rounded-lg h-10 font-semibold"
           >
-            Agregar al Carrito
+            Comprar
           </Button>
         </div>
       </div>

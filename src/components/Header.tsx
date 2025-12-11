@@ -10,6 +10,8 @@ import {
   Settings,
   ShoppingCart,
   UserPlus,
+  FolderOpen,
+  DollarSign,
 } from 'lucide-react'
 import AuthModal from './auth/AuthModal'
 import CartDrawer from './CartDrawer'
@@ -20,6 +22,7 @@ import { useAuthStore } from '@/app/store/auth/authStore'
 import { useLogoutMutation } from '@/app/features/auth/login/mutations/useLogoutMutation'
 import { userInfoService } from '@/app/features/auth/login/services/userInfoService'
 import { useCartQuery } from '@/app/features/cart/queries/useCartQuery'
+import { getDolarBlueRate } from '@/app/services/currencyService'
 
 export default function Header() {
   const { token, roles } = useAuthStore()
@@ -33,10 +36,6 @@ export default function Header() {
   const isAuthenticated = !!token
   const isAdmin = roles === 'ADMIN'
 
-  // Forzar re-render cuando cambie el token
-  useEffect(() => {
-    // Este efecto asegura que el componente se actualice cuando cambie el token
-  }, [token])
 
   // Obtener información del usuario si está autenticado
   const { data: userInfo } = useQuery({
@@ -50,19 +49,21 @@ export default function Header() {
     enabled: isAuthenticated,
   })
 
+  // Obtener tasa de dólar blue - Solo para admins
+  const { data: blueRate } = useQuery({
+    queryKey: ['dolarBlueRate'],
+    queryFn: getDolarBlueRate,
+    enabled: isAdmin, // Solo obtener si es admin
+    staleTime: 60 * 60 * 1000, // Cache por 1 hora
+    refetchInterval: 60 * 60 * 1000, // Refrescar cada hora
+  })
+
   // Estado para el conteo de items - inicializar en 0 para evitar errores de hidratación
   const [itemCount, setItemCount] = useState(0)
-  const [isMounted, setIsMounted] = useState(false)
-
-  // Solo activar después de la hidratación
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
 
   // Calcular conteo de items: usar BD si está autenticado, sino localStorage
   // Escuchar cambios en el carrito local y en el carrito de BD
   useEffect(() => {
-    if (!isMounted) return
 
     if (isAuthenticated && dbCartItems) {
       const count = dbCartItems.reduce(
@@ -78,7 +79,7 @@ export default function Header() {
       )
       setItemCount(count)
     }
-  }, [isMounted, isAuthenticated, dbCartItems, cartItems])
+  }, [isAuthenticated, dbCartItems, cartItems])
 
   const handleLoginClick = () => {
     setAuthMode('login')
@@ -138,10 +139,12 @@ export default function Header() {
             {/* Logo */}
             <Link to="/" className="flex items-center">
               <div className="flex items-center gap-2">
-                <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-lg flex items-center justify-center shadow-coffee">
-                  <span className="text-coffee-dark font-bold text-lg md:text-xl">
-                    MC
-                  </span>
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-lg flex items-center justify-center shadow-coffee overflow-hidden">
+                  <img
+                    src="/box.png"
+                    alt="Mercado Copado"
+                    className="w-full h-full object-contain p-1"
+                  />
                 </div>
                 <span className="text-white font-bold text-lg md:text-xl hidden sm:block">
                   Mercado Copado
@@ -151,6 +154,13 @@ export default function Header() {
 
             {/* Right side - Auth buttons or Cart */}
             <div className="flex items-center gap-3 md:gap-4">
+              {/* Dólar Blue Display - Solo para admins */}
+              {isAdmin && blueRate && (
+                <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-white/20 rounded-lg text-white text-sm font-semibold">
+                  <DollarSign size={16} />
+                  <span>Dólar Blue: ${blueRate.toLocaleString('es-AR')}</span>
+                </div>
+              )}
               {!isAuthenticated ? (
                 <>
                   <button
@@ -171,16 +181,29 @@ export default function Header() {
               ) : (
                 <div className="flex items-center gap-3">
                   {isAdmin && (
-                    <Button
-                      type="text"
-                      onClick={() => setIsAdminDrawerOpen(true)}
-                      className="flex items-center gap-2 text-white hover:bg-white/20 h-10 px-3"
-                    >
-                      <LayoutDashboard size={18} className="text-white" />
-                      <span className="hidden md:inline text-white">
-                        Dashboard
-                      </span>
-                    </Button>
+                    <>
+                      <Button
+                        type="text"
+                        onClick={() => setIsAdminDrawerOpen(true)}
+                        className="flex items-center gap-2 text-white hover:bg-white/20 h-10 px-3"
+                      >
+                        <LayoutDashboard size={18} className="text-white" />
+                        <span className="hidden md:inline text-white">
+                          Dashboard
+                        </span>
+                      </Button>
+                      <Link to="/dashboard">
+                        <Button
+                          type="text"
+                          className="flex items-center gap-2 text-white hover:bg-white/20 h-10 px-3"
+                        >
+                          <FolderOpen size={18} className="text-white" />
+                          <span className="hidden md:inline text-white">
+                            Panel
+                          </span>
+                        </Button>
+                      </Link>
+                    </>
                   )}
                   <Dropdown
                     menu={{ items: userMenuItems }}

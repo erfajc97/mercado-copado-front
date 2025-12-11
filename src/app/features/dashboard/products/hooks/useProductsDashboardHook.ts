@@ -9,7 +9,9 @@ import { useCurrency } from '@/app/hooks/useCurrency'
 import { formatUSD } from '@/app/services/currencyService'
 
 export const useProductsDashboardHook = () => {
-  const { data: products, isLoading } = useProductsQuery()
+  const { data: products, isLoading } = useProductsQuery({
+    includeInactive: true,
+  })
   const { data: categories } = useAllCategoriesQuery()
   const { mutateAsync: deleteProduct } = useDeleteProductMutation()
   const { mutateAsync: updateProduct } = useUpdateProductMutation()
@@ -118,10 +120,20 @@ export const useProductsDashboardHook = () => {
   }
 
   const handleToggleActive = async (product: any) => {
-    await updateProduct({
-      productId: product.id,
-      data: { isActive: !product.isActive },
-    })
+    try {
+      // Obtener el valor actual del producto desde el cache actualizado
+      const currentProduct = products?.find((p: any) => p.id === product.id)
+      const currentStatus = currentProduct?.isActive ?? product.isActive
+      const newStatus = !currentStatus
+
+      await updateProduct({
+        productId: product.id,
+        data: { isActive: newStatus },
+      })
+    } catch (error) {
+      // Si hay error, revertir el cambio visual
+      console.error('Error al actualizar estado del producto:', error)
+    }
   }
 
   return {

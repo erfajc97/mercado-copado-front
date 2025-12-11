@@ -24,8 +24,9 @@ export const updateProductService = async (
     Object.keys(data).forEach((key) => {
       const value = data[key as keyof UpdateProductData]
       if (value !== undefined) {
+        // Para booleanos, asegurar que se envíe como string "true" o "false"
         if (typeof value === 'boolean') {
-          formData.append(key, String(value))
+          formData.append(key, value ? 'true' : 'false')
         } else {
           formData.append(key, String(value))
         }

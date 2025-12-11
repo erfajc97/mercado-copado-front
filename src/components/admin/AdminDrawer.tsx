@@ -1,15 +1,14 @@
-import { useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Drawer, Tabs } from 'antd'
+import { useNavigate } from '@tanstack/react-router'
 import {
   BarChart3,
   FolderOpen,
-  List,
   Package,
   ShoppingBag,
   Tag,
   Users,
 } from 'lucide-react'
-import { Link } from '@tanstack/react-router'
 import DashboardStats from './tabs/DashboardStats'
 import CreateProduct from './tabs/CreateProduct'
 import CreateCategory from './tabs/CreateCategory'
@@ -23,113 +22,94 @@ interface AdminDrawerProps {
 
 export default function AdminDrawer({ isOpen, onClose }: AdminDrawerProps) {
   const [activeTab, setActiveTab] = useState('dashboard')
+  const navigate = useNavigate()
 
-  const tabItems = [
-    {
-      key: 'dashboard',
-      label: (
-        <span className="ml-5 flex items-center gap-2">
-          <BarChart3 size={18} />
-          Dashboard
-        </span>
-      ),
-      children: <DashboardStats />,
+  const handleTabChange = useCallback(
+    (key: string) => {
+      if (key === 'Panel') {
+        // Usar setTimeout para evitar bloqueo síncrono
+        setTimeout(() => {
+          navigate({ to: '/dashboard' })
+          onClose()
+        }, 0)
+      } else {
+        setActiveTab(key)
+      }
     },
-    {
-      key: 'orders',
-      label: (
-        <span className="flex items-center gap-2">
-          <ShoppingBag size={18} />
-          Órdenes
-        </span>
-      ),
-      children: <AdminOrders />,
-    },
-    {
-      key: 'users',
-      label: (
-        <span className="flex items-center gap-2">
-          <Users size={18} />
-          Usuarios
-        </span>
-      ),
-      children: <AdminUsers />,
-    },
-    {
-      key: 'products-list',
-      label: (
-        <Link
-          to="/dashboard/products"
-          className="flex items-center gap-2 text-inherit hover:text-blue-600"
-          onClick={onClose}
-        >
-          <List size={18} />
-          Lista de Productos
-        </Link>
-      ),
-      children: (
-        <div className="p-6 text-center">
-          <p className="text-gray-600 mb-4">
-            Redirigiendo a la lista de productos...
-          </p>
-          <Link
-            to="/dashboard/products"
-            className="text-blue-600 hover:text-blue-800 underline"
-            onClick={onClose}
-          >
-            Ir a Lista de Productos
-          </Link>
-        </div>
-      ),
-    },
-    {
-      key: 'products',
-      label: (
-        <span className="flex items-center gap-2">
-          <Package size={18} />
-          Crear Producto
-        </span>
-      ),
-      children: <CreateProduct />,
-    },
-    {
-      key: 'categories-list',
-      label: (
-        <Link
-          to="/dashboard/categories"
-          className="flex items-center gap-2 text-inherit hover:text-green-600"
-          onClick={onClose}
-        >
-          <FolderOpen size={18} />
-          Lista de Categorías
-        </Link>
-      ),
-      children: (
-        <div className="p-6 text-center">
-          <p className="text-gray-600 mb-4">
-            Redirigiendo a la lista de categorías...
-          </p>
-          <Link
-            to="/dashboard/categories"
-            className="text-green-600 hover:text-green-800 underline"
-            onClick={onClose}
-          >
-            Ir a Lista de Categorías
-          </Link>
-        </div>
-      ),
-    },
-    {
-      key: 'categories',
-      label: (
-        <span className="flex items-center gap-2">
-          <Tag size={18} />
-          Crear Categoría
-        </span>
-      ),
-      children: <CreateCategory />,
-    },
-  ]
+    [navigate, onClose],
+  )
+
+  const tabItems = useMemo(
+    () => [
+      {
+        key: 'dashboard',
+        label: (
+          <span className="ml-5 flex items-center gap-2">
+            <BarChart3 size={18} />
+            Dashboard
+          </span>
+        ),
+        children: activeTab === 'dashboard' ? <DashboardStats /> : null,
+      },
+      {
+        key: 'orders',
+        label: (
+          <span className="flex items-center gap-2">
+            <ShoppingBag size={18} />
+            Órdenes
+          </span>
+        ),
+        children: activeTab === 'orders' ? <AdminOrders /> : null,
+      },
+      {
+        key: 'users',
+        label: (
+          <span className="flex items-center gap-2">
+            <Users size={18} />
+            Usuarios
+          </span>
+        ),
+        children: activeTab === 'users' ? <AdminUsers /> : null,
+      },
+      {
+        key: 'products',
+        label: (
+          <span className="flex items-center gap-2">
+            <Package size={18} />
+            Crear Producto
+          </span>
+        ),
+        children: activeTab === 'products' ? <CreateProduct /> : null,
+      },
+      {
+        key: 'categories',
+        label: (
+          <span className="flex items-center gap-2">
+            <Tag size={18} />
+            Crear Categoría
+          </span>
+        ),
+        children: activeTab === 'categories' ? <CreateCategory /> : null,
+      },
+      {
+        key: 'Panel',
+        label: (
+          <span className="flex items-center gap-2">
+            <FolderOpen size={18} />
+            Panel
+          </span>
+        ),
+        children: (
+          <div className="p-6 text-center">
+            <p className="text-gray-600 mb-4">
+              Redirigiendo al panel administrativo...
+            </p>
+          </div>
+        ),
+      },
+    ],
+    [activeTab],
+  )
 
   return (
     <Drawer
@@ -152,7 +132,7 @@ export default function AdminDrawer({ isOpen, onClose }: AdminDrawerProps) {
     >
       <Tabs
         activeKey={activeTab}
-        onChange={setActiveTab}
+        onChange={handleTabChange}
         items={tabItems}
         className="px-6"
       />

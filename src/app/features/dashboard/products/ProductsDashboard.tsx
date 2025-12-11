@@ -1,26 +1,36 @@
-import { Link } from '@tanstack/react-router'
-import { Modal } from 'antd'
+import { useState } from 'react'
+import { Button, Modal } from 'antd'
+import { Plus } from 'lucide-react'
 import { useProductsDashboardHook } from './hooks/useProductsDashboardHook'
 import { ProductsFilters } from './components/ProductsFilters'
 import { ProductsTable } from './components/ProductsTable'
+import CreateProductModal from '@/components/admin/modals/CreateProductModal'
 
 export const ProductsDashboard = () => {
   const hook = useProductsDashboardHook()
+  const [createProductModalOpen, setCreateProductModalOpen] = useState(false)
 
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Gestión de Productos</h2>
-        <Link
-          to="/dashboard/products/new"
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+        <Button
+          type="primary"
+          icon={<Plus size={16} />}
+          onClick={() => setCreateProductModalOpen(true)}
+          className="bg-gradient-coffee border-none hover:opacity-90"
         >
           Nuevo Producto
-        </Link>
+        </Button>
       </div>
 
       <ProductsFilters hook={hook} />
       <ProductsTable hook={hook} />
+
+      <CreateProductModal
+        isOpen={createProductModalOpen}
+        onClose={() => setCreateProductModalOpen(false)}
+      />
 
       <Modal
         title="Eliminar Producto"

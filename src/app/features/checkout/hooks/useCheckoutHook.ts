@@ -7,6 +7,7 @@ import { useCreateAddressMutation } from '@/app/features/addresses/mutations/use
 import { usePaymentMethodsQuery } from '@/app/features/payment-methods/queries/usePaymentMethodsQuery'
 import { useCreatePaymentMethodMutation } from '@/app/features/payment-methods/mutations/usePaymentMethodMutations'
 import { useCreatePaymentTransactionWithoutOrderMutation } from '@/app/features/payments/mutations/useCreatePaymentTransactionWithoutOrderMutation'
+import { useCashDepositMutation } from '@/app/features/payments/mutations/useCashDepositMutation'
 import { useCurrency } from '@/app/hooks/useCurrency'
 
 export const useCheckoutHook = () => {
@@ -16,6 +17,8 @@ export const useCheckoutHook = () => {
     usePaymentMethodsQuery()
   const { mutateAsync: createPaymentTransactionWithoutOrder, isPending } =
     useCreatePaymentTransactionWithoutOrderMutation()
+  const { mutateAsync: cashDeposit, isPending: isProcessingDeposit } =
+    useCashDepositMutation()
   const { mutateAsync: createAddress, isPending: isCreatingAddress } =
     useCreateAddressMutation()
   const {
@@ -27,10 +30,14 @@ export const useCheckoutHook = () => {
   const [selectedAddressId, setSelectedAddressId] = useState<string>('')
   const [selectedPaymentMethodId, setSelectedPaymentMethodId] =
     useState<string>('')
+  const [selectedPaymentProvider, setSelectedPaymentProvider] = useState<
+    'PAYPHONE' | 'MERCADOPAGO' | 'CRYPTO' | 'CASH_DEPOSIT' | null
+  >(null)
   const [clientTransactionId, setClientTransactionId] = useState<string | null>(
     null,
   )
   const [transactionTotal, setTransactionTotal] = useState<number>(0)
+  const [depositImage, setDepositImage] = useState<File | null>(null)
   const [showAddressForm, setShowAddressForm] = useState(false)
   const [showAddressSelector, setShowAddressSelector] = useState(false)
   const [showPaymentMethodForm, setShowPaymentMethodForm] = useState(false)
@@ -137,8 +144,32 @@ export const useCheckoutHook = () => {
       return
     }
 
-    if (!selectedPaymentMethodId) {
-      alert('Por favor, selecciona un método de pago')
+    if (!selectedPaymentProvider) {
+      alert('Por favor, selecciona un proveedor de pago')
+      return
+    }
+
+    // Si es depósito en efectivo, usar el método específico
+    if (selectedPaymentProvider === 'CASH_DEPOSIT') {
+      if (!depositImage) {
+        alert('Por favor, sube una imagen del comprobante de depósito')
+        return
+      }
+
+      try {
+        const randomIdClientTransaction = Math.random()
+          .toString(36)
+          .substring(2, 15)
+
+        await cashDeposit({
+          addressId: selectedAddressId,
+          clientTransactionId: randomIdClientTransaction,
+          depositImage,
+        })
+      } catch (error) {
+        console.error('Error processing cash deposit:', error)
+        // El error ya se maneja en la mutación con sonner
+      }
       return
     }
 
@@ -147,12 +178,21 @@ export const useCheckoutHook = () => {
         .toString(36)
         .substring(2, 15)
 
-      const transaction = await createPaymentTransactionWithoutOrder({
+      // Para Payphone, no enviamos paymentMethodId
+      // Para otros proveedores futuros, será necesario
+      const transactionData: any = {
         addressId: selectedAddressId,
-        paymentMethodId: selectedPaymentMethodId,
         clientTransactionId: randomIdClientTransaction,
-        paymentProvider: 'PAYPHONE',
-      })
+        paymentProvider: selectedPaymentProvider,
+      }
+
+      if (selectedPaymentProvider !== 'PAYPHONE' && selectedPaymentMethodId) {
+        transactionData.paymentMethodId = selectedPaymentMethodId
+      }
+
+      const transaction = await createPaymentTransactionWithoutOrder(
+        transactionData,
+      )
 
       setClientTransactionId(randomIdClientTransaction)
       setTransactionTotal(Number(transaction.amount))
@@ -172,6 +212,8 @@ export const useCheckoutHook = () => {
     setSelectedAddressId,
     selectedPaymentMethodId,
     setSelectedPaymentMethodId,
+    selectedPaymentProvider,
+    setSelectedPaymentProvider,
     clientTransactionId,
     transactionTotal,
     showAddressForm,
@@ -190,11 +232,13 @@ export const useCheckoutHook = () => {
     calculateTotal,
     total,
     formatPrice,
-    isPending,
+    isPending: isPending || isProcessingDeposit,
     isCreatingAddress,
     isCreatingPaymentMethod,
     refetchAddresses,
     refetchPaymentMethods,
+    depositImage,
+    setDepositImage,
   }
 }
 

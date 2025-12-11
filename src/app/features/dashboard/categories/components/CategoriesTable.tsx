@@ -78,7 +78,10 @@ export const CategoriesTable = ({ hook }: CategoriesTableProps) => {
           <Button
             type="link"
             icon={<Edit size={16} />}
-            onClick={() => hook.openEditCategory(record)}
+            onClick={() => {
+              // Esta función será manejada por el componente padre
+              hook.openEditCategory(record)
+            }}
             size="small"
           >
             Editar

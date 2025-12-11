@@ -2,6 +2,9 @@ import { Button, Form, Input, Modal, Radio } from 'antd'
 import { CreditCard, Home, Plus } from 'lucide-react'
 import type { PaymentMethod } from '@/app/features/payment-methods/types'
 import type { CheckoutHookReturn } from './types'
+import { PaymentProviderSelector } from './PaymentProviderSelector'
+import { ButtonPayPhone } from '@/app/components/payphone/components/ButtonPayPhone'
+import { CashDepositUpload } from './CashDepositUpload'
 
 interface CheckoutFormProps {
   checkout: CheckoutHookReturn
@@ -258,55 +261,53 @@ export const CheckoutForm = ({ checkout }: CheckoutFormProps) => {
         </Form>
       </Modal>
 
-      {/* Payment Method Section */}
-      <div className="bg-white rounded-lg shadow-md p-6">
+      {/* Payment Provider Section */}
+      <div className="bg-white rounded-lg shadow-coffee p-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">Método de Pago</h2>
-          <Button
-            type="link"
-            icon={<Plus size={16} />}
-            onClick={() => checkout.setShowPaymentMethodForm(true)}
-            className="p-0"
-          >
-            Agregar
-          </Button>
+          <h2 className="text-xl font-bold text-coffee-darker">
+            Método de Pago
+          </h2>
         </div>
-        {checkout.paymentMethods && checkout.paymentMethods.length > 0 ? (
-          <Radio.Group
-            value={checkout.selectedPaymentMethodId}
-            onChange={(e) => checkout.setSelectedPaymentMethodId(e.target.value)}
-            className="w-full"
-          >
-            <div className="space-y-2">
-              {checkout.paymentMethods.map((method: PaymentMethod) => (
-                <Radio key={method.id} value={method.id} className="w-full">
-                  <div className="flex items-center gap-2">
-                    <CreditCard size={16} />
-                    <span>
-                      {method.cardBrand || 'Tarjeta'} •••• {method.last4Digits}
-                    </span>
-                    {method.isDefault && (
-                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
-                        Por defecto
-                      </span>
-                    )}
-                  </div>
-                </Radio>
-              ))}
-            </div>
-          </Radio.Group>
-        ) : (
-          <div className="text-center py-4">
-            <p className="text-gray-600 mb-4">
-              No tienes métodos de pago. Agrega uno para continuar.
+        <div className="mb-6">
+          <PaymentProviderSelector
+            selectedProvider={checkout.selectedPaymentProvider}
+            onSelectProvider={(provider) =>
+              checkout.setSelectedPaymentProvider(provider)
+            }
+          />
+        </div>
+
+        {/* Mostrar opciones de Payphone cuando está seleccionado - automáticamente */}
+        {checkout.selectedPaymentProvider === 'PAYPHONE' && (
+          <div className="mt-6 pt-6 border-t border-coffee-medium">
+            <h3 className="text-lg font-semibold text-coffee-darker mb-4">
+              Completa tu Pago
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Elige una de las siguientes opciones para finalizar tu compra:
             </p>
-            <Button
-              type="primary"
-              onClick={() => checkout.setShowPaymentMethodForm(true)}
-              className="bg-gradient-coffee border-none hover:opacity-90"
-            >
-              Agregar Método de Pago
-            </Button>
+            <ButtonPayPhone
+              amount={checkout.total}
+              addressId={checkout.selectedAddressId}
+              paymentMethodId={checkout.selectedPaymentMethodId || 'payphone-default'}
+              clientTransactionId={checkout.clientTransactionId || ''}
+              onSuccess={() => {
+                // El onSuccess se maneja en CheckoutSummary
+              }}
+            />
+          </div>
+        )}
+
+        {/* Mostrar componente de depósito en efectivo cuando está seleccionado */}
+        {checkout.selectedPaymentProvider === 'CASH_DEPOSIT' && (
+          <div className="mt-6 pt-6 border-t border-coffee-medium">
+            <h3 className="text-lg font-semibold text-coffee-darker mb-4">
+              Sube tu Comprobante de Depósito
+            </h3>
+            <CashDepositUpload
+              onImageSelect={checkout.setDepositImage}
+              selectedImage={checkout.depositImage}
+            />
           </div>
         )}
       </div>

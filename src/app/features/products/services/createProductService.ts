@@ -10,6 +10,7 @@ export const createProductService = async (data: {
   categoryId: string
   subcategoryId: string
   country?: string
+  isActive?: boolean
   images?: Array<File>
 }) => {
   try {
@@ -26,6 +27,9 @@ export const createProductService = async (data: {
     formData.append('subcategoryId', data.subcategoryId)
     if (data.country) {
       formData.append('country', data.country)
+    }
+    if (data.isActive !== undefined) {
+      formData.append('isActive', data.isActive.toString())
     }
 
     // Agregar imágenes

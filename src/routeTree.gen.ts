@@ -18,6 +18,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as PayResponseIndexRouteImport } from './routes/pay-response/index'
 import { Route as ProductsProductIdRouteImport } from './routes/products.$productId'
 import { Route as OrdersOrderIdRouteImport } from './routes/orders.$orderId'
+import { Route as DashboardUsersRouteImport } from './routes/dashboard.users'
 import { Route as DashboardProductsRouteImport } from './routes/dashboard.products'
 import { Route as DashboardOrdersRouteImport } from './routes/dashboard.orders'
 import { Route as DashboardCategoriesRouteImport } from './routes/dashboard.categories'
@@ -70,6 +71,11 @@ const OrdersOrderIdRoute = OrdersOrderIdRouteImport.update({
   path: '/$orderId',
   getParentRoute: () => OrdersRoute,
 } as any)
+const DashboardUsersRoute = DashboardUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardProductsRoute = DashboardProductsRouteImport.update({
   id: '/products',
   path: '/products',
@@ -112,6 +118,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/categories': typeof DashboardCategoriesRoute
   '/dashboard/orders': typeof DashboardOrdersRoute
   '/dashboard/products': typeof DashboardProductsRouteWithChildren
+  '/dashboard/users': typeof DashboardUsersRoute
   '/orders/$orderId': typeof OrdersOrderIdRoute
   '/products/$productId': typeof ProductsProductIdRoute
   '/pay-response': typeof PayResponseIndexRoute
@@ -129,6 +136,7 @@ export interface FileRoutesByTo {
   '/dashboard/categories': typeof DashboardCategoriesRoute
   '/dashboard/orders': typeof DashboardOrdersRoute
   '/dashboard/products': typeof DashboardProductsRouteWithChildren
+  '/dashboard/users': typeof DashboardUsersRoute
   '/orders/$orderId': typeof OrdersOrderIdRoute
   '/products/$productId': typeof ProductsProductIdRoute
   '/pay-response': typeof PayResponseIndexRoute
@@ -147,6 +155,7 @@ export interface FileRoutesById {
   '/dashboard/categories': typeof DashboardCategoriesRoute
   '/dashboard/orders': typeof DashboardOrdersRoute
   '/dashboard/products': typeof DashboardProductsRouteWithChildren
+  '/dashboard/users': typeof DashboardUsersRoute
   '/orders/$orderId': typeof OrdersOrderIdRoute
   '/products/$productId': typeof ProductsProductIdRoute
   '/pay-response/': typeof PayResponseIndexRoute
@@ -166,6 +175,7 @@ export interface FileRouteTypes {
     | '/dashboard/categories'
     | '/dashboard/orders'
     | '/dashboard/products'
+    | '/dashboard/users'
     | '/orders/$orderId'
     | '/products/$productId'
     | '/pay-response'
@@ -183,6 +193,7 @@ export interface FileRouteTypes {
     | '/dashboard/categories'
     | '/dashboard/orders'
     | '/dashboard/products'
+    | '/dashboard/users'
     | '/orders/$orderId'
     | '/products/$productId'
     | '/pay-response'
@@ -200,6 +211,7 @@ export interface FileRouteTypes {
     | '/dashboard/categories'
     | '/dashboard/orders'
     | '/dashboard/products'
+    | '/dashboard/users'
     | '/orders/$orderId'
     | '/products/$productId'
     | '/pay-response/'
@@ -285,6 +297,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrdersOrderIdRouteImport
       parentRoute: typeof OrdersRoute
     }
+    '/dashboard/users': {
+      id: '/dashboard/users'
+      path: '/users'
+      fullPath: '/dashboard/users'
+      preLoaderRoute: typeof DashboardUsersRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/products': {
       id: '/dashboard/products'
       path: '/products'
@@ -345,12 +364,14 @@ interface DashboardRouteChildren {
   DashboardCategoriesRoute: typeof DashboardCategoriesRoute
   DashboardOrdersRoute: typeof DashboardOrdersRoute
   DashboardProductsRoute: typeof DashboardProductsRouteWithChildren
+  DashboardUsersRoute: typeof DashboardUsersRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardCategoriesRoute: DashboardCategoriesRoute,
   DashboardOrdersRoute: DashboardOrdersRoute,
   DashboardProductsRoute: DashboardProductsRouteWithChildren,
+  DashboardUsersRoute: DashboardUsersRoute,
 }
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(

@@ -190,31 +190,31 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 return (
                   <div
                     key={item.id || item.productId}
-                    className="bg-white rounded-lg shadow-coffee p-4 flex gap-3"
+                    className="bg-white rounded-lg shadow-coffee p-4 flex gap-3 border border-gray-200 hover:border-coffee-medium hover:shadow-coffee-md transition-all duration-200"
                   >
                     {mainImage && (
                       <img
                         src={mainImage}
                         alt={item.product.name}
-                        className="w-20 h-20 object-cover rounded-lg"
+                        className="w-20 h-20 object-cover rounded-lg shadow-md"
                       />
                     )}
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-sm text-coffee-darker truncate mb-1">
+                      <h4 className="font-bold text-base text-coffee-darker truncate mb-2">
                         {item.product.name}
                       </h4>
-                      <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center gap-2 mb-3">
                         {item.product.discount > 0 && (
-                          <span className="text-gray-400 line-through text-xs">
+                          <span className="text-gray-400 line-through text-sm">
                             ${Number(item.product.price).toFixed(2)}
                           </span>
                         )}
-                        <span className="text-coffee-dark font-bold">
+                        <span className="text-coffee-dark font-bold text-lg">
                           ${finalPrice.toFixed(2)}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 border border-gray-300 rounded-lg">
+                        <div className="flex items-center gap-2 border-2 border-coffee-medium rounded-lg overflow-hidden">
                           <button
                             onClick={() => {
                               if (item.quantity > 1) {
@@ -226,12 +226,12 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                               }
                             }}
                             disabled={item.quantity <= 1}
-                            className="p-1 hover:bg-coffee-light rounded-l-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="p-2 hover:bg-coffee-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             aria-label="Decrementar cantidad"
                           >
                             <Minus size={16} className="text-coffee-dark" />
                           </button>
-                          <span className="px-3 py-1 text-sm font-semibold text-coffee-darker min-w-8 text-center">
+                          <span className="px-4 py-2 text-sm font-bold text-coffee-darker min-w-10 text-center bg-coffee-light/30">
                             {item.quantity}
                           </span>
                           <button
@@ -242,7 +242,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                 item.quantity + 1,
                               )
                             }}
-                            className="p-1 hover:bg-coffee-light rounded-r-lg transition-colors"
+                            className="p-2 hover:bg-coffee-light transition-colors"
                             aria-label="Incrementar cantidad"
                           >
                             <Plus size={16} className="text-coffee-dark" />
@@ -252,10 +252,10 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                           onClick={() =>
                             handleRemoveItem(item.id, item.productId)
                           }
-                          className="text-red-500 hover:text-red-700 p-1"
+                          className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-colors"
                           aria-label="Eliminar producto"
                         >
-                          <Trash2 size={16} />
+                          <Trash2 size={18} />
                         </button>
                       </div>
                     </div>
@@ -264,12 +264,12 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               })}
             </div>
 
-            <div className="border-t border-gray-200 p-4 bg-gray-50">
+            <div className="border-t-2 border-coffee-medium p-4 bg-gradient-to-r from-coffee-light/20 to-white">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-lg font-semibold text-coffee-darker">
+                <span className="text-lg font-bold text-coffee-darker">
                   Total:
                 </span>
-                <span className="text-xl font-bold text-coffee-dark">
+                <span className="text-2xl font-bold text-coffee-dark">
                   {formatPrice(total)}
                 </span>
               </div>

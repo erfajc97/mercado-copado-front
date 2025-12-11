@@ -4,7 +4,7 @@ import axiosInstance from '@/app/config/axiosConfig'
 
 interface CreatePaymentTransactionWithoutOrderData {
   addressId: string
-  paymentMethodId: string
+  paymentMethodId?: string
   clientTransactionId: string
   paymentProvider?: 'PAYPHONE' | 'MERCADOPAGO' | 'CRYPTO'
 }

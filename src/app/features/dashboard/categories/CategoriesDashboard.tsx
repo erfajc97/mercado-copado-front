@@ -1,12 +1,26 @@
+import { useState, useCallback } from 'react'
 import { Button, Input, Modal } from 'antd'
 import { Plus } from 'lucide-react'
 import { useCategoriesDashboardHook } from './hooks/useCategoriesDashboardHook'
 import { CategoriesFilters } from './components/CategoriesFilters'
 import { CategoriesTable } from './components/CategoriesTable'
 import { CategoriesCollapse } from './components/CategoriesCollapse'
+import CreateCategoryModal from '@/components/admin/modals/CreateCategoryModal'
+import EditCategoryModal from '@/components/admin/modals/EditCategoryModal'
 
 export const CategoriesDashboard = () => {
   const hook = useCategoriesDashboardHook()
+  const [createCategoryModalOpen, setCreateCategoryModalOpen] = useState(false)
+  const [editCategoryModalOpen, setEditCategoryModalOpen] = useState(false)
+  const [editingCategory, setEditingCategory] = useState<any>(null)
+
+  const handleEditCategory = useCallback(
+    (category: any) => {
+      setEditingCategory(category)
+      setEditCategoryModalOpen(true)
+    },
+    [],
+  )
 
   return (
     <div className="p-6">
@@ -23,11 +37,8 @@ export const CategoriesDashboard = () => {
           <Button
             type="primary"
             icon={<Plus size={16} />}
-            onClick={() => {
-              hook.setEditingCategory(null)
-              hook.setCategoryName('')
-              hook.setCategoryModalVisible(true)
-            }}
+            onClick={() => setCreateCategoryModalOpen(true)}
+            className="bg-gradient-coffee border-none hover:opacity-90"
           >
             Nueva Categoría
           </Button>
@@ -40,40 +51,27 @@ export const CategoriesDashboard = () => {
         <div className="text-center py-12">Cargando...</div>
       ) : hook.categories && hook.categories.length > 0 ? (
         hook.viewMode === 'table' ? (
-          <CategoriesTable hook={hook} />
+          <CategoriesTable hook={{ ...hook, openEditCategory: handleEditCategory }} />
         ) : (
-          <CategoriesCollapse hook={hook} />
+          <CategoriesCollapse hook={{ ...hook, openEditCategory: handleEditCategory }} />
         )
       ) : (
         <div className="text-center py-12 text-gray-500">No hay categorías</div>
       )}
 
-      <Modal
-        title={hook.editingCategory ? 'Editar Categoría' : 'Nueva Categoría'}
-        open={hook.categoryModalVisible}
-        onOk={
-          hook.editingCategory
-            ? hook.handleUpdateCategory
-            : hook.handleCreateCategory
-        }
-        onCancel={() => {
-          hook.setCategoryModalVisible(false)
-          hook.setEditingCategory(null)
-          hook.setCategoryName('')
+      <CreateCategoryModal
+        isOpen={createCategoryModalOpen}
+        onClose={() => setCreateCategoryModalOpen(false)}
+      />
+
+      <EditCategoryModal
+        isOpen={editCategoryModalOpen}
+        onClose={() => {
+          setEditCategoryModalOpen(false)
+          setEditingCategory(null)
         }}
-        okText={hook.editingCategory ? 'Actualizar' : 'Crear'}
-      >
-        <Input
-          placeholder="Nombre de la categoría"
-          value={hook.categoryName}
-          onChange={(e) => hook.setCategoryName(e.target.value)}
-          onPressEnter={
-            hook.editingCategory
-              ? hook.handleUpdateCategory
-              : hook.handleCreateCategory
-          }
-        />
-      </Modal>
+        category={editingCategory}
+      />
 
       <Modal
         title="Editar Subcategoría"

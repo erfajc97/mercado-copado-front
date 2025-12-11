@@ -7,6 +7,8 @@ export const useMyOrdersQuery = () => {
   return useQuery({
     queryKey: ['orders', 'my-orders'],
     queryFn: () => getMyOrdersService(),
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   })
 }
 
