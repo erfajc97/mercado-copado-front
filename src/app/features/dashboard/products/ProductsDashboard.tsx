@@ -5,6 +5,7 @@ import { useProductsDashboardHook } from './hooks/useProductsDashboardHook'
 import { ProductsFilters } from './components/ProductsFilters'
 import { ProductsTable } from './components/ProductsTable'
 import CreateProductModal from '@/components/admin/modals/CreateProductModal'
+import EditProductModal from '@/components/admin/modals/EditProductModal'
 
 export const ProductsDashboard = () => {
   const hook = useProductsDashboardHook()
@@ -30,6 +31,15 @@ export const ProductsDashboard = () => {
       <CreateProductModal
         isOpen={createProductModalOpen}
         onClose={() => setCreateProductModalOpen(false)}
+      />
+
+      <EditProductModal
+        isOpen={hook.editModalVisible}
+        onClose={() => {
+          hook.setEditModalVisible(false)
+          hook.setProductToEdit(null)
+        }}
+        productId={hook.productToEdit}
       />
 
       <Modal

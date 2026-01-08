@@ -38,7 +38,11 @@ const statusColors: Record<string, string> = {
   delivered: 'bg-green-100 text-green-800',
 }
 
-export default function AdminOrders() {
+interface AdminOrdersProps {
+  onClose?: () => void
+}
+
+export default function AdminOrders({ onClose }: AdminOrdersProps) {
   const navigate = useNavigate()
   const { data: orders, isLoading } = useAllOrdersQuery()
   const [searchText, setSearchText] = useState('')
@@ -153,6 +157,12 @@ export default function AdminOrders() {
               to: '/admin/orders/$orderId',
               params: { orderId: record.id },
             })
+            // Cerrar drawer después de navegar, especialmente importante en mobile
+            if (onClose) {
+              setTimeout(() => {
+                onClose()
+              }, 100)
+            }
           }}
           className="bg-gradient-coffee border-none hover:opacity-90"
         >
@@ -163,16 +173,16 @@ export default function AdminOrders() {
   ]
 
   return (
-    <div className="p-6">
-      <div className="mb-6 space-y-4">
-        <div className="flex gap-4">
+    <div className="p-3 sm:p-6">
+      <div className="mb-4 sm:mb-6 space-y-4">
+        <div className="flex flex-col sm:flex-row gap-4">
           <Input
             placeholder="Buscar por código de orden..."
             prefix={<Search size={16} className="text-gray-400" />}
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             size="large"
-            className="flex-1"
+            className="flex-1 w-full sm:w-auto"
           />
           <Select
             placeholder="Filtrar por estado"
@@ -180,7 +190,7 @@ export default function AdminOrders() {
             onChange={(value) => setStatusFilter(value || '')}
             allowClear
             size="large"
-            className="w-48"
+            className="w-full sm:w-48"
           >
             {statusOptions.map((option) => (
               <Select.Option key={option.value} value={option.value}>
@@ -191,17 +201,20 @@ export default function AdminOrders() {
         </div>
       </div>
 
-      <Table
-        columns={columns}
-        dataSource={filteredOrders}
-        loading={isLoading}
-        rowKey="id"
-        pagination={{
-          pageSize: 10,
-          showSizeChanger: true,
-          showTotal: (total) => `Total: ${total} órdenes`,
-        }}
-      />
+      <div className="overflow-x-auto">
+        <Table
+          columns={columns}
+          dataSource={filteredOrders}
+          loading={isLoading}
+          rowKey="id"
+          scroll={{ x: 800 }}
+          pagination={{
+            pageSize: 10,
+            showSizeChanger: true,
+            showTotal: (total) => `Total: ${total} órdenes`,
+          }}
+        />
+      </div>
     </div>
   )
 }

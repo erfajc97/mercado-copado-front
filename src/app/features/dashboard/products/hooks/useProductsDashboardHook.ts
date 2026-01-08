@@ -19,6 +19,8 @@ export const useProductsDashboardHook = () => {
 
   const [deleteModalVisible, setDeleteModalVisible] = useState(false)
   const [productToDelete, setProductToDelete] = useState<string | null>(null)
+  const [editModalVisible, setEditModalVisible] = useState(false)
+  const [productToEdit, setProductToEdit] = useState<string | null>(null)
   const [searchText, setSearchText] = useState('')
   const [categoryFilter, setCategoryFilter] = useState<string>('')
   const [subcategoryFilter, setSubcategoryFilter] = useState<string>('')
@@ -111,6 +113,11 @@ export const useProductsDashboardHook = () => {
     setDeleteModalVisible(true)
   }
 
+  const handleEditClick = (productId: string) => {
+    setProductToEdit(productId)
+    setEditModalVisible(true)
+  }
+
   const handleConfirmDelete = async () => {
     if (productToDelete) {
       await deleteProduct(productToDelete)
@@ -145,6 +152,10 @@ export const useProductsDashboardHook = () => {
     setDeleteModalVisible,
     productToDelete,
     setProductToDelete,
+    editModalVisible,
+    setEditModalVisible,
+    productToEdit,
+    setProductToEdit,
     searchText,
     setSearchText,
     categoryFilter,
@@ -161,6 +172,7 @@ export const useProductsDashboardHook = () => {
     setPageSize,
     totalProducts: filteredProducts.length,
     handleDeleteClick,
+    handleEditClick,
     handleConfirmDelete,
     handleToggleActive,
     formatPrice,

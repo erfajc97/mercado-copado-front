@@ -23,14 +23,15 @@ export const CategoriesDashboard = () => {
   )
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Gestión de Categorías</h2>
-        <div className="flex gap-2">
+    <div className="p-3 sm:p-6 overflow-x-hidden">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <h2 className="text-xl sm:text-2xl font-bold">Gestión de Categorías</h2>
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <Button
             onClick={() =>
               hook.setViewMode(hook.viewMode === 'table' ? 'collapse' : 'table')
             }
+            className="w-full sm:w-auto"
           >
             {hook.viewMode === 'table' ? 'Vista Acordeón' : 'Vista Tabla'}
           </Button>
@@ -38,9 +39,10 @@ export const CategoriesDashboard = () => {
             type="primary"
             icon={<Plus size={16} />}
             onClick={() => setCreateCategoryModalOpen(true)}
-            className="bg-gradient-coffee border-none hover:opacity-90"
+            className="bg-gradient-coffee border-none hover:opacity-90 w-full sm:w-auto"
           >
-            Nueva Categoría
+            <span className="hidden sm:inline">Nueva Categoría</span>
+            <span className="sm:hidden">+ Nueva Categ</span>
           </Button>
         </div>
       </div>

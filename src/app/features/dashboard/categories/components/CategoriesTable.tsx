@@ -105,11 +105,13 @@ export const CategoriesTable = ({ hook }: CategoriesTableProps) => {
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
-      <Table
-        columns={categoryColumns}
-        dataSource={hook.categories}
-        loading={hook.isLoading}
-        rowKey="id"
+      <div className="overflow-x-auto">
+        <Table
+          columns={categoryColumns}
+          dataSource={hook.categories}
+          loading={hook.isLoading}
+          rowKey="id"
+          scroll={{ x: 800 }}
         expandable={{
           expandedRowRender: (record: any) => (
             <div className="p-4 bg-gray-50">
@@ -165,12 +167,13 @@ export const CategoriesTable = ({ hook }: CategoriesTableProps) => {
           rowExpandable: (record: any) =>
             record.subcategories && record.subcategories.length > 0,
         }}
-        pagination={{
-          pageSize: 10,
-          showSizeChanger: true,
-          showTotal: (total) => `Total: ${total} categorías`,
-        }}
-      />
+          pagination={{
+            pageSize: 10,
+            showSizeChanger: true,
+            showTotal: (total) => `Total: ${total} categorías`,
+          }}
+        />
+      </div>
     </div>
   )
 }

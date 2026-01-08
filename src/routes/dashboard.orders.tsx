@@ -10,13 +10,14 @@ function DashboardOrders() {
   const { data: orders, isLoading } = useAllOrdersQuery()
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold mb-6">Todas las Órdenes</h2>
+    <div className="p-3 sm:p-6 overflow-x-hidden">
+      <h2 className="text-xl sm:text-2xl font-bold mb-6">Todas las Órdenes</h2>
       {isLoading ? (
         <div className="text-center py-12">Cargando...</div>
       ) : orders && orders.length > 0 ? (
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <table className="w-full">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[600px]">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
@@ -88,7 +89,8 @@ function DashboardOrders() {
                 </tr>
               ))}
             </tbody>
-          </table>
+            </table>
+          </div>
         </div>
       ) : (
         <div className="text-center py-12 text-gray-500">No hay órdenes</div>

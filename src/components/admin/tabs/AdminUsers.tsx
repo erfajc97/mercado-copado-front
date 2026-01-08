@@ -1,9 +1,10 @@
-import { useState } from 'react'
-import { Button, Input, Modal, Select, Table } from 'antd'
-import { Search, Trash2 } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Button, Input, Modal, Select, Table, Form } from 'antd'
+import { Search, Trash2, Edit } from 'lucide-react'
 import type { ColumnsType } from 'antd/es/table'
 import { useAdminUsersQuery } from '@/app/features/users/queries/useAdminUsersQuery'
 import { useDeleteUserMutation } from '@/app/features/users/mutations/useDeleteUserMutation'
+import { useUpdateUserAdminMutation } from '@/app/features/users/mutations/useUpdateUserAdminMutation'
 import { COUNTRIES } from '@/app/constants/countries'
 
 interface UserData {
@@ -26,6 +27,9 @@ export default function AdminUsers() {
   const [pageSize, setPageSize] = useState(10)
   const [deleteModalVisible, setDeleteModalVisible] = useState(false)
   const [userToDelete, setUserToDelete] = useState<string | null>(null)
+  const [editModalVisible, setEditModalVisible] = useState(false)
+  const [userToEdit, setUserToEdit] = useState<UserData | null>(null)
+  const [form] = Form.useForm()
 
   const { data: usersData, isLoading } = useAdminUsersQuery({
     search: searchText || undefined,
@@ -36,6 +40,9 @@ export default function AdminUsers() {
 
   const { mutateAsync: deleteUser, isPending: isDeleting } =
     useDeleteUserMutation()
+
+  const { mutateAsync: updateUser, isPending: isUpdating } =
+    useUpdateUserAdminMutation()
 
   const users = usersData?.users || []
   const total = usersData?.pagination?.total || 0
@@ -52,6 +59,53 @@ export default function AdminUsers() {
       setUserToDelete(null)
     }
   }
+
+  const handleEditClick = (user: UserData) => {
+    setUserToEdit(user)
+    form.setFieldsValue({
+      firstName: user.firstName,
+      lastName: user.lastName || '',
+      email: user.email,
+      documentId: user.documentId || '',
+      phoneNumber: user.phoneNumber || '',
+      country: user.country || '',
+    })
+    setEditModalVisible(true)
+  }
+
+  const handleEditCancel = () => {
+    setEditModalVisible(false)
+    setUserToEdit(null)
+    form.resetFields()
+  }
+
+  const handleEditSubmit = async () => {
+    if (!userToEdit) return
+
+    try {
+      const values = await form.validateFields()
+      await updateUser({
+        userId: userToEdit.id,
+        data: {
+          firstName: values.firstName,
+          lastName: values.lastName || undefined,
+          email: values.email,
+          documentId: values.documentId || undefined,
+          phoneNumber: values.phoneNumber || undefined,
+          country: values.country || undefined,
+        },
+      })
+      handleEditCancel()
+    } catch (error) {
+      console.error('Error updating user:', error)
+    }
+  }
+
+  useEffect(() => {
+    if (!editModalVisible) {
+      form.resetFields()
+    }
+  }, [editModalVisible, form])
 
   const columns: ColumnsType<UserData> = [
     {
@@ -127,17 +181,27 @@ export default function AdminUsers() {
     {
       title: 'Acciones',
       key: 'actions',
-      width: 100,
+      width: 150,
       render: (_: unknown, record: UserData) => (
-        <Button
-          type="text"
-          danger
-          icon={<Trash2 size={16} />}
-          onClick={() => handleDeleteClick(record.id)}
-          size="small"
-        >
-          Eliminar
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            type="text"
+            icon={<Edit size={16} />}
+            onClick={() => handleEditClick(record)}
+            size="small"
+          >
+            Editar
+          </Button>
+          <Button
+            type="text"
+            danger
+            icon={<Trash2 size={16} />}
+            onClick={() => handleDeleteClick(record.id)}
+            size="small"
+          >
+            Eliminar
+          </Button>
+        </div>
       ),
     },
   ]
@@ -214,6 +278,92 @@ export default function AdminUsers() {
           ¿Estás seguro de que deseas eliminar este usuario? Esta acción no se
           puede deshacer.
         </p>
+      </Modal>
+
+      <Modal
+        title="Editar Usuario"
+        open={editModalVisible}
+        onOk={handleEditSubmit}
+        onCancel={handleEditCancel}
+        confirmLoading={isUpdating}
+        okText="Guardar"
+        cancelText="Cancelar"
+        width={600}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          className="mt-4"
+        >
+          <div className="grid grid-cols-2 gap-4">
+            <Form.Item
+              label="Nombre"
+              name="firstName"
+              rules={[
+                { required: true, message: 'El nombre es requerido' },
+                { min: 2, message: 'El nombre debe tener al menos 2 caracteres' },
+              ]}
+            >
+              <Input placeholder="Nombre" />
+            </Form.Item>
+
+            <Form.Item
+              label="Apellido"
+              name="lastName"
+            >
+              <Input placeholder="Apellido" />
+            </Form.Item>
+          </div>
+
+          <Form.Item
+            label="Email"
+            name="email"
+            rules={[
+              { required: true, message: 'El email es requerido' },
+              { type: 'email', message: 'Debe ser un email válido' },
+            ]}
+          >
+            <Input placeholder="email@ejemplo.com" />
+          </Form.Item>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Form.Item
+              label="Documento"
+              name="documentId"
+              rules={[
+                {
+                  pattern: /^[0-9A-Za-z-]+$/,
+                  message: 'Solo números, letras y guiones',
+                },
+              ]}
+            >
+              <Input placeholder="Documento de identidad" />
+            </Form.Item>
+
+            <Form.Item
+              label="Teléfono"
+              name="phoneNumber"
+            >
+              <Input placeholder="Teléfono" />
+            </Form.Item>
+          </div>
+
+          <Form.Item
+            label="País"
+            name="country"
+          >
+            <Select
+              placeholder="Seleccionar país"
+              showSearch
+              filterOption={(input, option) =>
+                (option?.label ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+              }
+              options={COUNTRIES}
+            />
+          </Form.Item>
+        </Form>
       </Modal>
     </div>
   )

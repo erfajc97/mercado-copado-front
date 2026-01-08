@@ -9,7 +9,7 @@ interface CategoriesFiltersProps {
 export const CategoriesFilters = ({ hook }: CategoriesFiltersProps) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-4 mb-6">
-      <div className="flex gap-4">
+      <div className="flex flex-col sm:flex-row gap-4">
         <Input
           placeholder="Buscar categorías..."
           prefix={<Search size={16} />}

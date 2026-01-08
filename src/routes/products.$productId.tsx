@@ -131,13 +131,24 @@ function ProductDetail() {
               Inicio
             </Link>
             <ChevronRight size={14} className="text-gray-400" />
-            <Link to="/" className="hover:text-coffee-medium transition-colors">
+            <Link
+              to="/"
+              search={{ category: product.category.id }}
+              className="hover:text-coffee-medium transition-colors"
+            >
               {product.category.name}
             </Link>
             <ChevronRight size={14} className="text-gray-400" />
-            <span className="text-gray-900 font-medium">
+            <Link
+              to="/"
+              search={{
+                category: product.category.id,
+                subcategory: product.subcategory.id,
+              }}
+              className="text-gray-900 font-medium hover:text-coffee-medium transition-colors"
+            >
               {product.subcategory.name}
-            </span>
+            </Link>
             <ChevronRight size={14} className="text-gray-400" />
             <span className="text-gray-400 truncate max-w-xs">
               {product.name}
@@ -331,17 +342,33 @@ function ProductDetail() {
                 </Button>
               </div>
 
-              {/* Categorías - más compacto */}
-              <div className="text-xs text-gray-600 border-t border-gray-200 pt-3">
-                <p>
-                  <span className="font-semibold text-gray-700">
+              {/* Categorías */}
+              <div className="text-sm text-gray-600 border-t border-gray-200 pt-4">
+                <p className="flex flex-wrap items-center gap-2">
+                  <span className="font-semibold text-gray-700 text-base">
                     Categoría:
-                  </span>{' '}
-                  {product.category.name} •{' '}
-                  <span className="font-semibold text-gray-700">
+                  </span>
+                  <Link
+                    to="/"
+                    search={{ category: product.category.id }}
+                    className="text-coffee-medium hover:text-coffee-dark transition-colors text-base"
+                  >
+                    {product.category.name}
+                  </Link>
+                  <span className="text-gray-400">•</span>
+                  <span className="font-semibold text-gray-700 text-base">
                     Subcategoría:
-                  </span>{' '}
-                  {product.subcategory.name}
+                  </span>
+                  <Link
+                    to="/"
+                    search={{
+                      category: product.category.id,
+                      subcategory: product.subcategory.id,
+                    }}
+                    className="text-coffee-medium hover:text-coffee-dark transition-colors text-base"
+                  >
+                    {product.subcategory.name}
+                  </Link>
                 </p>
               </div>
             </div>

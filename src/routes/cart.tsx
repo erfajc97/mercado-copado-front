@@ -69,9 +69,11 @@ function Cart() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8 text-coffee-darker">Mi Carrito</h1>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div className="container mx-auto px-4 py-4 sm:py-8">
+      <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-8 text-coffee-darker">
+        Mi Carrito
+      </h1>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
         <div className="lg:col-span-2 space-y-4">
           {cartItems.map((item: any) => {
             const price = Number(item.product.price)
@@ -82,33 +84,33 @@ function Cart() {
             return (
               <div
                 key={item.id}
-                className="bg-white rounded-lg shadow-coffee p-6 flex gap-4 border-2 border-gray-200 hover:border-coffee-medium hover:shadow-coffee-md transition-all duration-200"
+                className="bg-white rounded-lg shadow-coffee p-4 sm:p-6 flex flex-col sm:flex-row gap-4 border-2 border-gray-200 hover:border-coffee-medium hover:shadow-coffee-md transition-all duration-200"
               >
                 {mainImage && (
                   <img
                     src={mainImage}
                     alt={item.product.name}
-                    className="w-24 h-24 object-cover rounded-lg shadow-md"
+                    className="w-full sm:w-24 h-48 sm:h-24 object-cover rounded-lg shadow-md"
                   />
                 )}
-                <div className="flex-1">
-                  <h3 className="font-bold text-lg mb-2 text-coffee-darker">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-base sm:text-lg mb-2 text-coffee-darker break-words">
                     {item.product.name}
                   </h3>
                   <div className="flex items-center gap-4 mb-4">
                     <div>
                       {discount > 0 && (
-                        <span className="text-gray-500 line-through mr-2 text-sm">
+                        <span className="text-gray-500 line-through mr-2 text-xs sm:text-sm">
                           ${price.toFixed(2)}
                         </span>
                       )}
-                      <span className="text-xl font-bold text-coffee-dark">
+                      <span className="text-lg sm:text-xl font-bold text-coffee-dark">
                         ${finalPrice.toFixed(2)}
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2 border-2 border-coffee-medium rounded-lg overflow-hidden">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+                    <div className="flex items-center gap-2 border-2 border-coffee-medium rounded-lg overflow-hidden w-full sm:w-auto justify-center">
                       <button
                         onClick={() =>
                           handleUpdateQuantity(item.id, item.quantity - 1)
@@ -134,15 +136,15 @@ function Cart() {
                     </div>
                     <button
                       onClick={() => handleRemoveItem(item.id, item.productId)}
-                      className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-1"
+                      className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-colors flex items-center justify-center gap-1 w-full sm:w-auto"
                     >
                       <Trash2 size={16} />
                       <span className="text-sm font-semibold">Eliminar</span>
                     </button>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-xl font-bold text-coffee-darker">
+                <div className="text-left sm:text-right border-t sm:border-t-0 border-gray-200 pt-3 sm:pt-0">
+                  <p className="text-lg sm:text-xl font-bold text-coffee-darker">
                     ${(finalPrice * item.quantity).toFixed(2)}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">Subtotal</p>

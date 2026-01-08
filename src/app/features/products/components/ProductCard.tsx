@@ -113,7 +113,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           params={{ productId: product.id }}
           className="block"
         >
-          <div className="aspect-square bg-gray-100 overflow-hidden relative">
+          <div className="h-[200px] sm:h-auto sm:aspect-square bg-gray-100 overflow-hidden relative">
             {currentImage ? (
               <img
                 src={currentImage}
@@ -170,14 +170,14 @@ export const ProductCard = ({ product }: ProductCardProps) => {
               </div>
             )}
           </div>
-          <div className="p-4">
-            <h3 className="font-semibold text-lg mb-2 line-clamp-2 text-coffee-darker group-hover:text-coffee-medium transition-colors">
+          <div className="p-2 sm:p-4">
+            <h3 className="font-semibold text-base sm:text-lg mb-2 line-clamp-2 text-coffee-darker group-hover:text-coffee-medium transition-colors">
               {product.name}
             </h3>
-            <div className="flex flex-col gap-1 mb-4 min-h-[60px]">
+            <div className="flex flex-col gap-1 mb-3 sm:mb-4 min-h-[50px] sm:min-h-[60px]">
               {discount > 0 ? (
                 <div className="flex items-center gap-2">
-                  <span className="text-gray-400 line-through text-sm">
+                  <span className="text-gray-400 line-through text-xs sm:text-sm">
                     {isAdmin ? formatUSD(price) : formatPrice(price)}
                   </span>
                   {isAdmin && currency === 'ARS' && (
@@ -187,14 +187,14 @@ export const ProductCard = ({ product }: ProductCardProps) => {
                   )}
                 </div>
               ) : (
-                <div className="h-5"></div>
+                <div className="h-4 sm:h-5"></div>
               )}
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-2xl font-bold text-coffee-dark">
+                <span className="text-xl sm:text-2xl font-bold text-coffee-dark">
                   {isAdmin ? formatUSD(finalPrice) : formatPrice(finalPrice)}
                 </span>
                 {isAdmin && currency === 'ARS' && (
-                  <span className="text-lg font-semibold text-coffee-medium">
+                  <span className="text-base sm:text-lg font-semibold text-coffee-medium">
                     / {formatPrice(finalPrice)}
                   </span>
                 )}
@@ -204,20 +204,20 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         </Link>
 
         {/* Botones de acción */}
-        <div className="px-4 pb-4 flex gap-2">
+        <div className="px-2 sm:px-4 pb-2 sm:pb-4 flex gap-2">
           <Button
             type="default"
-            icon={<ShoppingCart size={18} />}
+            icon={<ShoppingCart size={16} className="sm:w-[18px] sm:h-[18px]" />}
             onClick={handleAddToCart}
             loading={isPending && isAuthenticated}
-            className="flex-1 border-coffee-medium text-coffee-dark hover:bg-coffee-light rounded-lg h-10"
+            className="flex-1 border-coffee-medium text-coffee-dark hover:bg-coffee-light rounded-lg h-9 sm:h-10 text-xs sm:text-sm"
             title="Agregar al Carrito"
           />
           <Button
             type="primary"
             onClick={handleBuyNow}
             loading={isPending && isAuthenticated}
-            className="flex-1 bg-gradient-coffee border-none hover:opacity-90 rounded-lg h-10 font-semibold"
+            className="flex-1 bg-gradient-coffee border-none hover:opacity-90 rounded-lg h-9 sm:h-10 font-semibold text-xs sm:text-sm"
           >
             Comprar
           </Button>

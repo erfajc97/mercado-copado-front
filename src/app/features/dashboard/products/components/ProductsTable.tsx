@@ -128,11 +128,14 @@ export const ProductsTable = ({ hook }: ProductsTableProps) => {
               Ver
             </Button>
           </Link>
-          <Link to="/dashboard/products/new" search={{ edit: record.id }}>
-            <Button type="link" icon={<Edit size={16} />} size="small">
-              Editar
-            </Button>
-          </Link>
+          <Button
+            type="link"
+            icon={<Edit size={16} />}
+            onClick={() => hook.handleEditClick(record.id)}
+            size="small"
+          >
+            Editar
+          </Button>
           <Button
             type="link"
             danger

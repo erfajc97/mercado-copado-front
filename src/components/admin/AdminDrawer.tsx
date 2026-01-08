@@ -59,7 +59,7 @@ export default function AdminDrawer({ isOpen, onClose }: AdminDrawerProps) {
             Órdenes
           </span>
         ),
-        children: activeTab === 'orders' ? <AdminOrders /> : null,
+        children: activeTab === 'orders' ? <AdminOrders onClose={onClose} /> : null,
       },
       {
         key: 'users',
@@ -130,12 +130,14 @@ export default function AdminDrawer({ isOpen, onClose }: AdminDrawerProps) {
         },
       }}
     >
-      <Tabs
-        activeKey={activeTab}
-        onChange={handleTabChange}
-        items={tabItems}
-        className="px-6"
-      />
+      <div className="px-4 sm:px-6 pb-4">
+        <Tabs
+          activeKey={activeTab}
+          onChange={handleTabChange}
+          items={tabItems}
+          className="w-full"
+        />
+      </div>
     </Drawer>
   )
 }

@@ -91,37 +91,39 @@ function AdminOrderDetail() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-4 sm:py-8">
       <Button
         icon={<ArrowLeft size={16} />}
-        onClick={() => navigate({ to: '/' })}
-        className="mb-6 bg-gradient-coffee text-white border-none hover:opacity-90 shadow-coffee hover:shadow-coffee-md"
+        onClick={() => navigate({ to: '/dashboard/orders' })}
+        className="mb-4 sm:mb-6 bg-gradient-coffee text-white border-none hover:opacity-90 shadow-coffee hover:shadow-coffee-md"
       >
         Volver
       </Button>
 
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-coffee-darker">
-          Orden #{order.id.slice(0, 8)}
-        </h1>
-        <span
-          className={`inline-block px-4 py-2 rounded-full text-sm font-semibold ${getStatusColor(order.status)}`}
-        >
-          {getStatusLabel(order.status)}
-        </span>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 min-w-0">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-coffee-darker break-words">
+            Orden #{order.id.slice(0, 8)}
+          </h1>
+          <span
+            className={`inline-block px-3 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm font-semibold whitespace-nowrap ${getStatusColor(order.status)}`}
+          >
+            {getStatusLabel(order.status)}
+          </span>
+        </div>
       </div>
 
       <div className="mb-6 bg-white rounded-lg shadow-coffee p-6">
         <h2 className="text-xl font-bold mb-4 text-coffee-darker">
           Cambiar Estado de la Orden
         </h2>
-        <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-4">
           <Select
             placeholder="Seleccionar nuevo estado"
             value={selectedStatus || undefined}
             onChange={setSelectedStatus}
             size="large"
-            className="flex-1"
+            className="flex-1 w-full sm:w-auto"
           >
             {statusOptions.map((option) => (
               <Select.Option key={option.value} value={option.value}>
@@ -134,14 +136,14 @@ function AdminOrderDetail() {
             onClick={handleStatusChange}
             loading={isUpdating}
             disabled={!selectedStatus || selectedStatus === order.status}
-            className="bg-gradient-coffee border-none hover:opacity-90"
+            className="bg-gradient-coffee border-none hover:opacity-90 w-full sm:w-auto"
           >
             Actualizar Estado
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white rounded-lg shadow-coffee p-6">
             <h2 className="text-xl font-bold mb-4 text-coffee-darker">
@@ -158,17 +160,17 @@ function AdminOrderDetail() {
                 return (
                   <div
                     key={item.id}
-                    className="flex gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:shadow-coffee transition-shadow"
+                    className="flex flex-col sm:flex-row gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:shadow-coffee transition-shadow"
                   >
                     {mainImage && (
                       <img
                         src={mainImage}
                         alt={item.product.name}
-                        className="w-24 h-24 object-cover rounded-lg shadow-coffee"
+                        className="w-full sm:w-24 h-48 sm:h-24 object-cover rounded-lg shadow-coffee"
                       />
                     )}
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-coffee-darker mb-2 text-lg">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-coffee-darker mb-2 text-base sm:text-lg break-words">
                         {item.product.name}
                       </h3>
                       <div className="space-y-2">
@@ -195,9 +197,9 @@ function AdminOrderDetail() {
                         )}
                       </div>
                     </div>
-                    <div className="text-right flex flex-col justify-between">
+                    <div className="text-left sm:text-right flex flex-row sm:flex-col justify-between sm:justify-start">
                       <div>
-                        <p className="text-xl font-bold text-coffee-darker">
+                        <p className="text-lg sm:text-xl font-bold text-coffee-darker">
                           ${itemTotal.toFixed(2)}
                         </p>
                         <p className="text-xs text-gray-500 mt-1">Subtotal</p>
