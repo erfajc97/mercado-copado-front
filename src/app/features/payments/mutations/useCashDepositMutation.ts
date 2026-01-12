@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useNavigate } from '@tanstack/react-router'
 import { cashDepositService } from '../services/cashDepositService'
 import { sonnerResponse } from '@/app/helpers/sonnerResponse'
-import { useNavigate } from '@tanstack/react-router'
 
 export const useCashDepositMutation = () => {
   const queryClient = useQueryClient()
@@ -37,4 +37,3 @@ export const useCashDepositMutation = () => {
     },
   })
 }
-

@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Button, Dropdown } from 'antd'
 import {
+  DollarSign,
+  FolderOpen,
   LayoutDashboard,
   LogIn,
   LogOut,
@@ -10,8 +12,6 @@ import {
   Settings,
   ShoppingCart,
   UserPlus,
-  FolderOpen,
-  DollarSign,
 } from 'lucide-react'
 import AuthModal from './auth/AuthModal'
 import CartDrawer from './CartDrawer'
@@ -35,7 +35,6 @@ export default function Header() {
 
   const isAuthenticated = !!token
   const isAdmin = roles === 'ADMIN'
-
 
   // Obtener información del usuario si está autenticado
   const { data: userInfo } = useQuery({
@@ -64,7 +63,6 @@ export default function Header() {
   // Calcular conteo de items: usar BD si está autenticado, sino localStorage
   // Escuchar cambios en el carrito local y en el carrito de BD
   useEffect(() => {
-
     if (isAuthenticated && dbCartItems) {
       const count = dbCartItems.reduce(
         (sum: number, item: { quantity: number }) => sum + item.quantity,

@@ -9,6 +9,8 @@ import { useCreatePaymentMethodMutation } from '@/app/features/payment-methods/m
 import { useCreatePaymentTransactionWithoutOrderMutation } from '@/app/features/payments/mutations/useCreatePaymentTransactionWithoutOrderMutation'
 import { useCashDepositMutation } from '@/app/features/payments/mutations/useCashDepositMutation'
 import { useCurrency } from '@/app/hooks/useCurrency'
+import { formatUSD } from '@/app/services/currencyService'
+import { useAuthStore } from '@/app/store/auth/authStore'
 
 export const useCheckoutHook = () => {
   const { data: cartItems } = useCartQuery()
@@ -25,7 +27,9 @@ export const useCheckoutHook = () => {
     mutateAsync: createPaymentMethod,
     isPending: isCreatingPaymentMethod,
   } = useCreatePaymentMethodMutation()
-  const { formatPrice } = useCurrency()
+  const { formatPrice, currency } = useCurrency()
+  const { roles } = useAuthStore()
+  const isAdmin = roles === 'ADMIN'
 
   const [selectedAddressId, setSelectedAddressId] = useState<string>('')
   const [selectedPaymentMethodId, setSelectedPaymentMethodId] =
@@ -232,6 +236,9 @@ export const useCheckoutHook = () => {
     calculateTotal,
     total,
     formatPrice,
+    formatUSD,
+    currency,
+    isAdmin,
     isPending: isPending || isProcessingDeposit,
     isCreatingAddress,
     isCreatingPaymentMethod,

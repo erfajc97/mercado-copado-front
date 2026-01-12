@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Lock } from 'lucide-react'
 
 type PaymentProvider = 'PAYPHONE' | 'MERCADOPAGO' | 'CRYPTO' | 'CASH_DEPOSIT'
@@ -102,4 +101,3 @@ export const PaymentProviderSelector = ({
     </div>
   )
 }
-

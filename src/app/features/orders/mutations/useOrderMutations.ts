@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { createOrderService } from '../services/createOrderService'
 
 import { updateOrderStatusService } from '../services/updateOrderStatusService'
+import { getOrderPaymentLinkService } from '../services/getOrderPaymentLinkService'
 import { sonnerResponse } from '@/app/helpers/sonnerResponse'
 
 export const useCreateOrderMutation = () => {
@@ -41,6 +42,30 @@ export const useUpdateOrderStatusMutation = () => {
         error instanceof Error
           ? error.message
           : 'Error al actualizar el estado de la orden'
+      sonnerResponse(message, 'error')
+    },
+  })
+}
+
+export const useGetOrderPaymentLinkMutation = () => {
+  return useMutation<
+    { paymentLink: string; orderId: string; total: number },
+    Error,
+    string
+  >({
+    mutationFn: (orderId: string) => getOrderPaymentLinkService(orderId),
+    onSuccess: (data) => {
+      // Abrir el link de pago en una nueva ventana
+      if (data && data.paymentLink) {
+        window.open(data.paymentLink, '_blank')
+        sonnerResponse('Redirigiendo al pago...', 'success')
+      }
+    },
+    onError: (error) => {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Error al obtener el link de pago'
       sonnerResponse(message, 'error')
     },
   })

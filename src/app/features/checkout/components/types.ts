@@ -1,4 +1,3 @@
-export type CheckoutHookReturn = ReturnType<
-  typeof import('../hooks/useCheckoutHook').useCheckoutHook
->
+import type { useCheckoutHook } from '../hooks/useCheckoutHook'
 
+export type CheckoutHookReturn = ReturnType<typeof useCheckoutHook>

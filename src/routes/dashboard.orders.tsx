@@ -1,6 +1,8 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { Eye } from 'lucide-react'
 import { useAllOrdersQuery } from '@/app/features/orders/queries/useOrdersQuery'
+import { useCurrency } from '@/app/hooks/useCurrency'
+import { formatUSD } from '@/app/services/currencyService'
 
 export const Route = createFileRoute('/dashboard/orders')({
   component: DashboardOrders,
@@ -8,6 +10,7 @@ export const Route = createFileRoute('/dashboard/orders')({
 
 function DashboardOrders() {
   const { data: orders, isLoading } = useAllOrdersQuery()
+  const { formatPrice, currency } = useCurrency()
 
   return (
     <div className="p-3 sm:p-6 overflow-x-hidden">
@@ -50,7 +53,14 @@ function DashboardOrders() {
                     {order.user?.email || 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    ${Number(order.total).toFixed(2)}
+                    <div className="flex flex-col">
+                      <span className="font-semibold">{formatUSD(Number(order.total))}</span>
+                      {currency === 'ARS' && (
+                        <span className="text-xs text-gray-500">
+                          {formatPrice(Number(order.total))}
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span

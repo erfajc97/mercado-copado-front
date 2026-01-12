@@ -1,24 +1,53 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Button, Select } from 'antd'
 import { ArrowLeft } from 'lucide-react'
 import { useOrderQuery } from '@/app/features/orders/queries/useOrdersQuery'
 import { useUpdateOrderStatusMutation } from '@/app/features/orders/mutations/useOrderMutations'
 import { useAuthStore } from '@/app/store/auth/authStore'
+import { useCurrency } from '@/app/hooks/useCurrency'
+import { formatUSD } from '@/app/services/currencyService'
 
 export const Route = createFileRoute('/admin/orders/$orderId')({
   component: AdminOrderDetail,
 })
 
-const statusOptions = [
+const allStatusOptions = [
   { value: 'pending', label: 'Pendiente' },
-  { value: 'created', label: 'Creada' },
-  { value: 'processing', label: 'Procesando' },
+  { value: 'paid_pending_review', label: 'Procesando Pago' },
   { value: 'shipping', label: 'En Envío' },
-  { value: 'delivered', label: 'Entregada' },
   { value: 'completed', label: 'Completada' },
   { value: 'cancelled', label: 'Cancelada' },
 ]
+
+// Función para obtener los estados válidos según el estado actual
+const getValidStatusOptions = (currentStatus: string) => {
+  switch (currentStatus) {
+    case 'pending':
+      // Las órdenes pendientes no deberían cambiarse manualmente
+      // (esperan confirmación de Payphone), pero permitimos cancelar
+      return [{ value: 'cancelled', label: 'Cancelada' }]
+    case 'paid_pending_review':
+      // Después de revisar el comprobante, puede aprobarse o cancelarse
+      return [
+        { value: 'shipping', label: 'En Envío' },
+        { value: 'cancelled', label: 'Cancelada' },
+      ]
+    case 'shipping':
+      // Cuando está en envío, puede completarse o cancelarse
+      return [
+        { value: 'completed', label: 'Completada' },
+        { value: 'cancelled', label: 'Cancelada' },
+      ]
+    case 'completed':
+    case 'cancelled':
+      // Estados finales, no se pueden cambiar
+      return []
+    default:
+      // Para cualquier otro estado, permitir cambiar a estados válidos
+      return allStatusOptions.filter((opt) => opt.value !== currentStatus)
+  }
+}
 
 function AdminOrderDetail() {
   const navigate = useNavigate()
@@ -28,6 +57,7 @@ function AdminOrderDetail() {
   const { mutateAsync: updateStatus, isPending: isUpdating } =
     useUpdateOrderStatusMutation()
   const [selectedStatus, setSelectedStatus] = useState<string>('')
+  const { formatPrice, currency } = useCurrency()
 
   // Verificar acceso de admin antes de renderizar
   useEffect(() => {
@@ -37,17 +67,15 @@ function AdminOrderDetail() {
   }, [roles, navigate])
 
   const getStatusLabel = (status: string) => {
-    return statusOptions.find((opt) => opt.value === status)?.label || status
+    return allStatusOptions.find((opt) => opt.value === status)?.label || status
   }
 
   const getStatusColor = (status: string) => {
     const colorMap: Record<string, string> = {
       pending: 'bg-yellow-100 text-yellow-800',
-      created: 'bg-blue-100 text-blue-800',
-      processing: 'bg-purple-100 text-purple-800',
+      paid_pending_review: 'bg-purple-100 text-purple-800',
       shipping: 'bg-indigo-100 text-indigo-800',
       completed: 'bg-green-100 text-green-800',
-      delivered: 'bg-green-100 text-green-800',
       cancelled: 'bg-red-100 text-red-800',
     }
     return colorMap[status] || 'bg-gray-100 text-gray-800'
@@ -90,19 +118,22 @@ function AdminOrderDetail() {
     )
   }
 
+  // Obtener opciones válidas según el estado actual
+  const validStatusOptions = getValidStatusOptions(order.status)
+
   return (
     <div className="container mx-auto px-4 py-4 sm:py-8">
       <Button
-        icon={<ArrowLeft size={16} />}
+        icon={<ArrowLeft color="white" size={16} />}
         onClick={() => navigate({ to: '/dashboard/orders' })}
         className="mb-4 sm:mb-6 bg-gradient-coffee text-white border-none hover:opacity-90 shadow-coffee hover:shadow-coffee-md"
       >
-        Volver
+        <p className="text-white">Volver</p>
       </Button>
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 min-w-0">
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-coffee-darker break-words">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-coffee-darker wrap-break-word">
             Orden #{order.id.slice(0, 8)}
           </h1>
           <span
@@ -113,35 +144,47 @@ function AdminOrderDetail() {
         </div>
       </div>
 
-      <div className="mb-6 bg-white rounded-lg shadow-coffee p-6">
-        <h2 className="text-xl font-bold mb-4 text-coffee-darker">
-          Cambiar Estado de la Orden
-        </h2>
-        <div className="flex flex-col sm:flex-row gap-4">
-          <Select
-            placeholder="Seleccionar nuevo estado"
-            value={selectedStatus || undefined}
-            onChange={setSelectedStatus}
-            size="large"
-            className="flex-1 w-full sm:w-auto"
-          >
-            {statusOptions.map((option) => (
-              <Select.Option key={option.value} value={option.value}>
-                {option.label}
-              </Select.Option>
-            ))}
-          </Select>
-          <Button
-            type="primary"
-            onClick={handleStatusChange}
-            loading={isUpdating}
-            disabled={!selectedStatus || selectedStatus === order.status}
-            className="bg-gradient-coffee border-none hover:opacity-90 w-full sm:w-auto"
-          >
-            Actualizar Estado
-          </Button>
+      {validStatusOptions.length > 0 && (
+        <div className="mb-6 bg-white rounded-lg shadow-coffee p-6">
+          <h2 className="text-xl font-bold mb-4 text-coffee-darker">
+            Cambiar Estado de la Orden
+          </h2>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Select
+              placeholder="Seleccionar nuevo estado"
+              value={selectedStatus || undefined}
+              onChange={setSelectedStatus}
+              size="large"
+              className="flex-1 w-full sm:w-auto"
+            >
+              {validStatusOptions.map((option) => (
+                <Select.Option key={option.value} value={option.value}>
+                  {option.label}
+                </Select.Option>
+              ))}
+            </Select>
+            <Button
+              type="primary"
+              onClick={handleStatusChange}
+              loading={isUpdating}
+              disabled={!selectedStatus || selectedStatus === order.status}
+              className="bg-gradient-coffee border-none hover:opacity-90 w-full sm:w-auto"
+            >
+              Actualizar Estado
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
+      {validStatusOptions.length === 0 && (
+        <div className="mb-6 bg-white rounded-lg shadow-coffee p-6">
+          <h2 className="text-xl font-bold mb-4 text-coffee-darker">
+            Estado de la Orden
+          </h2>
+          <p className="text-gray-600">
+            Esta orden está en un estado final y no puede ser modificada.
+          </p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
         <div className="lg:col-span-2 space-y-6">
@@ -170,7 +213,7 @@ function AdminOrderDetail() {
                       />
                     )}
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-coffee-darker mb-2 text-base sm:text-lg break-words">
+                      <h3 className="font-semibold text-coffee-darker mb-2 text-base sm:text-lg wrap-break-word">
                         {item.product.name}
                       </h3>
                       <div className="space-y-2">
@@ -182,13 +225,20 @@ function AdminOrderDetail() {
                             x{item.quantity}
                           </span>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-sm text-gray-600">
                             Precio unitario:
                           </span>
-                          <span className="text-sm font-semibold text-coffee-dark">
-                            ${itemPrice.toFixed(2)}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold text-coffee-dark">
+                              {formatUSD(itemPrice)}
+                            </span>
+                            {currency === 'ARS' && (
+                              <span className="text-xs font-semibold text-coffee-medium">
+                                / {formatPrice(itemPrice)}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         {item.product.description && (
                           <p className="text-xs text-gray-500 line-clamp-2">
@@ -199,10 +249,17 @@ function AdminOrderDetail() {
                     </div>
                     <div className="text-left sm:text-right flex flex-row sm:flex-col justify-between sm:justify-start">
                       <div>
-                        <p className="text-lg sm:text-xl font-bold text-coffee-darker">
-                          ${itemTotal.toFixed(2)}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">Subtotal</p>
+                        <div className="flex flex-col items-end gap-1">
+                          <p className="text-lg sm:text-xl font-bold text-coffee-darker">
+                            {formatUSD(itemTotal)}
+                          </p>
+                          {currency === 'ARS' && (
+                            <p className="text-sm font-semibold text-coffee-medium">
+                              {formatPrice(itemTotal)}
+                            </p>
+                          )}
+                          <p className="text-xs text-gray-500 mt-1">Subtotal</p>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -233,6 +290,34 @@ function AdminOrderDetail() {
             </div>
           </div>
 
+          {order.depositImageUrl && (
+            <div className="bg-white rounded-lg shadow-coffee p-6">
+              <h2 className="text-xl font-bold mb-4 text-coffee-darker">
+                Comprobante de Depósito
+              </h2>
+              <div className="space-y-4">
+                <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <p className="text-sm text-gray-600 mb-3">
+                    Imagen del comprobante de depósito en efectivo:
+                  </p>
+                  <div className="flex justify-center">
+                    <img
+                      src={order.depositImageUrl}
+                      alt="Comprobante de depósito"
+                      className="max-w-full h-auto rounded-lg shadow-md cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() =>
+                        window.open(order.depositImageUrl, '_blank')
+                      }
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-3 text-center">
+                    Haz clic en la imagen para verla en tamaño completo
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {order.payments && order.payments.length > 0 && (
             <div className="bg-white rounded-lg shadow-coffee p-6">
               <h2 className="text-xl font-bold mb-4 text-coffee-darker">
@@ -254,9 +339,16 @@ function AdminOrderDetail() {
                           Estado: {payment.status}
                         </p>
                       </div>
-                      <span className="text-lg font-bold text-coffee-dark">
-                        ${Number(payment.amount).toFixed(2)}
-                      </span>
+                      <div className="flex flex-col items-end gap-1">
+                        <span className="text-lg font-bold text-coffee-dark">
+                          {formatUSD(Number(payment.amount))}
+                        </span>
+                        {currency === 'ARS' && (
+                          <span className="text-sm font-semibold text-coffee-medium">
+                            {formatPrice(Number(payment.amount))}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <p className="text-xs text-gray-500">
                       {new Date(payment.createdAt).toLocaleDateString('es-ES', {
@@ -282,13 +374,27 @@ function AdminOrderDetail() {
             <div className="space-y-2 mb-4">
               <div className="flex justify-between text-gray-600">
                 <span>Subtotal:</span>
-                <span>${Number(order.total).toFixed(2)}</span>
+                <div className="flex flex-col items-end">
+                  <span>{formatUSD(Number(order.total))}</span>
+                  {currency === 'ARS' && (
+                    <span className="text-xs text-gray-500">
+                      {formatPrice(Number(order.total))}
+                    </span>
+                  )}
+                </div>
               </div>
               <div className="flex justify-between font-bold text-xl pt-4 border-t border-gray-200">
                 <span className="text-coffee-darker">Total:</span>
-                <span className="text-coffee-dark">
-                  ${Number(order.total).toFixed(2)}
-                </span>
+                <div className="flex flex-col items-end">
+                  <span className="text-coffee-dark">
+                    {formatUSD(Number(order.total))}
+                  </span>
+                  {currency === 'ARS' && (
+                    <span className="text-sm font-semibold text-coffee-medium">
+                      {formatPrice(Number(order.total))}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
             <div className="mt-6 pt-6 border-t border-gray-200">

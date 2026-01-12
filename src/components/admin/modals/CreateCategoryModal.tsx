@@ -1,6 +1,5 @@
-import { Modal } from 'antd'
 import { useState } from 'react'
-import { Button, Form, Input } from 'antd'
+import { Button, Form, Input, Modal } from 'antd'
 import { useCreateCategoryMutation } from '@/app/features/categories/mutations/useCategoryMutations'
 import { useCreateSubcategoryMutation } from '@/app/features/categories/mutations/useCreateSubcategoryMutation'
 import { sonnerResponse } from '@/app/helpers/sonnerResponse'
@@ -153,4 +152,3 @@ export default function CreateCategoryModal({
     </Modal>
   )
 }
-

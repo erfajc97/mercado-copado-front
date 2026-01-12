@@ -1,7 +1,7 @@
+import { Upload, message } from 'antd'
 import React from 'react'
 import { InboxOutlined } from '@ant-design/icons'
 import type { FormInstance, UploadProps } from 'antd'
-import { message, Upload } from 'antd'
 
 const { Dragger } = Upload
 
@@ -10,7 +10,7 @@ interface CustomUploadProps extends UploadProps {
   uploadHint?: React.ReactNode
   uploadIcon?: React.ReactNode
   form?: FormInstance<any>
-  allowedTypes?: string[]
+  allowedTypes?: Array<string>
   maxSizeMB?: number
 }
 
@@ -95,4 +95,3 @@ const CustomUpload: React.FC<CustomUploadProps> = ({
 }
 
 export default CustomUpload
-

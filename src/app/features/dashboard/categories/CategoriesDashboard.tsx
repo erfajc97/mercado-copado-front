@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { Button, Input, Modal } from 'antd'
 import { Plus } from 'lucide-react'
 import { useCategoriesDashboardHook } from './hooks/useCategoriesDashboardHook'
@@ -14,13 +14,10 @@ export const CategoriesDashboard = () => {
   const [editCategoryModalOpen, setEditCategoryModalOpen] = useState(false)
   const [editingCategory, setEditingCategory] = useState<any>(null)
 
-  const handleEditCategory = useCallback(
-    (category: any) => {
-      setEditingCategory(category)
-      setEditCategoryModalOpen(true)
-    },
-    [],
-  )
+  const handleEditCategory = useCallback((category: any) => {
+    setEditingCategory(category)
+    setEditCategoryModalOpen(true)
+  }, [])
 
   return (
     <div className="p-3 sm:p-6 overflow-x-hidden">
@@ -53,9 +50,13 @@ export const CategoriesDashboard = () => {
         <div className="text-center py-12">Cargando...</div>
       ) : hook.categories && hook.categories.length > 0 ? (
         hook.viewMode === 'table' ? (
-          <CategoriesTable hook={{ ...hook, openEditCategory: handleEditCategory }} />
+          <CategoriesTable
+            hook={{ ...hook, openEditCategory: handleEditCategory }}
+          />
         ) : (
-          <CategoriesCollapse hook={{ ...hook, openEditCategory: handleEditCategory }} />
+          <CategoriesCollapse
+            hook={{ ...hook, openEditCategory: handleEditCategory }}
+          />
         )
       ) : (
         <div className="text-center py-12 text-gray-500">No hay categorías</div>
@@ -134,4 +135,3 @@ export const CategoriesDashboard = () => {
     </div>
   )
 }
-

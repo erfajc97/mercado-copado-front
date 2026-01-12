@@ -1,6 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { Button } from 'antd'
 import { useOrderQuery } from '@/app/features/orders/queries/useOrdersQuery'
+import { useGetOrderPaymentLinkMutation } from '@/app/features/orders/mutations/useOrderMutations'
 import { useCurrency } from '@/app/hooks/useCurrency'
+import { formatUSD } from '@/app/services/currencyService'
+import { useAuthStore } from '@/app/store/auth/authStore'
 
 export const Route = createFileRoute('/orders/$orderId')({
   component: OrderDetail,
@@ -9,7 +13,11 @@ export const Route = createFileRoute('/orders/$orderId')({
 function OrderDetail() {
   const { orderId } = Route.useParams()
   const { data: order, isLoading } = useOrderQuery(orderId)
-  const { formatPrice } = useCurrency()
+  const { formatPrice, currency } = useCurrency()
+  const { roles } = useAuthStore()
+  const isAdmin = roles === 'ADMIN'
+  const { mutateAsync: getPaymentLink, isPending: isGettingPaymentLink } =
+    useGetOrderPaymentLinkMutation()
 
   const getStatusLabel = (status: string) => {
     const statusMap: Record<string, string> = {
@@ -100,13 +108,22 @@ function OrderDetail() {
                             x{item.quantity}
                           </span>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-sm text-gray-600">
                             Precio unitario:
                           </span>
-                          <span className="text-sm font-semibold text-coffee-dark">
-                            ${itemPrice.toFixed(2)}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold text-coffee-dark">
+                              {isAdmin
+                                ? formatUSD(itemPrice)
+                                : formatPrice(itemPrice)}
+                            </span>
+                            {isAdmin && currency === 'ARS' && (
+                              <span className="text-xs font-semibold text-coffee-medium">
+                                / {formatPrice(itemPrice)}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         {item.product.description && (
                           <p className="text-xs text-gray-500 line-clamp-2">
@@ -117,10 +134,19 @@ function OrderDetail() {
                     </div>
                     <div className="text-right flex flex-col justify-between">
                       <div>
-                        <p className="text-xl font-bold text-coffee-darker">
-                          ${itemTotal.toFixed(2)}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">Subtotal</p>
+                        <div className="flex flex-col items-end gap-1">
+                          <p className="text-xl font-bold text-coffee-darker">
+                            {isAdmin
+                              ? formatUSD(itemTotal)
+                              : formatPrice(itemTotal)}
+                          </p>
+                          {isAdmin && currency === 'ARS' && (
+                            <p className="text-sm font-semibold text-coffee-medium">
+                              {formatPrice(itemTotal)}
+                            </p>
+                          )}
+                          <p className="text-xs text-gray-500 mt-1">Subtotal</p>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -160,13 +186,33 @@ function OrderDetail() {
             <div className="space-y-2 mb-4">
               <div className="flex justify-between text-gray-600">
                 <span>Subtotal:</span>
-                <span>{formatPrice(Number(order.total))}</span>
+                <div className="flex items-center gap-2">
+                  <span>
+                    {isAdmin
+                      ? formatUSD(Number(order.total))
+                      : formatPrice(Number(order.total))}
+                  </span>
+                  {isAdmin && currency === 'ARS' && (
+                    <span className="text-sm font-semibold text-coffee-medium">
+                      / {formatPrice(Number(order.total))}
+                    </span>
+                  )}
+                </div>
               </div>
               <div className="flex justify-between font-bold text-xl pt-4 border-t border-gray-200">
                 <span className="text-coffee-darker">Total:</span>
-                <span className="text-coffee-dark">
-                  {formatPrice(Number(order.total))}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-coffee-dark">
+                    {isAdmin
+                      ? formatUSD(Number(order.total))
+                      : formatPrice(Number(order.total))}
+                  </span>
+                  {isAdmin && currency === 'ARS' && (
+                    <span className="text-base font-semibold text-coffee-medium">
+                      / {formatPrice(Number(order.total))}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
             <div className="mt-6 pt-6 border-t border-gray-200">
@@ -177,6 +223,23 @@ function OrderDetail() {
                 {getStatusLabel(order.status)}
               </span>
             </div>
+            {order.status === 'pending' && (
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <Button
+                  type="primary"
+                  block
+                  size="large"
+                  loading={isGettingPaymentLink}
+                  onClick={() => getPaymentLink(orderId)}
+                  className="bg-gradient-coffee border-none hover:opacity-90"
+                >
+                  Pagar Ahora
+                </Button>
+                <p className="text-xs text-gray-500 mt-2 text-center">
+                  Serás redirigido a la página de pago de Payphone
+                </p>
+              </div>
+            )}
             <div className="mt-6 pt-6 border-t border-gray-200">
               <p className="text-sm text-gray-600 mb-1">Fecha de creación:</p>
               <p className="text-sm font-medium text-coffee-darker">

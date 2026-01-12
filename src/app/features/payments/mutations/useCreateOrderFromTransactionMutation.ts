@@ -1,11 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+// import { useNavigate } from '@tanstack/react-router'
 import { createOrderFromTransactionService } from '../services/createOrderFromTransactionService'
 import { sonnerResponse } from '@/app/helpers/sonnerResponse'
-import { useNavigate } from '@tanstack/react-router'
 
 export const useCreateOrderFromTransactionMutation = () => {
   const queryClient = useQueryClient()
-  const navigate = useNavigate()
+  // const navigate = useNavigate()
 
   return useMutation({
     mutationFn: async (data: {
@@ -29,4 +29,3 @@ export const useCreateOrderFromTransactionMutation = () => {
     },
   })
 }
-

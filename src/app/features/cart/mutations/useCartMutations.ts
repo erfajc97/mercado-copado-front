@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { addToCartService } from '../services/addToCartService'
 import { updateCartItemService } from '../services/updateCartItemService'
 import { removeCartItemService } from '../services/removeCartItemService'
+import { clearCartService } from '../services/clearCartService'
 import { sonnerResponse } from '@/app/helpers/sonnerResponse'
 
 export const useAddToCartMutation = () => {
@@ -59,3 +60,20 @@ export const useRemoveCartItemMutation = () => {
   })
 }
 
+export const useClearCartMutation = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: clearCartService,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cart'] })
+      sonnerResponse('Carrito limpiado exitosamente', 'success')
+    },
+    onError: (error) => {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Error al limpiar el carrito'
+      sonnerResponse(message, 'error')
+    },
+  })
+}

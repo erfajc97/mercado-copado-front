@@ -44,21 +44,42 @@ export const CheckoutSummary = ({ checkout, onSuccess }: CheckoutSummaryProps) =
                       x{item.quantity}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     {discount > 0 && (
-                      <span className="text-gray-400 line-through text-sm">
-                        {checkout.formatPrice(price)}
-                      </span>
+                      <>
+                        <span className="text-gray-400 line-through text-sm">
+                          {checkout.isAdmin ? checkout.formatUSD(price) : checkout.formatPrice(price)}
+                        </span>
+                        {checkout.isAdmin && checkout.currency === 'ARS' && (
+                          <span className="text-gray-400 line-through text-sm">
+                            {checkout.formatPrice(price)}
+                          </span>
+                        )}
+                      </>
                     )}
-                    <span className="text-coffee-dark font-bold">
-                      {checkout.formatPrice(finalPrice)} c/u
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-coffee-dark font-bold">
+                        {checkout.isAdmin ? checkout.formatUSD(finalPrice) : checkout.formatPrice(finalPrice)} c/u
+                      </span>
+                      {checkout.isAdmin && checkout.currency === 'ARS' && (
+                        <span className="text-sm font-semibold text-coffee-medium">
+                          / {checkout.formatPrice(finalPrice)} c/u
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="text-lg font-bold text-coffee-darker">
-                    {checkout.formatPrice(finalPrice * item.quantity)}
-                  </span>
+                  <div className="flex flex-col items-end gap-1">
+                    <span className="text-lg font-bold text-coffee-darker">
+                      {checkout.isAdmin ? checkout.formatUSD(finalPrice * item.quantity) : checkout.formatPrice(finalPrice * item.quantity)}
+                    </span>
+                    {checkout.isAdmin && checkout.currency === 'ARS' && (
+                      <span className="text-sm font-semibold text-coffee-medium">
+                        {checkout.formatPrice(finalPrice * item.quantity)}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             )
@@ -72,11 +93,25 @@ export const CheckoutSummary = ({ checkout, onSuccess }: CheckoutSummaryProps) =
         <div className="space-y-2 mb-6">
           <div className="flex justify-between">
             <span>Subtotal:</span>
-            <span>{checkout.formatPrice(checkout.total)}</span>
+            <div className="flex items-center gap-2">
+              <span>{checkout.isAdmin ? checkout.formatUSD(checkout.total) : checkout.formatPrice(checkout.total)}</span>
+              {checkout.isAdmin && checkout.currency === 'ARS' && (
+                <span className="text-sm font-semibold text-coffee-medium">
+                  / {checkout.formatPrice(checkout.total)}
+                </span>
+              )}
+            </div>
           </div>
           <div className="flex justify-between font-bold text-xl pt-4 border-t">
             <span>Total:</span>
-            <span>{checkout.formatPrice(checkout.total)}</span>
+            <div className="flex items-center gap-2">
+              <span>{checkout.isAdmin ? checkout.formatUSD(checkout.total) : checkout.formatPrice(checkout.total)}</span>
+              {checkout.isAdmin && checkout.currency === 'ARS' && (
+                <span className="text-base font-semibold text-coffee-medium">
+                  / {checkout.formatPrice(checkout.total)}
+                </span>
+              )}
+            </div>
           </div>
         </div>
 

@@ -4,9 +4,9 @@ import {
   useLinkPayphoneMutation,
   usePhonePayphoneMutation,
 } from '../mutations/usePayPhoneMutation'
+import { LinkPaymentConfirmationModal } from './LinkPaymentConfirmationModal'
 import { useCreateOrderFromTransactionMutation } from '@/app/features/payments/mutations/useCreateOrderFromTransactionMutation'
 import { useCreatePaymentTransactionWithoutOrderMutation } from '@/app/features/payments/mutations/useCreatePaymentTransactionWithoutOrderMutation'
-import { LinkPaymentConfirmationModal } from './LinkPaymentConfirmationModal'
 import { useCurrency } from '@/app/hooks/useCurrency'
 
 interface ButtonPayPhoneProps {
@@ -29,13 +29,18 @@ export const ButtonPayPhone = ({
   const { mutateAsync: linkPayphone, isPending } = useLinkPayphoneMutation()
   const { mutateAsync: phonePayphone, isPending: isPendingPhonePayment } =
     usePhonePayphoneMutation()
-  const { mutateAsync: createOrderFromTransaction, isPending: isCreatingOrder } =
-    useCreateOrderFromTransactionMutation()
-  const { mutateAsync: createPaymentTransactionWithoutOrder, isPending: isCreatingTransaction } =
-    useCreatePaymentTransactionWithoutOrderMutation()
+  const {
+    mutateAsync: createOrderFromTransaction,
+    isPending: isCreatingOrder,
+  } = useCreateOrderFromTransactionMutation()
+  const {
+    mutateAsync: createPaymentTransactionWithoutOrder,
+    isPending: isCreatingTransaction,
+  } = useCreatePaymentTransactionWithoutOrderMutation()
   const { formatPrice } = useCurrency()
   const [showPhoneModal, setShowPhoneModal] = useState(false)
-  const [showLinkConfirmationModal, setShowLinkConfirmationModal] = useState(false)
+  const [showLinkConfirmationModal, setShowLinkConfirmationModal] =
+    useState(false)
   const [phoneNumber, setPhoneNumber] = useState('')
   const [clientTransactionId, setClientTransactionId] = useState<string | null>(
     propClientTransactionId || null,
@@ -126,7 +131,7 @@ export const ButtonPayPhone = ({
 
   const handlePhonePayment = async () => {
     const cleanPhoneNumber = phoneNumber.replace(/\s+/g, '')
-    
+
     if (!cleanPhoneNumber || cleanPhoneNumber.length < 8) {
       alert('Por favor ingresa un número de teléfono válido')
       return
@@ -168,29 +173,27 @@ export const ButtonPayPhone = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <button
           onClick={handleLinkPayment}
-          disabled={disabled || isPending || isCreatingOrder || isCreatingTransaction}
-          className="flex flex-col items-center justify-center p-6 bg-gradient-to-br from-coffee-light to-coffee-medium text-white rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-coffee hover:shadow-coffee-md transition-all duration-200 border-2 border-coffee-medium"
+          disabled={
+            disabled || isPending || isCreatingOrder || isCreatingTransaction
+          }
+          className="flex flex-col items-center justify-center p-6 bg-linear-to-br from-coffee-light to-coffee-medium text-white rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-coffee hover:shadow-coffee-md transition-all duration-200 border-2 border-coffee-medium"
         >
           <div className="text-2xl mb-2">🔗</div>
           <div className="text-base font-bold">
-            {isPending || isCreatingOrder || isCreatingTransaction ? 'Procesando...' : 'Pagar con Link'}
+            {isPending || isCreatingOrder || isCreatingTransaction
+              ? 'Procesando...'
+              : 'Pagar con Link'}
           </div>
-          <div className="text-xs mt-1 opacity-90">
-            Abre en nueva ventana
-          </div>
+          <div className="text-xs mt-1 opacity-90">Abre en nueva ventana</div>
         </button>
         <button
           onClick={() => setShowPhoneModal(true)}
           disabled={disabled}
-          className="flex flex-col items-center justify-center p-6 bg-gradient-to-br from-coffee-medium to-coffee-dark text-white rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-coffee hover:shadow-coffee-md transition-all duration-200 border-2 border-coffee-dark"
+          className="flex flex-col items-center justify-center p-6 bg-linear-to-br from-coffee-medium to-coffee-dark text-white rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-coffee hover:shadow-coffee-md transition-all duration-200 border-2 border-coffee-dark"
         >
           <div className="text-2xl mb-2">📱</div>
-          <div className="text-base font-bold">
-            Pagar con Teléfono
-          </div>
-          <div className="text-xs mt-1 opacity-90">
-            Notificación en la app
-          </div>
+          <div className="text-base font-bold">Pagar con Teléfono</div>
+          <div className="text-xs mt-1 opacity-90">Notificación en la app</div>
         </button>
       </div>
 
@@ -216,7 +219,8 @@ export const ButtonPayPhone = ({
               maxLength={15}
             />
             <p className="text-xs text-gray-500 mt-1">
-              Ingresa tu número de teléfono (8-15 dígitos). El código de país es opcional.
+              Ingresa tu número de teléfono (8-15 dígitos). El código de país es
+              opcional.
             </p>
           </div>
           <div className="flex gap-2 justify-end">
@@ -225,7 +229,7 @@ export const ButtonPayPhone = ({
               type="primary"
               onClick={handlePhonePayment}
               loading={isPendingPhonePayment}
-              className="bg-gradient-coffee border-none hover:opacity-90"
+              className="bg-linear-to-r from-coffee-light to-coffee-medium border-none hover:opacity-90"
             >
               {isPendingPhonePayment ? 'Procesando...' : 'Confirmar Pago'}
             </Button>

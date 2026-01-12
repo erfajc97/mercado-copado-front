@@ -1,8 +1,12 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { Link, createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { Modal, Button } from 'antd'
-import { Package, Eye } from 'lucide-react'
+import { Button, Modal } from 'antd'
+import { CreditCard, Eye, Package } from 'lucide-react'
 import { useMyOrdersQuery } from '@/app/features/orders/queries/useOrdersQuery'
+import { useGetOrderPaymentLinkMutation } from '@/app/features/orders/mutations/useOrderMutations'
+import { useCurrency } from '@/app/hooks/useCurrency'
+import { formatUSD } from '@/app/services/currencyService'
+import { useAuthStore } from '@/app/store/auth/authStore'
 
 export const Route = createFileRoute('/orders')({
   component: Orders,
@@ -12,6 +16,11 @@ function Orders() {
   const { data: orders, isLoading } = useMyOrdersQuery()
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const { formatPrice, currency } = useCurrency()
+  const { roles } = useAuthStore()
+  const isAdmin = roles === 'ADMIN'
+  const { mutateAsync: getPaymentLink, isPending: isGettingPaymentLink } =
+    useGetOrderPaymentLinkMutation()
 
   const handleViewProducts = (order: any, e: React.MouseEvent) => {
     e.preventDefault()
@@ -79,37 +88,67 @@ function Orders() {
               </div>
               <div className="flex items-center gap-4">
                 <div className="text-right">
-                  <p className="text-xl font-bold text-green-600">
-                    ${Number(order.total).toFixed(2)}
-                  </p>
+                  <div className="flex flex-col items-end gap-1">
+                    <p className="text-xl font-bold text-green-600">
+                      {isAdmin
+                        ? formatUSD(Number(order.total))
+                        : formatPrice(Number(order.total))}
+                    </p>
+                    {isAdmin && currency === 'ARS' && (
+                      <p className="text-sm font-semibold text-coffee-medium">
+                        {formatPrice(Number(order.total))}
+                      </p>
+                    )}
+                  </div>
                   <span
                     className={`inline-block px-3 py-1 rounded-full text-sm mt-2 ${
                       order.status === 'completed'
                         ? 'bg-green-100 text-green-800'
-                        : order.status === 'processing'
-                          ? 'bg-blue-100 text-blue-800'
-                          : order.status === 'cancelled'
-                            ? 'bg-red-100 text-red-800'
-                            : 'bg-yellow-100 text-yellow-800'
+                        : order.status === 'shipping'
+                          ? 'bg-indigo-100 text-indigo-800'
+                          : order.status === 'paid_pending_review'
+                            ? 'bg-purple-100 text-purple-800'
+                            : order.status === 'cancelled'
+                              ? 'bg-red-100 text-red-800'
+                              : 'bg-yellow-100 text-yellow-800'
                     }`}
                   >
                     {order.status === 'completed'
                       ? 'Completada'
-                      : order.status === 'processing'
-                        ? 'Procesando'
-                        : order.status === 'cancelled'
-                          ? 'Cancelada'
-                          : 'Pendiente'}
+                      : order.status === 'shipping'
+                        ? 'En Envío'
+                        : order.status === 'paid_pending_review'
+                          ? 'Procesando Pago'
+                          : order.status === 'cancelled'
+                            ? 'Cancelada'
+                            : 'Pendiente'}
                   </span>
                 </div>
-                <Button
-                  type="primary"
-                  icon={<Eye size={16} />}
-                  onClick={(e) => handleViewProducts(order, e)}
-                  className="bg-gradient-coffee border-none hover:opacity-90"
-                >
-                  Ver Productos
-                </Button>
+                <div className="flex flex-col gap-2">
+                  {order.status === 'pending' && (
+                    <Button
+                      type="primary"
+                      icon={<CreditCard size={16} />}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        getPaymentLink(order.id)
+                      }}
+                      loading={isGettingPaymentLink}
+                      className="bg-green-600 border-none hover:bg-green-700"
+                    >
+                      Pagar Ahora
+                    </Button>
+                  )}
+                  <Button
+                    type="primary"
+                    icon={<Eye size={16} />}
+                    onClick={(e) => handleViewProducts(order, e)}
+                    className="bg-gradient-coffee border-none hover:opacity-90"
+                  >
+                    Ver Productos
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -166,31 +205,60 @@ function Orders() {
                           {item.quantity}
                         </span>
                       </p>
-                      <p className="text-sm text-gray-600">
-                        <span className="font-semibold">Precio unitario:</span>{' '}
-                        <span className="text-coffee-dark font-bold">
-                          ${Number(item.price).toFixed(2)}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm text-gray-600 font-semibold">
+                          Precio unitario:
                         </span>
-                      </p>
+                        <div className="flex items-center gap-2">
+                          <span className="text-coffee-dark font-bold">
+                            {isAdmin
+                              ? formatUSD(Number(item.price))
+                              : formatPrice(Number(item.price))}
+                          </span>
+                          {isAdmin && currency === 'ARS' && (
+                            <span className="text-sm font-semibold text-coffee-medium">
+                              / {formatPrice(Number(item.price))}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-xl text-coffee-darker">
-                      ${(Number(item.price) * item.quantity).toFixed(2)}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">Subtotal</p>
+                    <div className="flex flex-col items-end gap-1">
+                      <p className="font-bold text-xl text-coffee-darker">
+                        {isAdmin
+                          ? formatUSD(Number(item.price) * item.quantity)
+                          : formatPrice(Number(item.price) * item.quantity)}
+                      </p>
+                      {isAdmin && currency === 'ARS' && (
+                        <p className="text-sm font-semibold text-coffee-medium">
+                          {formatPrice(Number(item.price) * item.quantity)}
+                        </p>
+                      )}
+                      <p className="text-xs text-gray-500 mt-1">Subtotal</p>
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
-            <div className="border-t-2 border-coffee-medium pt-4 mt-4 bg-gradient-to-r from-coffee-light/20 to-white rounded-lg p-4">
+            <div className="border-t-2 border-coffee-medium pt-4 mt-4 bg-linear-to-r from-coffee-light/20 to-white rounded-lg p-4">
               <div className="flex justify-between items-center">
                 <span className="text-lg font-bold text-coffee-darker">
                   Total:
                 </span>
-                <span className="text-2xl font-bold text-coffee-dark">
-                  ${Number(selectedOrder.total).toFixed(2)}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl font-bold text-coffee-dark">
+                    {isAdmin
+                      ? formatUSD(Number(selectedOrder.total))
+                      : formatPrice(Number(selectedOrder.total))}
+                  </span>
+                  {isAdmin && currency === 'ARS' && (
+                    <span className="text-lg font-semibold text-coffee-medium">
+                      / {formatPrice(Number(selectedOrder.total))}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           </div>

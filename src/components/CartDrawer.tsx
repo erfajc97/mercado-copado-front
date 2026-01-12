@@ -1,13 +1,14 @@
 import { Link } from '@tanstack/react-router'
 import { useMemo, useState } from 'react'
-import { Button, Drawer, Empty } from 'antd'
-import { LogIn, Minus, Plus, ShoppingCart, Trash2 } from 'lucide-react'
+import { Button, Drawer, Empty, Modal } from 'antd'
+import { LogIn, Minus, Plus, ShoppingCart, Trash2, X } from 'lucide-react'
 import AuthModal from './auth/AuthModal'
 import type { CartItem } from '@/app/store/cart/cartStore'
 import { useCartStore } from '@/app/store/cart/cartStore'
 import { useAuthStore } from '@/app/store/auth/authStore'
 import { useCartQuery } from '@/app/features/cart/queries/useCartQuery'
 import {
+  useClearCartMutation,
   useRemoveCartItemMutation,
   useUpdateCartItemMutation,
 } from '@/app/features/cart/mutations/useCartMutations'
@@ -19,9 +20,15 @@ interface CartDrawerProps {
 }
 
 export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
-  const { items: localItems, updateQuantity, removeItem } = useCartStore()
+  const {
+    items: localItems,
+    updateQuantity,
+    removeItem,
+    clearCart,
+  } = useCartStore()
   const { token } = useAuthStore()
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
+  const [isClearCartModalOpen, setIsClearCartModalOpen] = useState(false)
   const { formatPrice } = useCurrency()
 
   const isAuthenticated = !!token
@@ -32,6 +39,8 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   })
   const { mutateAsync: updateCartItem } = useUpdateCartItemMutation()
   const { mutateAsync: removeCartItem } = useRemoveCartItemMutation()
+  const { mutateAsync: clearCartMutation, isPending: isClearingCart } =
+    useClearCartMutation()
 
   // Usar carrito de BD si está autenticado, sino usar localStorage
   const items = useMemo(() => {
@@ -128,6 +137,20 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     // Navigation will be handled by Link component
   }
 
+  const handleClearCart = async () => {
+    if (isAuthenticated) {
+      try {
+        await clearCartMutation()
+        setIsClearCartModalOpen(false)
+      } catch (error) {
+        console.error('Error clearing cart:', error)
+      }
+    } else {
+      clearCart()
+      setIsClearCartModalOpen(false)
+    }
+  }
+
   return (
     <>
       <Drawer
@@ -177,6 +200,17 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           </div>
         ) : (
           <div className="flex flex-col h-full">
+            <div className="flex justify-end px-4 pt-4">
+              <Button
+                type="text"
+                danger
+                icon={<X size={16} />}
+                onClick={() => setIsClearCartModalOpen(true)}
+                className="text-sm"
+              >
+                Limpiar Carrito
+              </Button>
+            </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {items.map((item: CartItem) => {
                 const finalPrice =
@@ -264,7 +298,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               })}
             </div>
 
-            <div className="border-t-2 border-coffee-medium p-4 bg-gradient-to-r from-coffee-light/20 to-white">
+            <div className="border-t-2 border-coffee-medium p-4 bg-linear-to-r from-coffee-light/20 to-white">
               <div className="flex justify-between items-center mb-4">
                 <span className="text-lg font-bold text-coffee-darker">
                   Total:
@@ -306,6 +340,21 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         onClose={() => setIsAuthModalOpen(false)}
         initialMode="login"
       />
+
+      <Modal
+        title="Limpiar Carrito"
+        open={isClearCartModalOpen}
+        onOk={handleClearCart}
+        onCancel={() => setIsClearCartModalOpen(false)}
+        okText="Sí, Limpiar"
+        cancelText="Cancelar"
+        okButtonProps={{ danger: true, loading: isClearingCart }}
+      >
+        <p>
+          ¿Estás seguro de que deseas limpiar todo el carrito? Esta acción no se
+          puede deshacer.
+        </p>
+      </Modal>
     </>
   )
 }

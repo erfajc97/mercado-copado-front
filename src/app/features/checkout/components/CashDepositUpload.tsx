@@ -13,22 +13,20 @@ export const CashDepositUpload = ({
   selectedImage,
 }: CashDepositUploadProps) => {
   const [preview, setPreview] = useState<string | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
+  const validateAndSetFile = (file: File) => {
     // Validar que sea una imagen
     if (!file.type.startsWith('image/')) {
       message.error('Por favor, selecciona un archivo de imagen')
-      return
+      return false
     }
 
     // Validar tamaño (máximo 5MB)
     if (file.size > 5 * 1024 * 1024) {
       message.error('La imagen debe ser menor a 5MB')
-      return
+      return false
     }
 
     onImageSelect(file)
@@ -39,6 +37,35 @@ export const CashDepositUpload = ({
       setPreview(reader.result as string)
     }
     reader.readAsDataURL(file)
+    return true
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    validateAndSetFile(file)
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+
+    if (e.dataTransfer.files.length > 0) {
+      validateAndSetFile(e.dataTransfer.files[0])
+    }
   }
 
   const handleRemove = () => {
@@ -51,7 +78,7 @@ export const CashDepositUpload = ({
 
   return (
     <div className="space-y-4">
-      <div className="bg-gradient-to-r from-coffee-light/20 to-coffee-medium/20 p-4 rounded-lg border-2 border-coffee-medium">
+      <div className="bg-linear-to-r from-coffee-light/20 to-coffee-medium/20 p-4 rounded-lg border-2 border-coffee-medium">
         <p className="text-sm text-coffee-darker font-semibold mb-2">
           Sube una foto del comprobante de depósito
         </p>
@@ -62,23 +89,31 @@ export const CashDepositUpload = ({
       </div>
 
       {!preview && !selectedImage ? (
-        <div className="border-2 border-dashed border-coffee-medium rounded-lg p-8 text-center hover:border-coffee-dark transition-colors">
+        <div
+          className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+            isDragging
+              ? 'border-coffee-dark bg-coffee-light/20'
+              : 'border-coffee-medium hover:border-coffee-dark'
+          }`}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept="image/jpeg,image/jpg,image/png,image/webp"
             onChange={handleFileChange}
             className="hidden"
             id="deposit-image-upload"
           />
-          <label
-            htmlFor="deposit-image-upload"
-            className="cursor-pointer flex flex-col items-center gap-3"
-          >
+          <div className="flex flex-col items-center gap-3">
             <ImageIcon className="text-coffee-medium" size={48} />
             <div>
               <p className="text-coffee-darker font-semibold mb-1">
-                Haz clic para subir el comprobante
+                {isDragging
+                  ? 'Suelta la imagen aquí'
+                  : 'Haz clic para subir el comprobante'}
               </p>
               <p className="text-xs text-gray-500">
                 o arrastra y suelta la imagen aquí
@@ -88,10 +123,15 @@ export const CashDepositUpload = ({
               type="primary"
               icon={<UploadOutlined />}
               className="bg-gradient-coffee border-none hover:opacity-90"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                fileInputRef.current?.click()
+              }}
             >
               Seleccionar Imagen
             </Button>
-          </label>
+          </div>
         </div>
       ) : (
         <div className="relative">

@@ -1,10 +1,9 @@
-import { Button, Form, Input, Modal, Radio } from 'antd'
-import { CreditCard, Home, Plus } from 'lucide-react'
-import type { PaymentMethod } from '@/app/features/payment-methods/types'
-import type { CheckoutHookReturn } from './types'
+import { Button, Form, Input, Modal } from 'antd'
+import { Home } from 'lucide-react'
 import { PaymentProviderSelector } from './PaymentProviderSelector'
-import { ButtonPayPhone } from '@/app/components/payphone/components/ButtonPayPhone'
 import { CashDepositUpload } from './CashDepositUpload'
+import type { CheckoutHookReturn } from './types'
+import { ButtonPayPhone } from '@/app/components/payphone/components/ButtonPayPhone'
 
 interface CheckoutFormProps {
   checkout: CheckoutHookReturn
@@ -48,13 +47,13 @@ export const CheckoutForm = ({ checkout }: CheckoutFormProps) => {
                 </div>
               </div>
             </div>
-            {checkout.addresses && checkout.addresses.length > 1 && (
+            {checkout.addresses && checkout.addresses.length > 0 && (
               <Button
                 type="default"
                 onClick={() => checkout.setShowAddressSelector(true)}
                 className="w-full"
               >
-                Cambiar por dirección existente
+                Cambiar Dirección
               </Button>
             )}
           </div>
@@ -120,19 +119,16 @@ export const CheckoutForm = ({ checkout }: CheckoutFormProps) => {
         width={600}
       >
         <div className="space-y-2 mt-4">
-          {checkout.addresses
-            ?.filter(
-              (addr: any) => addr.id !== checkout.defaultAddress?.id,
-            )
-            .map((address: any) => (
-              <label
-                key={address.id}
-                className={`block p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                  checkout.selectedAddressId === address.id
-                    ? 'border-coffee-medium bg-coffee-light/20'
-                    : 'border-gray-200 hover:border-coffee-light'
-                }`}
-              >
+          {checkout.addresses?.map((address: any) => (
+            <label
+              key={address.id}
+              className={`block p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                checkout.selectedAddressId === address.id
+                  ? 'border-coffee-medium bg-coffee-light/20'
+                  : 'border-gray-200 hover:border-coffee-light'
+              }`}
+            >
+              <div className="flex items-start gap-3">
                 <input
                   type="radio"
                   name="selectAddress"
@@ -142,9 +138,16 @@ export const CheckoutForm = ({ checkout }: CheckoutFormProps) => {
                     checkout.setSelectedAddressId(e.target.value)
                     checkout.setShowAddressSelector(false)
                   }}
-                  className="mr-2"
+                  className="mt-1"
                 />
-                <div>
+                <div className="flex-1">
+                  {address.isDefault && (
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xs bg-coffee-medium text-white px-2 py-1 rounded">
+                        Por defecto
+                      </span>
+                    </div>
+                  )}
                   <p className="font-semibold text-coffee-darker">
                     {address.street}, {address.city}
                   </p>
@@ -157,8 +160,21 @@ export const CheckoutForm = ({ checkout }: CheckoutFormProps) => {
                     </p>
                   )}
                 </div>
-              </label>
-            ))}
+              </div>
+            </label>
+          ))}
+        </div>
+        <div className="mt-4 pt-4 border-t">
+          <Button
+            type="dashed"
+            onClick={() => {
+              checkout.setShowAddressSelector(false)
+              checkout.setShowAddressForm(true)
+            }}
+            className="w-full"
+          >
+            Agregar Nueva Dirección
+          </Button>
         </div>
       </Modal>
 
@@ -189,18 +205,14 @@ export const CheckoutForm = ({ checkout }: CheckoutFormProps) => {
           <Form.Item
             name="city"
             label="Ciudad"
-            rules={[
-              { required: true, message: 'Por favor ingresa la ciudad' },
-            ]}
+            rules={[{ required: true, message: 'Por favor ingresa la ciudad' }]}
           >
             <Input size="large" placeholder="Ej: San Salvador" />
           </Form.Item>
           <Form.Item
             name="state"
             label="Estado/Departamento"
-            rules={[
-              { required: true, message: 'Por favor ingresa el estado' },
-            ]}
+            rules={[{ required: true, message: 'Por favor ingresa el estado' }]}
           >
             <Input size="large" placeholder="Ej: San Salvador" />
           </Form.Item>
@@ -289,7 +301,9 @@ export const CheckoutForm = ({ checkout }: CheckoutFormProps) => {
             <ButtonPayPhone
               amount={checkout.total}
               addressId={checkout.selectedAddressId}
-              paymentMethodId={checkout.selectedPaymentMethodId || 'payphone-default'}
+              paymentMethodId={
+                checkout.selectedPaymentMethodId || 'payphone-default'
+              }
               clientTransactionId={checkout.clientTransactionId || ''}
               onSuccess={() => {
                 // El onSuccess se maneja en CheckoutSummary
@@ -407,4 +421,3 @@ export const CheckoutForm = ({ checkout }: CheckoutFormProps) => {
     </div>
   )
 }
-

@@ -1,8 +1,6 @@
-import { useState } from 'react'
 import type { FormInstance, FormProps } from 'antd'
+import { useCreateProductMutation } from '@/app/features/products/mutations/useCreateProductMutation'
 import { useForm } from '@/app/hooks/useForm'
-import { useCreateProductMutation } from '../mutations/useProductMutations'
-import { dataToFormData } from '@/app/helpers/dataToFormData'
 
 type UseFormHookProps = {
   form?: FormInstance
@@ -17,16 +15,10 @@ const useFormHook = ({ form, onSuccess }: UseFormHookProps) => {
     console.log('Failed:', errorInfo)
   }
 
-  const handleSubmit = async ({
-    values,
-    id,
-  }: {
-    values: any
-    id?: string
-  }) => {
+  const handleSubmit = async ({ values, id }: { values: any; id?: string }) => {
     try {
       // Extraer archivos de las imágenes
-      const images: File[] = []
+      const images: Array<File> = []
       if (values.images && values.images.length > 0) {
         values.images.forEach((fileItem: any) => {
           if (fileItem.originFileObj) {
@@ -65,4 +57,3 @@ const useFormHook = ({ form, onSuccess }: UseFormHookProps) => {
 }
 
 export default useFormHook
-

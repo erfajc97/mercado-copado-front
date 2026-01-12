@@ -1,13 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
-import { Card, Statistic, Button } from 'antd'
+import { Button, Card, Statistic } from 'antd'
 import { Link } from '@tanstack/react-router'
 import {
   DollarSign,
+  Eye,
   Package,
   ShoppingCart,
   TrendingUp,
   Users,
-  Eye,
 } from 'lucide-react'
 import { dashboardStatsService } from '@/app/features/dashboard/services/dashboardStatsService'
 import { getDolarBlueRate } from '@/app/services/currencyService'
@@ -103,7 +103,10 @@ export default function DashboardStats() {
       </div>
 
       {recentOrdersThisWeek.length > 0 && (
-        <Card title="Órdenes Recientes (Última Semana)" className="shadow-coffee">
+        <Card
+          title="Órdenes Recientes (Última Semana)"
+          className="shadow-coffee"
+        >
           <div
             className="space-y-3 max-h-96 overflow-y-auto pr-2"
             style={{ scrollbarWidth: 'thin' }}

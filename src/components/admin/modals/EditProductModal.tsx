@@ -1,8 +1,18 @@
-import { Modal } from 'antd'
-import { useState, useEffect } from 'react'
-import { Button, Card, Form, Input, InputNumber, Select, Switch, Upload } from 'antd'
+import { useEffect, useState } from 'react'
+import {
+  Button,
+  Card,
+  Form,
+  Input,
+  InputNumber,
+  Modal,
+  Select,
+  Switch,
+  Upload,
+} from 'antd'
 import { Upload as UploadIcon } from 'lucide-react'
 import type { UploadFile } from 'antd'
+import type { Product } from '@/app/features/products/types'
 import { useAllCategoriesQuery } from '@/app/features/categories/queries/useCategoriesQuery'
 import { useUpdateProductMutation } from '@/app/features/products/mutations/useProductMutations'
 import { useProductQuery } from '@/app/features/products/queries/useProductQuery'
@@ -36,41 +46,45 @@ export default function EditProductModal({
   const [selectedCategory, setSelectedCategory] = useState<string>('')
   const [fileList, setFileList] = useState<Array<ExtendedUploadFile>>([])
 
+  // Tipar el producto correctamente
+  const typedProduct = product as Product | undefined
+
   const subcategories =
     categories?.find((cat: any) => cat.id === selectedCategory)
       ?.subcategories || []
 
   // Cargar datos del producto cuando se abre el modal
   useEffect(() => {
-    if (product && isOpen) {
+    if (typedProduct && isOpen) {
       form.setFieldsValue({
-        name: product.name,
-        description: product.description,
-        price: Number(product.price),
-        discount: Number(product.discount || 0),
-        categoryId: product.categoryId,
-        subcategoryId: product.subcategoryId,
-        country: product.country || '',
-        isActive: product.isActive,
+        name: typedProduct.name,
+        description: typedProduct.description,
+        price: Number(typedProduct.price),
+        discount: Number(typedProduct.discount || 0),
+        categoryId: typedProduct.categoryId,
+        subcategoryId: typedProduct.subcategoryId,
+        country: typedProduct.country || '',
+        isActive: typedProduct.isActive,
       })
-      setSelectedCategory(product.categoryId)
+      setSelectedCategory(typedProduct.categoryId)
 
       // Cargar imágenes existentes
-      if (product.images && product.images.length > 0) {
-        const existingImages = product.images.map((img: any, index: number) => ({
-          uid: img.id || `existing-${index}`,
-          name: `imagen-${index + 1}`,
-          status: 'done',
-          url: img.url,
-          isExisting: true,
-          imageId: img.id,
-        }))
+      if (typedProduct.images.length > 0) {
+        const existingImages: Array<ExtendedUploadFile> =
+          typedProduct.images.map((img: any, index: number) => ({
+            uid: img.id || `existing-${index}`,
+            name: `imagen-${index + 1}`,
+            status: 'done' as const,
+            url: img.url,
+            isExisting: true,
+            imageId: img.id,
+          }))
         setFileList(existingImages)
       } else {
         setFileList([])
       }
     }
-  }, [product, isOpen, form])
+  }, [typedProduct, isOpen, form])
 
   const handleSubmit = async (values: any) => {
     if (!productId) return
@@ -152,7 +166,11 @@ export default function EditProductModal({
           >
             {/* Información Básica y Precio en una fila */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Card title="Información Básica" className="shadow-sm" size="small">
+              <Card
+                title="Información Básica"
+                className="shadow-sm"
+                size="small"
+              >
                 <div className="space-y-3">
                   <Form.Item
                     name="name"
@@ -171,10 +189,16 @@ export default function EditProductModal({
                     name="description"
                     label="Descripción"
                     rules={[
-                      { required: true, message: 'Por favor ingresa la descripción' },
+                      {
+                        required: true,
+                        message: 'Por favor ingresa la descripción',
+                      },
                     ]}
                   >
-                    <TextArea rows={4} placeholder="Descripción del producto..." />
+                    <TextArea
+                      rows={4}
+                      placeholder="Descripción del producto..."
+                    />
                   </Form.Item>
                 </div>
               </Card>
@@ -185,7 +209,10 @@ export default function EditProductModal({
                     name="price"
                     label="Precio"
                     rules={[
-                      { required: true, message: 'Por favor ingresa el precio' },
+                      {
+                        required: true,
+                        message: 'Por favor ingresa el precio',
+                      },
                     ]}
                   >
                     <InputNumber
@@ -201,7 +228,10 @@ export default function EditProductModal({
                     name="discount"
                     label="Descuento (%)"
                     rules={[
-                      { required: true, message: 'Por favor ingresa el descuento' },
+                      {
+                        required: true,
+                        message: 'Por favor ingresa el descuento',
+                      },
                     ]}
                   >
                     <InputNumber
@@ -217,7 +247,10 @@ export default function EditProductModal({
                     label="Producto Activo"
                     valuePropName="checked"
                   >
-                    <Switch checkedChildren="Activo" unCheckedChildren="Inactivo" />
+                    <Switch
+                      checkedChildren="Activo"
+                      unCheckedChildren="Inactivo"
+                    />
                   </Form.Item>
                 </div>
               </Card>
@@ -292,7 +325,11 @@ export default function EditProductModal({
             </Card>
 
             {/* Imágenes */}
-            <Card title="Imágenes del Producto" className="shadow-sm" size="small">
+            <Card
+              title="Imágenes del Producto"
+              className="shadow-sm"
+              size="small"
+            >
               <Form.Item name="images">
                 <Upload
                   listType="picture-card"

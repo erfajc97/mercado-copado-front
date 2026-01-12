@@ -94,7 +94,7 @@ function Cart() {
                   />
                 )}
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-base sm:text-lg mb-2 text-coffee-darker break-words">
+                  <h3 className="font-bold text-base sm:text-lg mb-2 text-coffee-darker wrap-break-word">
                     {item.product.name}
                   </h3>
                   <div className="flex items-center gap-4 mb-4">

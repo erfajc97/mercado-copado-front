@@ -1,6 +1,15 @@
-import { Modal } from 'antd'
 import { useState } from 'react'
-import { Button, Card, Form, Input, InputNumber, Select, Switch, Upload } from 'antd'
+import {
+  Button,
+  Card,
+  Form,
+  Input,
+  InputNumber,
+  Modal,
+  Select,
+  Switch,
+  Upload,
+} from 'antd'
 import { Upload as UploadIcon } from 'lucide-react'
 import type { UploadFile } from 'antd'
 import { useAllCategoriesQuery } from '@/app/features/categories/queries/useCategoriesQuery'
@@ -115,10 +124,16 @@ export default function CreateProductModal({
                   name="description"
                   label="Descripción"
                   rules={[
-                    { required: true, message: 'Por favor ingresa la descripción' },
+                    {
+                      required: true,
+                      message: 'Por favor ingresa la descripción',
+                    },
                   ]}
                 >
-                  <TextArea rows={4} placeholder="Descripción del producto..." />
+                  <TextArea
+                    rows={4}
+                    placeholder="Descripción del producto..."
+                  />
                 </Form.Item>
               </div>
             </Card>
@@ -145,7 +160,10 @@ export default function CreateProductModal({
                   name="discount"
                   label="Descuento (%)"
                   rules={[
-                    { required: true, message: 'Por favor ingresa el descuento' },
+                    {
+                      required: true,
+                      message: 'Por favor ingresa el descuento',
+                    },
                   ]}
                 >
                   <InputNumber
@@ -162,7 +180,10 @@ export default function CreateProductModal({
                   valuePropName="checked"
                   initialValue={true}
                 >
-                  <Switch checkedChildren="Activo" unCheckedChildren="Inactivo" />
+                  <Switch
+                    checkedChildren="Activo"
+                    unCheckedChildren="Inactivo"
+                  />
                 </Form.Item>
               </div>
             </Card>
@@ -237,11 +258,18 @@ export default function CreateProductModal({
           </Card>
 
           {/* Imágenes */}
-          <Card title="Imágenes del Producto" className="shadow-sm" size="small">
+          <Card
+            title="Imágenes del Producto"
+            className="shadow-sm"
+            size="small"
+          >
             <Form.Item
               name="images"
               rules={[
-                { required: true, message: 'Por favor sube al menos una imagen' },
+                {
+                  required: true,
+                  message: 'Por favor sube al menos una imagen',
+                },
               ]}
             >
               <Upload
@@ -280,4 +308,3 @@ export default function CreateProductModal({
     </Modal>
   )
 }
-
