@@ -4,8 +4,8 @@ import { Plus } from 'lucide-react'
 import { useProductsDashboardHook } from './hooks/useProductsDashboardHook'
 import { ProductsFilters } from './components/ProductsFilters'
 import { ProductsTable } from './components/ProductsTable'
-import CreateProductModal from '@/components/admin/modals/CreateProductModal'
-import EditProductModal from '@/components/admin/modals/EditProductModal'
+import CreateProductModal from './components/modal/CreateProductModal'
+import EditProductModal from './components/modal/EditProductModal'
 
 export const ProductsDashboard = () => {
   const hook = useProductsDashboardHook()

@@ -56,6 +56,7 @@ export const API_ENDPOINTS = {
   PHONE_PAYMENT: '/payments/phone-payment',
   CREATE_ORDER_FROM_TRANSACTION: '/payments/create-order-from-transaction',
   CASH_DEPOSIT: '/payments/cash-deposit',
+  REGENERATE_TRANSACTION: '/payments/regenerate-transaction',
 
   // Dashboard
   DASHBOARD_STATS: '/dashboard/stats',

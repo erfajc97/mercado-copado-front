@@ -9,8 +9,27 @@ export const getOrderPaymentLinkService = async (orderId: string) => {
     )
     return response.data.content
   } catch (error: unknown) {
-    if (error instanceof AxiosError && error.response?.data?.message) {
-      throw new Error(error.response.data.message)
+    console.error('Error en getOrderPaymentLinkService:', error)
+    
+    if (error instanceof AxiosError) {
+      // Si hay una respuesta del servidor, usar su mensaje
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message)
+      }
+      
+      // Si no hay respuesta, podría ser un error de red o CORS
+      if (error.request && !error.response) {
+        throw new Error(
+          'No se pudo conectar con el servidor. Verifica que el backend esté corriendo.',
+        )
+      }
+      
+      // Si hay un código de estado, incluir información adicional
+      if (error.response?.status) {
+        throw new Error(
+          `Error ${error.response.status}: ${error.response.data?.message || 'Error al obtener el link de pago'}`,
+        )
+      }
     }
 
     throw new Error(

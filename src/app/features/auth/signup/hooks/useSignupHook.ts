@@ -1,4 +1,5 @@
 import { useSignupMutation } from '../../login/mutations/useSignupMutation'
+import { getGoogleAuthUrl } from '../../login/services/googleAuthService'
 
 type UseSignupHookProps = {
   onSuccess?: () => void
@@ -12,6 +13,7 @@ export const useSignupHook = ({ onSuccess }: UseSignupHookProps = {}) => {
     password: string
     firstName: string
     lastName?: string
+    country?: string
   }) => {
     try {
       await signup(values)
@@ -22,8 +24,14 @@ export const useSignupHook = ({ onSuccess }: UseSignupHookProps = {}) => {
     }
   }
 
+  const handleGoogleLogin = () => {
+    const googleAuthUrl = getGoogleAuthUrl()
+    window.location.href = googleAuthUrl
+  }
+
   return {
     handleSignup,
+    handleGoogleLogin,
     isPending,
   }
 }

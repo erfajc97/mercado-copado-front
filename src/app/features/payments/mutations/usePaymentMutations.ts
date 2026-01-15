@@ -28,6 +28,7 @@ export const useUpdatePaymentStatusMutation = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
       queryClient.invalidateQueries({ queryKey: ['orders'] })
+      queryClient.invalidateQueries({ queryKey: ['orders', 'all'] }) // Invalidar también queries del dashboard
       sonnerResponse('Estado de transacción actualizado', 'success')
     },
     onError: (error) => {

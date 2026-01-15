@@ -19,95 +19,91 @@ export const CheckoutForm = ({ checkout }: CheckoutFormProps) => {
             Dirección de Envío
           </h2>
         </div>
-        {checkout.defaultAddress ? (
-          <div className="space-y-4">
-            <div className="p-4 border-2 border-coffee-medium bg-coffee-light/20 rounded-lg">
-              <div className="flex items-start gap-3">
-                <Home size={24} className="text-coffee-medium mt-1" />
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xs bg-coffee-medium text-white px-2 py-1 rounded">
-                      Por defecto
-                    </span>
-                  </div>
-                  <p className="font-semibold text-coffee-darker">
-                    {checkout.defaultAddress.street},{' '}
-                    {checkout.defaultAddress.city}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {checkout.defaultAddress.state},{' '}
-                    {checkout.defaultAddress.zipCode},{' '}
-                    {checkout.defaultAddress.country}
-                  </p>
-                  {checkout.defaultAddress.reference && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      Referencia: {checkout.defaultAddress.reference}
+        {(() => {
+          // Determinar qué dirección mostrar: priorizar selectedAddressId sobre defaultAddress
+          const selectedAddress =
+            checkout.selectedAddressId &&
+            checkout.addresses?.find(
+              (addr: any) => addr.id === checkout.selectedAddressId,
+            )
+          const displayAddress =
+            selectedAddress ||
+            checkout.defaultAddress ||
+            (checkout.addresses && checkout.addresses.length > 0
+              ? checkout.addresses[0]
+              : null)
+
+          if (!displayAddress) {
+            return (
+              <div className="text-center py-8">
+                <p className="text-gray-600 mb-4">
+                  No tienes direcciones. Agrega una dirección para continuar.
+                </p>
+                <Button
+                  type="primary"
+                  onClick={() => checkout.setShowAddressForm(true)}
+                  className="bg-gradient-coffee border-none hover:opacity-90"
+                >
+                  Agregar Dirección
+                </Button>
+              </div>
+            )
+          }
+
+          const isDefaultAddress =
+            displayAddress.id === checkout.defaultAddress?.id
+          const isSelectedAddress =
+            checkout.selectedAddressId === displayAddress.id
+
+          return (
+            <div className="space-y-4">
+              <div className="p-4 border-2 border-coffee-medium bg-coffee-light/20 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <Home size={24} className="text-coffee-medium mt-1" />
+                  <div className="flex-1">
+                    {isDefaultAddress && (
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xs bg-coffee-medium text-white px-2 py-1 rounded">
+                          Por defecto
+                        </span>
+                      </div>
+                    )}
+                    {isSelectedAddress && !isDefaultAddress && (
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded">
+                          Seleccionada
+                        </span>
+                      </div>
+                    )}
+                    <p className="font-semibold text-coffee-darker">
+                      {displayAddress.street}, {displayAddress.city}
                     </p>
-                  )}
+                    <p className="text-sm text-gray-600">
+                      {displayAddress.state}, {displayAddress.zipCode},{' '}
+                      {displayAddress.country}
+                    </p>
+                    {displayAddress.reference && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Referencia: {displayAddress.reference}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
+              {checkout.addresses && checkout.addresses.length > 0 && (
+                <Button
+                  type="default"
+                  onClick={() => checkout.setShowAddressSelector(true)}
+                  className="w-full"
+                >
+                  {checkout.addresses.length > 1
+                    ? 'Cambiar Dirección'
+                    : 'Seleccionar o Agregar Dirección'}
+                </Button>
+              )}
             </div>
-            {checkout.addresses && checkout.addresses.length > 0 && (
-              <Button
-                type="default"
-                onClick={() => checkout.setShowAddressSelector(true)}
-                className="w-full"
-              >
-                Cambiar Dirección
-              </Button>
-            )}
-          </div>
-        ) : checkout.addresses && checkout.addresses.length > 0 ? (
-          <div className="space-y-2">
-            {checkout.addresses.map((address: any) => (
-              <label
-                key={address.id}
-                className={`block p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                  checkout.selectedAddressId === address.id
-                    ? 'border-coffee-medium bg-coffee-light/20'
-                    : 'border-gray-200 hover:border-coffee-light'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="address"
-                  value={address.id}
-                  checked={checkout.selectedAddressId === address.id}
-                  onChange={(e) =>
-                    checkout.setSelectedAddressId(e.target.value)
-                  }
-                  className="mr-2"
-                />
-                <div>
-                  <p className="font-semibold text-coffee-darker">
-                    {address.street}, {address.city}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {address.state}, {address.zipCode}, {address.country}
-                  </p>
-                  {address.reference && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      Referencia: {address.reference}
-                    </p>
-                  )}
-                </div>
-              </label>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-8">
-            <p className="text-gray-600 mb-4">
-              No tienes direcciones. Agrega una dirección para continuar.
-            </p>
-            <Button
-              type="primary"
-              onClick={() => checkout.setShowAddressForm(true)}
-              className="bg-gradient-coffee border-none hover:opacity-90"
-            >
-              Agregar Dirección
-            </Button>
-          </div>
-        )}
+          )
+        })()}
       </div>
 
       {/* Address Selector Modal */}
@@ -280,11 +276,28 @@ export const CheckoutForm = ({ checkout }: CheckoutFormProps) => {
             Método de Pago
           </h2>
         </div>
+        {/* Validar que haya dirección seleccionada antes de permitir seleccionar método de pago */}
+        {(() => {
+          const hasAddress =
+            !!checkout.selectedAddressId || !!checkout.defaultAddress
+          return !hasAddress ? (
+            <div className="mb-6 p-4 bg-yellow-50 border-2 border-yellow-200 rounded-lg">
+              <p className="text-sm text-yellow-800">
+                <strong>⚠️ Atención:</strong> Por favor, selecciona una
+                dirección de envío antes de elegir un método de pago. La orden
+                requiere una dirección para ser creada.
+              </p>
+            </div>
+          ) : null
+        })()}
         <div className="mb-6">
           <PaymentProviderSelector
             selectedProvider={checkout.selectedPaymentProvider}
             onSelectProvider={(provider) =>
               checkout.setSelectedPaymentProvider(provider)
+            }
+            disabled={
+              !checkout.selectedAddressId && !checkout.defaultAddress
             }
           />
         </div>
@@ -300,11 +313,18 @@ export const CheckoutForm = ({ checkout }: CheckoutFormProps) => {
             </p>
             <ButtonPayPhone
               amount={checkout.total}
-              addressId={checkout.selectedAddressId}
+              addressId={
+                checkout.selectedAddressId ||
+                checkout.defaultAddress?.id ||
+                ''
+              }
               paymentMethodId={
                 checkout.selectedPaymentMethodId || 'payphone-default'
               }
               clientTransactionId={checkout.clientTransactionId || ''}
+              disabled={
+                !checkout.selectedAddressId && !checkout.defaultAddress
+              }
               onSuccess={() => {
                 // El onSuccess se maneja en CheckoutSummary
               }}
@@ -318,9 +338,18 @@ export const CheckoutForm = ({ checkout }: CheckoutFormProps) => {
             <h3 className="text-lg font-semibold text-coffee-darker mb-4">
               Sube tu Comprobante de Depósito
             </h3>
+            {!checkout.selectedAddressId && !checkout.defaultAddress ? (
+              <div className="p-4 bg-yellow-50 border-2 border-yellow-200 rounded-lg mb-4">
+                <p className="text-sm text-yellow-800">
+                  Por favor, selecciona una dirección de envío antes de subir
+                  el comprobante.
+                </p>
+              </div>
+            ) : null}
             <CashDepositUpload
               onImageSelect={checkout.setDepositImage}
               selectedImage={checkout.depositImage}
+              disabled={!checkout.selectedAddressId && !checkout.defaultAddress}
             />
           </div>
         )}

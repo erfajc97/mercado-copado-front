@@ -4,14 +4,17 @@ import { createOrderService } from '../services/createOrderService'
 import { updateOrderStatusService } from '../services/updateOrderStatusService'
 import { getOrderPaymentLinkService } from '../services/getOrderPaymentLinkService'
 import { sonnerResponse } from '@/app/helpers/sonnerResponse'
+import { useCartStore } from '@/app/store/cart/cartStore'
 
 export const useCreateOrderMutation = () => {
   const queryClient = useQueryClient()
+  const { clearCart } = useCartStore()
   return useMutation({
     mutationFn: createOrderService,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] })
       queryClient.invalidateQueries({ queryKey: ['orders'] })
+      clearCart() // Limpiar el carrito local después de crear la orden
       sonnerResponse('Orden creada exitosamente', 'success')
     },
     onError: (error) => {
@@ -56,7 +59,7 @@ export const useGetOrderPaymentLinkMutation = () => {
     mutationFn: (orderId: string) => getOrderPaymentLinkService(orderId),
     onSuccess: (data) => {
       // Abrir el link de pago en una nueva ventana
-      if (data && data.paymentLink) {
+      if (data.paymentLink) {
         window.open(data.paymentLink, '_blank')
         sonnerResponse('Redirigiendo al pago...', 'success')
       }

@@ -7,6 +7,7 @@ import {
 // import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 // import { TanStackDevtools } from '@tanstack/react-devtools'
 import { Toaster } from 'sonner'
+import { HeroUIProvider } from '@heroui/react'
 
 import Header from '../components/Header'
 import Footer from '../components/Footer'
@@ -17,9 +18,11 @@ import { useCartSync } from '../app/hooks/useCartSync'
 import appCss from '../styles.css?url'
 
 import type { QueryClient } from '@tanstack/react-query'
+import type { AuthContext } from '../router'
 
 interface MyRouterContext {
   queryClient: QueryClient
+  auth: AuthContext
 }
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
@@ -82,12 +85,14 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body suppressHydrationWarning>
-        <div className="min-h-screen flex flex-col">
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </div>
-        <Toaster position="top-right" richColors />
+        <HeroUIProvider>
+          <div className="min-h-screen flex flex-col">
+            <Header />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </div>
+          <Toaster position="top-right" richColors />
+        </HeroUIProvider>
         {/* <TanStackDevtools
           config={{
             position: 'bottom-right',

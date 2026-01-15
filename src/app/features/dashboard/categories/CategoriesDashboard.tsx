@@ -5,8 +5,8 @@ import { useCategoriesDashboardHook } from './hooks/useCategoriesDashboardHook'
 import { CategoriesFilters } from './components/CategoriesFilters'
 import { CategoriesTable } from './components/CategoriesTable'
 import { CategoriesCollapse } from './components/CategoriesCollapse'
-import CreateCategoryModal from '@/components/admin/modals/CreateCategoryModal'
-import EditCategoryModal from '@/components/admin/modals/EditCategoryModal'
+import CreateCategoryModal from './components/modal/CreateCategoryModal'
+import EditCategoryModal from './components/modal/EditCategoryModal'
 
 export const CategoriesDashboard = () => {
   const hook = useCategoriesDashboardHook()

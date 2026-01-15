@@ -2,9 +2,11 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 // import { useNavigate } from '@tanstack/react-router'
 import { createOrderFromTransactionService } from '../services/createOrderFromTransactionService'
 import { sonnerResponse } from '@/app/helpers/sonnerResponse'
+import { useCartStore } from '@/app/store/cart/cartStore'
 
 export const useCreateOrderFromTransactionMutation = () => {
   const queryClient = useQueryClient()
+  const { clearCart } = useCartStore()
   // const navigate = useNavigate()
 
   return useMutation({
@@ -18,6 +20,7 @@ export const useCreateOrderFromTransactionMutation = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] })
       queryClient.invalidateQueries({ queryKey: ['cart'] })
+      clearCart() // Limpiar el carrito local después de crear la orden
       sonnerResponse('Orden creada exitosamente', 'success')
     },
     onError: (error) => {

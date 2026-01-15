@@ -6,11 +6,13 @@ import { Image as ImageIcon } from 'lucide-react'
 interface CashDepositUploadProps {
   onImageSelect: (file: File | null) => void
   selectedImage: File | null
+  disabled?: boolean
 }
 
 export const CashDepositUpload = ({
   onImageSelect,
   selectedImage,
+  disabled = false,
 }: CashDepositUploadProps) => {
   const [preview, setPreview] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -91,13 +93,15 @@ export const CashDepositUpload = ({
       {!preview && !selectedImage ? (
         <div
           className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-            isDragging
-              ? 'border-coffee-dark bg-coffee-light/20'
-              : 'border-coffee-medium hover:border-coffee-dark'
+            disabled
+              ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed'
+              : isDragging
+                ? 'border-coffee-dark bg-coffee-light/20'
+                : 'border-coffee-medium hover:border-coffee-dark'
           }`}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
+          onDragOver={disabled ? undefined : handleDragOver}
+          onDragLeave={disabled ? undefined : handleDragLeave}
+          onDrop={disabled ? undefined : handleDrop}
         >
           <input
             ref={fileInputRef}
@@ -106,27 +110,42 @@ export const CashDepositUpload = ({
             onChange={handleFileChange}
             className="hidden"
             id="deposit-image-upload"
+            disabled={disabled}
           />
           <div className="flex flex-col items-center gap-3">
-            <ImageIcon className="text-coffee-medium" size={48} />
+            <ImageIcon
+              className={disabled ? 'text-gray-400' : 'text-coffee-medium'}
+              size={48}
+            />
             <div>
-              <p className="text-coffee-darker font-semibold mb-1">
-                {isDragging
-                  ? 'Suelta la imagen aquí'
-                  : 'Haz clic para subir el comprobante'}
+              <p
+                className={`font-semibold mb-1 ${
+                  disabled ? 'text-gray-400' : 'text-coffee-darker'
+                }`}
+              >
+                {disabled
+                  ? 'Selecciona una dirección primero'
+                  : isDragging
+                    ? 'Suelta la imagen aquí'
+                    : 'Haz clic para subir el comprobante'}
               </p>
               <p className="text-xs text-gray-500">
-                o arrastra y suelta la imagen aquí
+                {disabled
+                  ? 'La dirección de envío es requerida'
+                  : 'o arrastra y suelta la imagen aquí'}
               </p>
             </div>
             <Button
               type="primary"
               icon={<UploadOutlined />}
               className="bg-gradient-coffee border-none hover:opacity-90"
+              disabled={disabled}
               onClick={(e) => {
                 e.preventDefault()
                 e.stopPropagation()
-                fileInputRef.current?.click()
+                if (!disabled) {
+                  fileInputRef.current?.click()
+                }
               }}
             >
               Seleccionar Imagen

@@ -1,17 +1,48 @@
-import { createRouter } from '@tanstack/react-router'
 import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query'
+import { createRouter } from '@tanstack/react-router'
+import { useAuthStore } from './app/store/auth/authStore'
 import * as TanstackQuery from './integrations/tanstack-query/root-provider'
-
-// Import the generated route tree
 import { routeTree } from './routeTree.gen'
+import type { AuthState } from './app/store/auth/authStore'
+
+export type AuthContext = Pick<
+  AuthState,
+  | 'token'
+  | 'refreshToken'
+  | 'tokenExpiration'
+  | 'setToken'
+  | 'removeToken'
+  | 'getToken'
+  | 'roles'
+> & {
+  isLogged: () => boolean
+}
 
 // Create a new router instance
 export const getRouter = () => {
   const rqContext = TanstackQuery.getContext()
 
+  // Obtener el estado inicial del auth store
+  const authState = useAuthStore.getState()
+  const isLogged = () => Boolean(authState.token)
+
+  const auth: AuthContext = {
+    token: authState.token,
+    refreshToken: authState.refreshToken,
+    tokenExpiration: authState.tokenExpiration,
+    setToken: authState.setToken,
+    removeToken: authState.removeToken,
+    getToken: authState.getToken,
+    isLogged,
+    roles: authState.roles,
+  }
+
   const router = createRouter({
     routeTree,
-    context: { ...rqContext },
+    context: {
+      ...rqContext,
+      auth,
+    },
     defaultPreload: 'intent',
     defaultNotFoundComponent: () => (
       <div className="flex flex-col items-center justify-center min-h-screen p-4">
@@ -25,13 +56,6 @@ export const getRouter = () => {
         </a>
       </div>
     ),
-    Wrap: (props: { children: React.ReactNode }) => {
-      return (
-        <TanstackQuery.Provider {...rqContext}>
-          {props.children}
-        </TanstackQuery.Provider>
-      )
-    },
   })
 
   setupRouterSsrQueryIntegration({ router, queryClient: rqContext.queryClient })

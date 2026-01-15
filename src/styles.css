@@ -1,4 +1,7 @@
 @import "tailwindcss";
+@plugin '../hero.ts';
+@source '../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   /* Paleta de colores café */
@@ -116,4 +119,24 @@ code {
 
 .border-coffee-dark {
   border-color: var(--color-coffee-dark);
+}
+
+/* Estilos para botones de Ant Design con gradiente coffee */
+.ant-btn.bg-gradient-coffee,
+.ant-btn.bg-gradient-coffee:hover,
+.ant-btn.bg-gradient-coffee:focus,
+.ant-btn.bg-gradient-coffee:active,
+.ant-btn.bg-gradient-coffee:focus-visible {
+  background: var(--gradient-coffee) !important;
+  border-color: transparent !important;
+  color: white !important;
+}
+
+.ant-btn.bg-gradient-coffee:hover {
+  opacity: 0.9;
+}
+
+.ant-btn.bg-gradient-coffee:active {
+  background: var(--gradient-coffee) !important;
+  opacity: 0.85;
 }

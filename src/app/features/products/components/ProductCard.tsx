@@ -62,33 +62,33 @@ export const ProductCard = ({ product }: ProductCardProps) => {
       : null
 
   const addProductToCart = async () => {
-    // Siempre agregar al carrito local (localStorage)
-    addItem({
-      id: '', // Se generará en el servidor si está autenticado
-      productId: product.id,
-      product: {
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        discount: product.discount,
-        images: product.images,
-      },
-      quantity: 1,
-    })
-
-    // Mostrar notificación de éxito inmediatamente
-    sonnerResponse('Producto agregado al carrito', 'success')
-
-    // Si está autenticado, también sincronizar con el backend
+    // Si está autenticado, solo agregar al backend (no al carrito local)
     if (isAuthenticated) {
       try {
         await addToCart({
           productId: product.id,
           quantity: 1,
         })
+        sonnerResponse('Producto agregado al carrito', 'success')
       } catch (error) {
         console.error('Error adding to cart:', error)
+        sonnerResponse('Error al agregar producto al carrito', 'error')
       }
+    } else {
+      // Si no está autenticado, agregar al carrito local (localStorage)
+      addItem({
+        id: '', // Se generará en el servidor si se autentica después
+        productId: product.id,
+        product: {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          discount: product.discount,
+          images: product.images,
+        },
+        quantity: 1,
+      })
+      sonnerResponse('Producto agregado al carrito', 'success')
     }
   }
 

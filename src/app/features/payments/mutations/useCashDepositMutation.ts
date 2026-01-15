@@ -12,6 +12,7 @@ export const useCashDepositMutation = () => {
       addressId: string
       clientTransactionId: string
       depositImage: File
+      orderId?: string // Para retry de pagos en órdenes existentes
     }) => {
       const response = await cashDepositService(data)
       return response

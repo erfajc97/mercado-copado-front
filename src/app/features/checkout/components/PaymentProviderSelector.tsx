@@ -5,11 +5,13 @@ type PaymentProvider = 'PAYPHONE' | 'MERCADOPAGO' | 'CRYPTO' | 'CASH_DEPOSIT'
 interface PaymentProviderSelectorProps {
   selectedProvider: PaymentProvider | null
   onSelectProvider: (provider: PaymentProvider) => void
+  disabled?: boolean
 }
 
 export const PaymentProviderSelector = ({
   selectedProvider,
   onSelectProvider,
+  disabled = false,
 }: PaymentProviderSelectorProps) => {
   const providers: Array<{
     id: PaymentProvider
@@ -47,7 +49,8 @@ export const PaymentProviderSelector = ({
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       {providers.map((provider) => {
         const isSelected = selectedProvider === provider.id
-        const isDisabled = !provider.available
+        const isProviderDisabled = !provider.available
+        const isDisabled = disabled || isProviderDisabled
 
         return (
           <button
@@ -68,7 +71,13 @@ export const PaymentProviderSelector = ({
                     : 'border-gray-200 bg-white hover:border-coffee-light hover:shadow-md cursor-pointer'
               }
             `}
-            title={isDisabled ? 'Próximamente' : provider.description}
+            title={
+              disabled
+                ? 'Por favor, selecciona una dirección de envío primero'
+                : isProviderDisabled
+                  ? 'Próximamente'
+                  : provider.description
+            }
           >
             {isDisabled && (
               <div className="absolute top-2 right-2">

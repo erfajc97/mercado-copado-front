@@ -1,9 +1,13 @@
 {
   "files.watcherExclude": {
-    "**/routeTree.gen.ts": true
+    "**/routeTree.gen.ts": true,
+    "**/.tanstack/**": true,
+    "**/_unauthenticated.tsx": true,
+    "**/_authenticated.tsx": true
   },
   "search.exclude": {
-    "**/routeTree.gen.ts": true
+    "**/routeTree.gen.ts": true,
+    "**/.tanstack/**": true
   },
   "files.readonlyInclude": {
     "**/routeTree.gen.ts": true

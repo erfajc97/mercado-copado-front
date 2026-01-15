@@ -9,8 +9,9 @@ import { useCreatePaymentMethodMutation } from '@/app/features/payment-methods/m
 import { useCreatePaymentTransactionWithoutOrderMutation } from '@/app/features/payments/mutations/useCreatePaymentTransactionWithoutOrderMutation'
 import { useCashDepositMutation } from '@/app/features/payments/mutations/useCashDepositMutation'
 import { useCurrency } from '@/app/hooks/useCurrency'
-import { formatUSD } from '@/app/services/currencyService'
+import { sonnerResponse } from '@/app/helpers/sonnerResponse'
 import { useAuthStore } from '@/app/store/auth/authStore'
+import { formatUSD } from '@/app/services/currencyService'
 
 export const useCheckoutHook = () => {
   const { data: cartItems } = useCartQuery()
@@ -53,16 +54,27 @@ export const useCheckoutHook = () => {
     (pm: PaymentMethod) => pm.isDefault,
   )
 
+  // Seleccionar automáticamente la dirección por defecto o la primera disponible
   useEffect(() => {
-    if (
-      !defaultAddress &&
-      !selectedAddressId &&
-      addresses &&
-      addresses.length > 0
-    ) {
-      setSelectedAddressId(addresses[0].id)
-    } else if (defaultAddress && !selectedAddressId) {
+    if (!addresses || addresses.length === 0) {
+      // No hay direcciones, no hacer nada
+      return
+    }
+
+    // Si ya hay una dirección seleccionada, no cambiar
+    if (selectedAddressId) {
+      return
+    }
+
+    // Si hay dirección por defecto, seleccionarla
+    if (defaultAddress) {
       setSelectedAddressId(defaultAddress.id)
+      return
+    }
+
+    // Si no hay dirección por defecto pero hay direcciones, seleccionar la primera
+    if (addresses.length > 0) {
+      setSelectedAddressId(addresses[0].id)
     }
   }, [addresses, defaultAddress, selectedAddressId])
 
@@ -144,19 +156,22 @@ export const useCheckoutHook = () => {
 
   const handleCreatePaymentTransaction = async () => {
     if (!selectedAddressId) {
-      alert('Por favor, selecciona una dirección')
+      sonnerResponse('Por favor, selecciona una dirección', 'error')
       return
     }
 
     if (!selectedPaymentProvider) {
-      alert('Por favor, selecciona un proveedor de pago')
+      sonnerResponse('Por favor, selecciona un proveedor de pago', 'error')
       return
     }
 
     // Si es depósito en efectivo, usar el método específico
     if (selectedPaymentProvider === 'CASH_DEPOSIT') {
       if (!depositImage) {
-        alert('Por favor, sube una imagen del comprobante de depósito')
+        sonnerResponse(
+          'Por favor, sube una imagen del comprobante de depósito',
+          'error',
+        )
         return
       }
 
@@ -194,15 +209,18 @@ export const useCheckoutHook = () => {
         transactionData.paymentMethodId = selectedPaymentMethodId
       }
 
-      const transaction = await createPaymentTransactionWithoutOrder(
-        transactionData,
-      )
+      const transaction =
+        await createPaymentTransactionWithoutOrder(transactionData)
 
       setClientTransactionId(randomIdClientTransaction)
       setTransactionTotal(Number(transaction.amount))
     } catch (error) {
       console.error('Error creating payment transaction:', error)
-      alert('Error al crear la transacción de pago. Por favor, intenta nuevamente.')
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Error al crear la transacción de pago. Por favor, intenta nuevamente.'
+      sonnerResponse(errorMessage, 'error')
     }
   }
 
@@ -248,4 +266,3 @@ export const useCheckoutHook = () => {
     setDepositImage,
   }
 }
-

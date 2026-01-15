@@ -36,14 +36,23 @@ export function useCartSync() {
     // Resetear el flag cuando el usuario cierra sesión
     if (!token) {
       hasSyncedRef.current = false
+      // Limpiar el carrito local cuando el usuario cierra sesión
+      clearCart()
       return
     }
 
     // Solo sincronizar si el usuario está autenticado, hay items en el carrito local
     // y aún no se ha sincronizado
+    // IMPORTANTE: Ya no sincronizamos automáticamente porque ahora solo agregamos al backend
+    // cuando el usuario está autenticado. El carrito local solo se usa para usuarios no autenticados.
+    // Si el usuario se autentica y tiene items en el carrito local, los ignoramos y usamos el carrito del backend.
     if (token && localCartItems.length > 0 && !hasSyncedRef.current) {
-      // Sincronizar los items locales con el servidor
-      syncCartMutation.mutate(localCartItems)
+      // Limpiar el carrito local cuando el usuario se autentica
+      // El carrito del backend es la fuente de verdad
+      clearCart()
+      hasSyncedRef.current = true
+      // Invalidar la query del carrito para obtener los datos del servidor
+      queryClient.invalidateQueries({ queryKey: ['cart'] })
     }
   }, [token, localCartItems.length]) // Ejecutar cuando cambie el token o el número de items
 

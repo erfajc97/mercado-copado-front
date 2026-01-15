@@ -1,0 +1,17 @@
+.group-data-\[odd\=true\]\/tr\:before\:bg-default-100 {
+    &:is(:where(.group\/tr)[data-odd="true"] *) {
+        &::before {
+            content: var(--tw-content);
+            background-color: hsl(var(--heroui-default-100) / 1);
+        }
+    }
+}
+
+html.dark .group-data-\[odd\=true\]\/tr\:before\:bg-default-100 {
+    &:is(:where(.group\/tr)[data-odd="true"] *) {
+        &::before {
+            content: var(--tw-content);
+            background-color: #313236;
+        }
+    }
+}

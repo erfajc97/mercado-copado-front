@@ -8,12 +8,10 @@ export const useLinkPayphoneMutation = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (data: any) => {
-      const response = await linkPayphoneService(data)
-      return response
+      return await linkPayphoneService(data)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
-      sonnerResponse('Link de pago generado exitosamente', 'success')
     },
     onError: (error) => {
       const message =
@@ -49,20 +47,16 @@ export const usePhonePayphoneMutation = () => {
   return useMutation({
     mutationFn: async (data: {
       addressId: string
-      paymentMethodId: string
+      paymentMethodId?: string
       phoneNumber: string
       clientTransactionId: string
+      amount: number
     }) => {
-      const response = await phonePayphoneService(data)
-      return response
+      return await phonePayphoneService(data)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
       queryClient.invalidateQueries({ queryKey: ['orders'] })
-      sonnerResponse(
-        'Solicitud de pago enviada. Revisa tu app de Payphone para confirmar.',
-        'success',
-      )
     },
     onError: (error) => {
       const message =

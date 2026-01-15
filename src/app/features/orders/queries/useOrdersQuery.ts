@@ -3,10 +3,15 @@ import { getMyOrdersService } from '../services/getMyOrdersService'
 import { getOrderService } from '../services/getOrderService'
 import { getAllOrdersService } from '../services/getAllOrdersService'
 
-export const useMyOrdersQuery = () => {
+interface UseMyOrdersQueryParams {
+  page?: number
+  limit?: number
+}
+
+export const useMyOrdersQuery = (params?: UseMyOrdersQueryParams) => {
   return useQuery({
-    queryKey: ['orders', 'my-orders'],
-    queryFn: () => getMyOrdersService(),
+    queryKey: ['orders', 'my-orders', params?.page, params?.limit],
+    queryFn: () => getMyOrdersService(params),
     refetchOnMount: true,
     refetchOnWindowFocus: true,
   })
@@ -20,9 +25,16 @@ export const useOrderQuery = (orderId: string) => {
   })
 }
 
-export const useAllOrdersQuery = () => {
+interface UseAllOrdersQueryParams {
+  page?: number
+  limit?: number
+}
+
+export const useAllOrdersQuery = (params?: UseAllOrdersQueryParams) => {
   return useQuery({
-    queryKey: ['orders', 'all'],
-    queryFn: () => getAllOrdersService(),
+    queryKey: ['orders', 'all', params?.page, params?.limit],
+    queryFn: () => getAllOrdersService(params),
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   })
 }
