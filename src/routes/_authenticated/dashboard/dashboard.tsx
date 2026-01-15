@@ -1,5 +1,5 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
-import DashboardStats from '@/app/features/dashboard/stats/DashboardStats'
+import { Outlet, createFileRoute, redirect } from '@tanstack/react-router'
+import { DashboardLayout } from '@/app/features/dashboard/DashboardLayout'
 
 export const Route = createFileRoute('/_authenticated/dashboard/dashboard')({
   beforeLoad: ({ context }) => {
@@ -9,5 +9,5 @@ export const Route = createFileRoute('/_authenticated/dashboard/dashboard')({
       })
     }
   },
-  component: DashboardStats,
+  component: () => <DashboardLayout children={<Outlet />} />,
 })

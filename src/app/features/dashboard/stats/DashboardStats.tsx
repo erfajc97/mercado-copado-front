@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { Button, Card, Statistic } from 'antd'
-import { Link } from '@tanstack/react-router'
+import { Card, Statistic } from 'antd'
 import {
   DollarSign,
   Eye,
@@ -101,7 +100,9 @@ export default function DashboardStats() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card
           className="shadow-md hover:shadow-lg transition-shadow cursor-pointer"
-          onClick={() => (window.location.href = '/_authenticated/dashboard/products')}
+          onClick={() =>
+            (window.location.href = '/_authenticated/dashboard/products')
+          }
         >
           <div className="flex items-center justify-between">
             <div>
@@ -118,7 +119,9 @@ export default function DashboardStats() {
 
         <Card
           className="shadow-md hover:shadow-lg transition-shadow cursor-pointer"
-          onClick={() => (window.location.href = '/_authenticated/dashboard/orders')}
+          onClick={() =>
+            (window.location.href = '/_authenticated/dashboard/orders')
+          }
         >
           <div className="flex items-center justify-between">
             <div>

@@ -1,13 +1,11 @@
 import {
-  HeadContent,
   Link,
-  Scripts,
+  Outlet,
   createRootRouteWithContext,
 } from '@tanstack/react-router'
 // import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 // import { TanStackDevtools } from '@tanstack/react-devtools'
-import { Toaster } from 'sonner'
-import { HeroUIProvider } from '@heroui/react'
+import { HeroUIProvider, ToastProvider } from '@heroui/react'
 
 import Header from '../components/Header'
 import Footer from '../components/Footer'
@@ -15,10 +13,8 @@ import { useCartSync } from '../app/hooks/useCartSync'
 
 // import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 
-import appCss from '../styles.css?url'
-
 import type { QueryClient } from '@tanstack/react-query'
-import type { AuthContext } from '../router'
+import type { AuthContext } from '../main'
 
 interface MyRouterContext {
   queryClient: QueryClient
@@ -26,37 +22,7 @@ interface MyRouterContext {
 }
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
-  head: () => ({
-    meta: [
-      {
-        charSet: 'utf-8',
-      },
-      {
-        name: 'viewport',
-        content: 'width=device-width, initial-scale=1',
-      },
-      {
-        title: 'Mercado Copado',
-      },
-    ],
-    links: [
-      {
-        rel: 'stylesheet',
-        href: appCss,
-      },
-      {
-        rel: 'icon',
-        type: 'image/png',
-        href: '/box.png',
-      },
-      {
-        rel: 'apple-touch-icon',
-        href: '/box.png',
-      },
-    ],
-  }),
-
-  shellComponent: RootDocument,
+  component: RootComponent,
   notFoundComponent: NotFoundComponent,
 })
 
@@ -75,38 +41,32 @@ function NotFoundComponent() {
   )
 }
 
-function RootDocument({ children }: { children: React.ReactNode }) {
+function RootComponent() {
   // Sincronizar carrito cuando el usuario inicia sesión
   useCartSync()
 
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <HeadContent />
-      </head>
-      <body suppressHydrationWarning>
-        <HeroUIProvider>
-          <div className="min-h-screen flex flex-col">
-            <Header />
-            <main className="flex-1">{children}</main>
-            <Footer />
-          </div>
-          <Toaster position="top-right" richColors />
-        </HeroUIProvider>
-        {/* <TanStackDevtools
-          config={{
-            position: 'bottom-right',
-          }}
-          plugins={[
-            {
-              name: 'Tanstack Router',
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-            TanStackQueryDevtools,
-          ]}
-        /> */}
-        <Scripts />
-      </body>
-    </html>
+    <HeroUIProvider>
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <ToastProvider placement="top-right" />
+        <main className="flex-1">
+          <Outlet />
+        </main>
+        <Footer />
+      </div>
+      {/* <TanStackDevtools
+        config={{
+          position: 'bottom-right',
+        }}
+        plugins={[
+          {
+            name: 'Tanstack Router',
+            render: <TanStackRouterDevtoolsPanel />,
+          },
+          TanStackQueryDevtools,
+        ]}
+      /> */}
+    </HeroUIProvider>
   )
 }

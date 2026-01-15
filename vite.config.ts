@@ -1,22 +1,25 @@
+import { URL, fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
-// import { devtools } from '@tanstack/devtools-vite'
-import { tanstackStart } from '@tanstack/react-start/plugin/vite'
+import { devtools } from '@tanstack/devtools-vite'
 import viteReact from '@vitejs/plugin-react'
-import viteTsConfigPaths from 'vite-tsconfig-paths'
 import tailwindcss from '@tailwindcss/vite'
 
-const config = defineConfig({
-  plugins: [
-    // devtools(), // Temporalmente deshabilitado por conflicto de puerto 42069
-    // Si necesitas devtools, cierra otros procesos que usen el puerto 42069
-    // this is the plugin that enables path aliases
-    viteTsConfigPaths({
-      projects: ['./tsconfig.json'],
-    }),
-    tailwindcss(),
-    tanstackStart(),
-    viteReact(),
-  ],
-})
+import { tanstackRouter } from '@tanstack/router-plugin/vite'
 
-export default config
+// https://vitejs.dev/config/
+export default defineConfig({
+  plugins: [
+    devtools(),
+    tanstackRouter({
+      target: 'react',
+      autoCodeSplitting: true,
+    }),
+    viteReact(),
+    tailwindcss(),
+  ],
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
+  },
+})

@@ -1,8 +1,8 @@
-import { Link, Outlet, useLocation } from '@tanstack/react-router'
+import { Link, useLocation } from '@tanstack/react-router'
 import { Store, Users } from 'lucide-react'
 import DashboardStats from './stats/DashboardStats'
 
-export function DashboardLayout() {
+export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation()
 
   return (
@@ -99,7 +99,7 @@ export function DashboardLayout() {
             </p>
           </Link>
         </div>
-        {location.pathname === '/dashboard' ? <DashboardStats /> : <Outlet />}
+        {location.pathname === '/dashboard' ? <DashboardStats /> : children}
       </div>
     </div>
   )
