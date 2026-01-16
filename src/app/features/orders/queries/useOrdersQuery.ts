@@ -14,6 +14,7 @@ export const useMyOrdersQuery = (params?: UseMyOrdersQueryParams) => {
     queryFn: () => getMyOrdersService(params),
     refetchOnMount: true,
     refetchOnWindowFocus: true,
+    staleTime: 30000, // 30 segundos - evita refetches innecesarios
   })
 }
 
@@ -36,5 +37,6 @@ export const useAllOrdersQuery = (params?: UseAllOrdersQueryParams) => {
     queryFn: () => getAllOrdersService(params),
     refetchOnMount: true,
     refetchOnWindowFocus: true,
+    staleTime: 30000, // 30 segundos - evita refetches innecesarios
   })
 }

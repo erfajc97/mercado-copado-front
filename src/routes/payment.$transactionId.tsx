@@ -6,12 +6,19 @@ export const Route = createFileRoute('/payment/$transactionId')({
   validateSearch: (search: Record<string, unknown>) => {
     return {
       paymentLink: (search.paymentLink as string) || '',
+      paymentId: (search.paymentId as string) || '',
     }
   },
 })
 
 function PaymentPageRoute() {
   const { transactionId } = Route.useParams()
-  const { paymentLink } = Route.useSearch()
-  return <PaymentPage transactionId={transactionId} paymentLink={paymentLink} />
+  const { paymentLink, paymentId } = Route.useSearch()
+  return (
+    <PaymentPage
+      transactionId={transactionId}
+      paymentLink={paymentLink}
+      paymentId={paymentId}
+    />
+  )
 }

@@ -840,7 +840,185 @@ export function FormAddresses({ form, onFinish }: Props) {
 - Mantener layout vertical del Form pero con campos lado a lado dentro de cada grupo
 - Priorizar formularios compactos que ocupen menos espacio vertical
 
-### 8. Manejo de Estado Global (Zustand)
+### 8. Organización de Tabs
+
+**REQUERIMIENTO OBLIGATORIO:**
+
+Cuando un componente utiliza tabs (pestañas), **DEBE existir un componente padre/contenedor** que gestione las tabs y llame a los componentes específicos que se renderizan en cada tab.
+
+**Estructura:**
+
+```
+components/
+├── {ComponentName}.tsx          # Componente principal (modal, página, etc.)
+└── tabs/                        # Carpeta para componentes de tabs
+    ├── {ComponentName}Tabs.tsx  # Componente contenedor de tabs (OBLIGATORIO)
+    ├── {TabName}Tab.tsx         # Componente específico para cada tab
+    └── {AnotherTab}Tab.tsx      # Otro componente de tab
+```
+
+**Características del Componente Contenedor de Tabs:**
+
+- ✅ Nombre: `{ComponentName}Tabs.tsx` (ej: `PaymentRetryModalTabs.tsx`)
+- ✅ Ubicación: `components/tabs/{ComponentName}Tabs.tsx`
+- ✅ Gestiona la configuración de las tabs (items, labels, keys)
+- ✅ Llama a los componentes específicos de cada tab
+- ✅ Pasa las props necesarias a cada tab
+- ✅ Facilita agregar nuevas tabs en el futuro (Mercado Pago, Crypto, etc.)
+
+**Características de los Componentes de Tab:**
+
+- ✅ Nombre: `{TabName}Tab.tsx` (ej: `PayphoneTab.tsx`, `CashDepositTab.tsx`)
+- ✅ Ubicación: `components/tabs/{TabName}Tab.tsx`
+- ✅ Componente independiente y reutilizable
+- ✅ Solo contiene el contenido específico de esa tab
+- ✅ Props tipadas explícitamente
+- ✅ Reutiliza componentes existentes cuando sea posible
+
+**Ejemplo Completo:**
+
+```typescript
+// components/tabs/PaymentRetryModalTabs.tsx - Componente contenedor
+import { Tabs } from 'antd'
+import { CreditCard, Image as ImageIcon } from 'lucide-react'
+import { PayphoneTab } from './PayphoneTab'
+import { CashDepositTab } from './CashDepositTab'
+
+interface PaymentRetryModalTabsProps {
+  activeTab: string
+  onTabChange: (key: string) => void
+  // Props para PayphoneTab
+  orderAmount: number
+  addressId: string
+  // Props para CashDepositTab
+  depositImage: File | null
+  setDepositImage: (file: File | null) => void
+  // ... más props
+}
+
+export const PaymentRetryModalTabs = ({
+  activeTab,
+  onTabChange,
+  orderAmount,
+  addressId,
+  depositImage,
+  setDepositImage,
+  // ... más props
+}: PaymentRetryModalTabsProps) => {
+  return (
+    <Tabs
+      activeKey={activeTab}
+      onChange={onTabChange}
+      items={[
+        {
+          key: 'payphone',
+          label: (
+            <span className="flex items-center gap-2">
+              <CreditCard size={16} />
+              Payphone
+            </span>
+          ),
+          children: (
+            <PayphoneTab
+              orderAmount={orderAmount}
+              addressId={addressId}
+              // ... más props específicas de PayphoneTab
+            />
+          ),
+        },
+        {
+          key: 'cash',
+          label: (
+            <span className="flex items-center gap-2">
+              <ImageIcon size={16} />
+              Depósito en Efectivo
+            </span>
+          ),
+          children: (
+            <CashDepositTab
+              depositImage={depositImage}
+              setDepositImage={setDepositImage}
+              // ... más props específicas de CashDepositTab
+            />
+          ),
+        },
+        // Fácil agregar nuevas tabs:
+        // {
+        //   key: 'mercadopago',
+        //   label: 'Mercado Pago',
+        //   children: <MercadoPagoTab {...props} />,
+        // },
+      ]}
+    />
+  )
+}
+```
+
+```typescript
+// components/tabs/PayphoneTab.tsx - Componente específico de tab
+import { PayPhoneButtonsContainer } from '../../shared/components/PayPhoneButtonsContainer'
+
+interface PayphoneTabProps {
+  orderAmount: number
+  addressId: string
+  // ... más props
+}
+
+export const PayphoneTab = ({
+  orderAmount,
+  addressId,
+  // ... más props
+}: PayphoneTabProps) => {
+  return (
+    <div className="py-4">
+      <PayPhoneButtonsContainer
+        amount={orderAmount}
+        addressId={addressId}
+        // ... más props
+      />
+    </div>
+  )
+}
+```
+
+```typescript
+// components/PaymentRetryModal.tsx - Componente principal
+import { PaymentRetryModalTabs } from './tabs/PaymentRetryModalTabs'
+
+export const PaymentRetryModal = ({ open, onCancel, ...props }) => {
+  const { activeTab, handleTabChange, ...hookValues } = usePaymentRetryModalHook()
+
+  return (
+    <CustomModalNextUI isOpen={open} onOpenChange={handleOpenChange}>
+      <PaymentRetryModalTabs
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        {...props}
+        {...hookValues}
+      />
+    </CustomModalNextUI>
+  )
+}
+```
+
+**Ventajas de esta Estructura:**
+
+- ✅ **Separación de responsabilidades**: Cada tab es un componente independiente
+- ✅ **Fácil de extender**: Agregar nuevas tabs es solo crear un componente y agregarlo al contenedor
+- ✅ **Reutilización**: Los componentes de tab pueden reutilizar componentes existentes
+- ✅ **Mantenibilidad**: Código más limpio y organizado
+- ✅ **Escalabilidad**: Fácil agregar Mercado Pago, Crypto, u otros métodos de pago
+
+**Reglas Importantes:**
+
+- ❌ NO poner la lógica de tabs directamente en el componente principal
+- ❌ NO duplicar código entre tabs (usar componentes compartidos)
+- ❌ NO mezclar la lógica de múltiples tabs en un solo componente
+- ✅ SÍ crear un componente contenedor para las tabs
+- ✅ SÍ crear un componente separado para cada tab
+- ✅ SÍ reutilizar componentes existentes dentro de las tabs
+
+### 9. Manejo de Estado Global (Zustand)
 
 **Cuándo usar Zustand:**
 
@@ -891,7 +1069,7 @@ export const useCartStore = create(
 )
 ```
 
-### 9. Servicios (API Calls)
+### 10. Servicios (API Calls)
 
 **Estructura:**
 
@@ -921,7 +1099,7 @@ export const getCartService = async () => {
 }
 ```
 
-### 10. Helpers
+### 11. Helpers
 
 **Cuándo crear helpers:**
 
@@ -944,7 +1122,7 @@ export const calculateItemPrice = (
 }
 ```
 
-### 11. Código Limpio
+### 12. Código Limpio
 
 **Reglas:**
 
@@ -980,7 +1158,7 @@ const total = useMemo(() => {
 }, [items])
 ```
 
-### 12. Sincronización de Estado
+### 13. Sincronización de Estado
 
 **Patrón para sincronizar estado local con servidor:**
 

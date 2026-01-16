@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { CategoriesDashboard } from '@/app/features/dashboard/categories/CategoriesDashboard'
-import { DashboardLayout } from '@/app/features/dashboard/DashboardLayout'
+import { DashboardLayout } from '@/app/layout/DashboardLayout'
+import { Categories } from '@/app/features/categories/Categories'
 
 export const Route = createFileRoute('/_authenticated/dashboard/categories/')({
   beforeLoad: ({ context }) => {
@@ -12,7 +12,7 @@ export const Route = createFileRoute('/_authenticated/dashboard/categories/')({
   },
   component: () => (
     <DashboardLayout>
-      <CategoriesDashboard />
+      <Categories />
     </DashboardLayout>
   ),
 })

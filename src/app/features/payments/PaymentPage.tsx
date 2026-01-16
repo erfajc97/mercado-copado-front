@@ -1,58 +1,23 @@
-import { useNavigate } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
-import { Button, Spin } from 'antd'
+import { Button, Spinner } from '@heroui/react'
 import { AlertCircle, CheckCircle2, CreditCard } from 'lucide-react'
-import { useCurrency } from '@/app/hooks/useCurrency'
-import { sonnerResponse } from '@/app/helpers/sonnerResponse'
+import { usePaymentPageHook } from './hooks/usePaymentPageHook'
 
 interface PaymentPageProps {
   transactionId: string
   paymentLink?: string
+  paymentId?: string
 }
 
-export function PaymentPage({ transactionId, paymentLink }: PaymentPageProps) {
-  const navigate = useNavigate()
-  const { formatPrice } = useCurrency()
-  const [paymentWindow, setPaymentWindow] = useState<Window | null>(null)
-  const [paymentCompleted, setPaymentCompleted] = useState(false)
-
-  // Verificar si el paymentLink está presente
-  useEffect(() => {
-    if (!paymentLink) {
-      sonnerResponse(
-        'Link de pago no encontrado. Redirigiendo...',
-        'error',
-      )
-      setTimeout(() => {
-        navigate({ to: '/checkout' })
-      }, 2000)
-    }
-  }, [paymentLink, navigate])
-
-  // Abrir la ventana de pago automáticamente cuando se carga la página
-  useEffect(() => {
-    if (paymentLink && !paymentWindow && !paymentCompleted) {
-      const windowRef = window.open(paymentLink, '_blank', 'noopener')
-      setPaymentWindow(windowRef)
-
-      // Verificar periódicamente si la ventana se cerró (indicando que el pago se completó)
-      const checkInterval = setInterval(() => {
-        if (windowRef && windowRef.closed) {
-          clearInterval(checkInterval)
-          setPaymentCompleted(true)
-          sonnerResponse(
-            'Pago completado. Redirigiendo a tus órdenes...',
-            'success',
-          )
-          setTimeout(() => {
-            navigate({ to: '/orders' })
-          }, 2000)
-        }
-      }, 1000)
-
-      return () => clearInterval(checkInterval)
-    }
-  }, [paymentLink, paymentWindow, paymentCompleted, navigate])
+export function PaymentPage({
+  transactionId,
+  paymentLink,
+  paymentId,
+}: PaymentPageProps) {
+  const {
+    paymentCompleted,
+    handleOpenPaymentWindow,
+    handleCancel,
+  } = usePaymentPageHook({ transactionId, paymentLink, paymentId })
 
   if (!paymentLink) {
     return (
@@ -66,10 +31,10 @@ export function PaymentPage({ transactionId, paymentLink }: PaymentPageProps) {
             No se pudo generar el link de pago. Por favor, intenta nuevamente.
           </p>
           <Button
-            type="primary"
-            onClick={() => navigate({ to: '/checkout' })}
+            color="primary"
+            onPress={handleCancel}
             className="bg-gradient-coffee border-none hover:opacity-90"
-            size="large"
+            size="lg"
           >
             Volver al Checkout
           </Button>
@@ -89,7 +54,7 @@ export function PaymentPage({ transactionId, paymentLink }: PaymentPageProps) {
           <p className="text-gray-600 mb-6">
             Tu pago ha sido procesado exitosamente. Redirigiendo a tus órdenes...
           </p>
-          <Spin size="large" />
+          <Spinner size="lg" />
         </div>
       </div>
     )
@@ -128,22 +93,17 @@ export function PaymentPage({ transactionId, paymentLink }: PaymentPageProps) {
 
         <div className="flex gap-3">
           <Button
-            onClick={() => {
-              if (paymentWindow) {
-                paymentWindow.focus()
-              } else if (paymentLink) {
-                window.open(paymentLink, '_blank', 'noopener')
-              }
-            }}
-            className="flex-1"
-            size="large"
+            onPress={handleOpenPaymentWindow}
+            className="flex-1 bg-gradient-coffee border-none hover:opacity-90"
+            size="lg"
           >
             Abrir Ventana de Pago
           </Button>
           <Button
-            onClick={() => navigate({ to: '/checkout' })}
+            onPress={handleCancel}
+            variant="bordered"
             className="flex-1"
-            size="large"
+            size="lg"
           >
             Cancelar
           </Button>

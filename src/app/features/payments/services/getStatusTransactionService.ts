@@ -27,24 +27,15 @@ export const getStatusTransactionService = async (
       // Asegurar que transactionId sea el valor completo, no cortado
       const fullTransactionId = String(transactionId).trim()
       const fullPaymentId = String(paymentId).trim()
-      
-      console.log(
-        `[getStatusTransactionService] Verificando pago por link con paymentId: "${fullPaymentId}" (longitud: ${fullPaymentId.length}), clientTransactionId: "${fullTransactionId}" (longitud: ${fullTransactionId.length})`,
-      )
-      
+
       const linkEndpoint =
         'https://pay.payphonetodoesposible.com/api/button/V2/Confirm'
-      
+
       const requestBody = {
         id: fullPaymentId,
         clientTxId: fullTransactionId,
       }
-      
-      console.log(
-        `[getStatusTransactionService] Body de la petición:`,
-        JSON.stringify(requestBody, null, 2),
-      )
-      
+
       const response = await axios.post<PayphoneStatusResponse>(
         linkEndpoint,
         requestBody,
@@ -56,10 +47,6 @@ export const getStatusTransactionService = async (
         },
       )
 
-      console.log(
-        `[getStatusTransactionService] Respuesta de pago por link:`,
-        response.data,
-      )
       return response.data
     }
 

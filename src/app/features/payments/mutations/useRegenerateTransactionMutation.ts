@@ -10,6 +10,8 @@ export const useRegenerateTransactionMutation = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
       queryClient.invalidateQueries({ queryKey: ['orders'] })
+      queryClient.invalidateQueries({ queryKey: ['orders', 'my-orders'] })
+      queryClient.invalidateQueries({ queryKey: ['orders', 'all'] })
       sonnerResponse('Transacción regenerada exitosamente', 'success')
     },
     onError: (error) => {

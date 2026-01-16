@@ -17,9 +17,25 @@ export const createTransactionAndOrderService = async (
       `${API_ENDPOINTS.PAYMENTS}/create-transaction-and-order`,
       data,
     )
+
+    // Validar que la respuesta tenga la estructura esperada
+    if (!response.data) {
+      throw new Error(
+        'La respuesta del servidor no contiene datos. La orden puede no haberse creado correctamente.',
+      )
+    }
+
+    // Validar que se haya creado una orden
+    if (!response.data.content && !response.data.order) {
+      console.warn(
+        '[createTransactionAndOrderService] Respuesta recibida pero no contiene orden:',
+        response.data,
+      )
+    }
+
     return response.data
   } catch (error: unknown) {
-    console.error('Error en createTransactionAndOrderService:', error)
+    console.error('[createTransactionAndOrderService] Error:', error)
     if (error instanceof Error) {
       throw error
     }

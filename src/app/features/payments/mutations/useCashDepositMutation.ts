@@ -19,6 +19,8 @@ export const useCashDepositMutation = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] })
+      queryClient.invalidateQueries({ queryKey: ['orders', 'my-orders'] })
+      queryClient.invalidateQueries({ queryKey: ['orders', 'all'] })
       queryClient.invalidateQueries({ queryKey: ['cart'] })
       sonnerResponse(
         'Depósito enviado exitosamente. Tu orden está en revisión.',

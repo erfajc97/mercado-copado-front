@@ -1,58 +1,41 @@
-export const statusOptions = [
-  { value: 'pending', label: 'Pendiente' },
-  { value: 'processing', label: 'Procesando' },
-  { value: 'completed', label: 'Completada' },
-  { value: 'cancelled', label: 'Cancelada' },
-  { value: 'created', label: 'Creada' },
-  { value: 'shipping', label: 'En Envío' },
-  { value: 'delivered', label: 'Entregada' },
-  { value: 'paid_pending_review', label: 'Pago Pendiente Revisión' },
+export const allStatusOptions = [
+  { label: 'Pendiente', value: 'pending' },
+  { label: 'Creada', value: 'created' },
+  { label: 'Procesando', value: 'processing' },
+  { label: 'En Envío', value: 'shipping' },
+  { label: 'Completada', value: 'completed' },
+  { label: 'Entregada', value: 'delivered' },
+  { label: 'Cancelada', value: 'cancelled' },
+  { label: 'Procesando Pago', value: 'paid_pending_review' },
 ]
+
+export const getValidStatusOptions = (currentStatus: string) => {
+  const statusFlow: Record<string, Array<string>> = {
+    pending: ['processing', 'cancelled'],
+    created: ['processing', 'cancelled'],
+    processing: ['shipping', 'cancelled'],
+    shipping: ['completed', 'delivered', 'cancelled'],
+    paid_pending_review: ['processing', 'cancelled'],
+    completed: ['delivered'],
+    delivered: [],
+    cancelled: [],
+  }
+
+  const validStatuses = statusFlow[currentStatus]
+  return allStatusOptions.filter((option) =>
+    validStatuses.includes(option.value),
+  )
+}
 
 export const statusColors: Record<string, string> = {
   pending: 'bg-yellow-100 text-yellow-800',
-  processing: 'bg-blue-100 text-blue-800',
+  created: 'bg-blue-100 text-blue-800',
+  processing: 'bg-purple-100 text-purple-800',
+  shipping: 'bg-indigo-100 text-indigo-800',
   completed: 'bg-green-100 text-green-800',
-  cancelled: 'bg-red-100 text-red-800',
-  created: 'bg-gray-100 text-gray-800',
-  shipping: 'bg-purple-100 text-purple-800',
   delivered: 'bg-green-100 text-green-800',
-  paid_pending_review: 'bg-orange-100 text-orange-800',
+  cancelled: 'bg-red-100 text-red-800',
+  paid_pending_review: 'bg-purple-100 text-purple-800',
 }
 
-export const allStatusOptions = [
-  { value: 'pending', label: 'Pendiente' },
-  { value: 'paid_pending_review', label: 'Procesando Pago' },
-  { value: 'shipping', label: 'En Envío' },
-  { value: 'completed', label: 'Completada' },
-  { value: 'cancelled', label: 'Cancelada' },
-]
-
-// Función para obtener los estados válidos según el estado actual
-export const getValidStatusOptions = (currentStatus: string) => {
-  switch (currentStatus) {
-    case 'pending':
-      // Las órdenes pendientes no deberían cambiarse manualmente
-      // (esperan confirmación de Payphone), pero permitimos cancelar
-      return [{ value: 'cancelled', label: 'Cancelada' }]
-    case 'paid_pending_review':
-      // Después de revisar el comprobante, puede aprobarse o cancelarse
-      return [
-        { value: 'shipping', label: 'En Envío' },
-        { value: 'cancelled', label: 'Cancelada' },
-      ]
-    case 'shipping':
-      // Cuando está en envío, puede completarse o cancelarse
-      return [
-        { value: 'completed', label: 'Completada' },
-        { value: 'cancelled', label: 'Cancelada' },
-      ]
-    case 'completed':
-    case 'cancelled':
-      // Estados finales, no se pueden cambiar
-      return []
-    default:
-      // Para cualquier otro estado, permitir cambiar a estados válidos
-      return allStatusOptions.filter((opt) => opt.value !== currentStatus)
-  }
-}
+export const statusOptions = allStatusOptions

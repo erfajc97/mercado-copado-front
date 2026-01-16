@@ -19,6 +19,8 @@ export const useCreateOrderFromTransactionMutation = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] })
+      queryClient.invalidateQueries({ queryKey: ['orders', 'my-orders'] })
+      queryClient.invalidateQueries({ queryKey: ['orders', 'all'] })
       queryClient.invalidateQueries({ queryKey: ['cart'] })
       clearCart() // Limpiar el carrito local después de crear la orden
       sonnerResponse('Orden creada exitosamente', 'success')

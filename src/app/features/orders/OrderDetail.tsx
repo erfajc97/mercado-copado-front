@@ -1,56 +1,38 @@
-import { Button } from 'antd'
-import { useOrderQuery } from '@/app/features/orders/queries/useOrdersQuery'
-import { useGetOrderPaymentLinkMutation } from '@/app/features/orders/mutations/useOrderMutations'
-import { useCurrency } from '@/app/hooks/useCurrency'
+import { Button } from '@heroui/react'
+import { useOrderDetailHook } from './hooks/useOrderDetailHook'
+import { getStatusLabel } from './helpers/getStatusLabel'
+import { getStatusColor } from './helpers/getStatusColor'
+import { formatOrderDateFull } from './helpers/formatOrderDate'
 import { formatUSD } from '@/app/services/currencyService'
-import { useAuthStore } from '@/app/store/auth/authStore'
 
 interface OrderDetailProps {
   orderId: string
 }
 
 export function OrderDetail({ orderId }: OrderDetailProps) {
-  const { data: order, isLoading } = useOrderQuery(orderId)
-  const { formatPrice, currency } = useCurrency()
-  const { roles } = useAuthStore()
-  const isAdmin = roles === 'ADMIN'
-  const { mutateAsync: getPaymentLink, isPending: isGettingPaymentLink } =
-    useGetOrderPaymentLinkMutation()
-
-  const getStatusLabel = (status: string) => {
-    const statusMap: Record<string, string> = {
-      pending: 'Pendiente',
-      created: 'Creada',
-      processing: 'Procesando',
-      shipping: 'En Envío',
-      completed: 'Completada',
-      delivered: 'Entregada',
-      cancelled: 'Cancelada',
-    }
-    return statusMap[status] || status
-  }
-
-  const getStatusColor = (status: string) => {
-    const colorMap: Record<string, string> = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      created: 'bg-blue-100 text-blue-800',
-      processing: 'bg-purple-100 text-purple-800',
-      shipping: 'bg-indigo-100 text-indigo-800',
-      completed: 'bg-green-100 text-green-800',
-      delivered: 'bg-green-100 text-green-800',
-      cancelled: 'bg-red-100 text-red-800',
-    }
-    return colorMap[status] || 'bg-gray-100 text-gray-800'
-  }
+  const {
+    order,
+    isLoading,
+    formatPrice,
+    currency,
+    isAdmin,
+    isGettingPaymentLink,
+    handleGetPaymentLink,
+  } = useOrderDetailHook({ orderId })
 
   if (isLoading) {
-    return <div className="container mx-auto px-4 py-8">Cargando...</div>
+    return (
+      <div className="container mx-auto px-4 py-8 text-center">
+        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-coffee-medium"></div>
+        <p className="mt-4 text-coffee-darker">Cargando orden...</p>
+      </div>
+    )
   }
 
   if (!order) {
     return (
       <div className="container mx-auto px-4 py-8 text-center">
-        Orden no encontrada
+        <p className="text-red-600">Orden no encontrada</p>
       </div>
     )
   }
@@ -224,12 +206,10 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
             {order.status === 'pending' && (
               <div className="mt-6 pt-6 border-t border-gray-200">
                 <Button
-                  type="primary"
-                  block
-                  size="large"
-                  loading={isGettingPaymentLink}
-                  onClick={() => getPaymentLink(orderId)}
-                  className="bg-gradient-coffee border-none hover:opacity-90"
+                  color="primary"
+                  className="w-full bg-gradient-coffee border-none hover:opacity-90"
+                  onPress={handleGetPaymentLink}
+                  isLoading={isGettingPaymentLink}
                 >
                   Pagar Ahora
                 </Button>
@@ -241,13 +221,7 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
             <div className="mt-6 pt-6 border-t border-gray-200">
               <p className="text-sm text-gray-600 mb-1">Fecha de creación:</p>
               <p className="text-sm font-medium text-coffee-darker">
-                {new Date(order.createdAt).toLocaleDateString('es-ES', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
+                {formatOrderDateFull(order.createdAt)}
               </p>
             </div>
           </div>

@@ -1,12 +1,13 @@
 import { Button } from '@heroui/react'
 import { Home } from 'lucide-react'
 import { PaymentProviderSelector } from './PaymentProviderSelector'
-import { CashDepositUpload } from './CashDepositUpload'
-import { AddressSelectorModal } from './modals/AddressSelectorModal'
-import { PaymentMethodFormModal } from './modals/PaymentMethodFormModal'
 import type { CheckoutHookReturn } from './types'
+import { AddressSelectorModal } from '@/app/features/addresses/components/modals/AddressSelectorModal'
 import { AddressModal } from '@/app/features/addresses/components/modals/AddressModal'
-import { ButtonPayPhone } from '@/app/components/payphone/components/ButtonPayPhone'
+import { PaymentMethodFormModal } from '@/app/features/payment-cards/components/modals/PaymentMethodFormModal'
+import { usePaymentMethodFormHook } from '@/app/features/payment-cards/hooks/usePaymentMethodFormHook'
+import { CashDepositUpload } from '@/app/features/payments/components/CashDepositUpload'
+import { PayPhoneButtonsContainer } from '@/app/features/payments/components/payphone/shared/components/PayPhoneButtonsContainer'
 import AuthModal from '@/app/features/auth/components/AuthModal'
 
 interface CheckoutFormProps {
@@ -14,6 +15,8 @@ interface CheckoutFormProps {
 }
 
 export const CheckoutForm = ({ checkout }: CheckoutFormProps) => {
+  const paymentMethodFormHook = usePaymentMethodFormHook()
+
   return (
     <div className="space-y-6">
       {/* Address Section */}
@@ -176,7 +179,7 @@ export const CheckoutForm = ({ checkout }: CheckoutFormProps) => {
             <p className="text-sm text-gray-600 mb-4">
               Elige una de las siguientes opciones para finalizar tu compra:
             </p>
-            <ButtonPayPhone
+            <PayPhoneButtonsContainer
               amount={checkout.total}
               addressId={
                 checkout.selectedAddressId || checkout.defaultAddress?.id || ''
@@ -227,6 +230,7 @@ export const CheckoutForm = ({ checkout }: CheckoutFormProps) => {
         paymentMethods={checkout.paymentMethods}
         isLoading={checkout.isCreatingPaymentMethod}
         onFinish={checkout.handleCreatePaymentMethod}
+        transformFormData={paymentMethodFormHook.transformFormData}
       />
 
       {/* Auth Modal */}

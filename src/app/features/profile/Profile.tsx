@@ -10,8 +10,9 @@ import {
   User,
 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
-import { PaymentMethodModal } from './components/modal/PaymentMethodModal'
-import type { PaymentMethod } from '@/app/features/payment-methods/types'
+import { PaymentMethodFormModal } from '@/app/features/payment-cards/components/modals/PaymentMethodFormModal'
+import { usePaymentMethodFormHook } from '@/app/features/payment-cards/hooks/usePaymentMethodFormHook'
+import type { PaymentMethod } from '@/app/features/payment-cards/types'
 import { Addresses } from '@/app/features/addresses/Addresses'
 import { useUpdateUserProfileMutation } from '@/app/features/users/mutations/useUpdateUserProfileMutation'
 import { useChangePasswordMutation } from '@/app/features/users/mutations/useChangePasswordMutation'
@@ -19,8 +20,8 @@ import {
   useCreatePaymentMethodMutation,
   useDeletePaymentMethodMutation,
   useSetDefaultPaymentMethodMutation,
-} from '@/app/features/payment-methods/mutations/usePaymentMethodMutations'
-import { usePaymentMethodsQuery } from '@/app/features/payment-methods/queries/usePaymentMethodsQuery'
+} from '@/app/features/payment-cards/mutations/usePaymentMethodMutations'
+import { usePaymentMethodsQuery } from '@/app/features/payment-cards/queries/usePaymentMethodsQuery'
 import { userInfoService } from '@/app/features/auth/login/services/userInfoService'
 import { COUNTRIES } from '@/app/constants/countries'
 import { PHONE_COUNTRY_CODES } from '@/app/constants/phoneCountryCodes'
@@ -51,6 +52,7 @@ export function Profile() {
   const [profileForm] = Form.useForm()
   const [passwordForm] = Form.useForm()
   const [paymentMethodForm] = Form.useForm()
+  const paymentMethodFormHook = usePaymentMethodFormHook()
   const [phoneCountryCode, setPhoneCountryCode] = useState('+503')
 
   useEffect(() => {
@@ -358,7 +360,7 @@ export function Profile() {
       children: <Addresses />,
     },
     {
-      key: 'payment-methods',
+      key: 'payment-cards',
       label: (
         <span className="flex items-center gap-2">
           <CreditCard size={18} />
@@ -473,16 +475,17 @@ export function Profile() {
         className="profile-tabs"
       />
 
-      <PaymentMethodModal
-        open={showPaymentMethodForm}
-        onCancel={() => {
+      <PaymentMethodFormModal
+        isOpen={showPaymentMethodForm}
+        onClose={() => {
           setShowPaymentMethodForm(false)
           paymentMethodForm.resetFields()
         }}
         onFinish={handleCreatePaymentMethod}
         form={paymentMethodForm}
         paymentMethods={paymentMethods}
-        isCreating={isCreatingPaymentMethod}
+        isLoading={isCreatingPaymentMethod}
+        transformFormData={paymentMethodFormHook.transformFormData}
       />
     </div>
   )
