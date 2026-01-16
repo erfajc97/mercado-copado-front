@@ -1,8 +1,8 @@
 import { useNavigate } from '@tanstack/react-router'
 import { useCheckoutHook } from './hooks/useCheckoutHook'
-import { EmptyCart } from './components/EmptyCart'
 import { CheckoutSummary } from './components/CheckoutSummary'
 import { CheckoutForm } from './components/CheckoutForm'
+import { EmptyCart } from '@/app/features/cart/components/EmptyCart'
 
 export const Checkout = () => {
   const navigate = useNavigate()

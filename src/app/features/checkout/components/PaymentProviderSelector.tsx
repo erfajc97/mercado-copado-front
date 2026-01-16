@@ -1,6 +1,7 @@
+import { Button } from '@heroui/react'
 import { Lock } from 'lucide-react'
-
-type PaymentProvider = 'PAYPHONE' | 'MERCADOPAGO' | 'CRYPTO' | 'CASH_DEPOSIT'
+import { PAYMENT_PROVIDERS } from '../constants/paymentProviders'
+import type { PaymentProvider } from '../constants/paymentProviders'
 
 interface PaymentProviderSelectorProps {
   selectedProvider: PaymentProvider | null
@@ -13,56 +14,24 @@ export const PaymentProviderSelector = ({
   onSelectProvider,
   disabled = false,
 }: PaymentProviderSelectorProps) => {
-  const providers: Array<{
-    id: PaymentProvider
-    name: string
-    available: boolean
-    description: string
-  }> = [
-    {
-      id: 'PAYPHONE',
-      name: 'Payphone',
-      available: true,
-      description: 'Pago con Payphone',
-    },
-    {
-      id: 'CASH_DEPOSIT',
-      name: 'Depósito en Efectivo',
-      available: true,
-      description: 'Sube comprobante',
-    },
-    {
-      id: 'MERCADOPAGO',
-      name: 'Mercado Pago',
-      available: false,
-      description: 'Próximamente',
-    },
-    {
-      id: 'CRYPTO',
-      name: 'Crypto USDT',
-      available: false,
-      description: 'Próximamente',
-    },
-  ]
-
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      {providers.map((provider) => {
+      {PAYMENT_PROVIDERS.map((provider) => {
         const isSelected = selectedProvider === provider.id
         const isProviderDisabled = !provider.available
         const isDisabled = disabled || isProviderDisabled
 
         return (
-          <button
+          <Button
             key={provider.id}
-            onClick={() => {
+            onPress={() => {
               if (!isDisabled) {
                 onSelectProvider(provider.id)
               }
             }}
             disabled={isDisabled}
             className={`
-              relative p-4 rounded-lg border-2 transition-all duration-200
+              relative p-8  rounded-lg border-2 transition-all duration-200
               ${
                 isSelected
                   ? 'border-coffee-medium bg-coffee-light/20 shadow-coffee'
@@ -104,7 +73,7 @@ export const PaymentProviderSelector = ({
                 {provider.description}
               </div>
             </div>
-          </button>
+          </Button>
         )
       })}
     </div>

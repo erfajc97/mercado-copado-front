@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Button, Card, Form, Input, Select, Space, Tabs } from 'antd'
 import {
   CreditCard,
-  Edit,
   Home,
   Lock,
   MapPin,
@@ -11,12 +10,9 @@ import {
   User,
 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
-import { userInfoService } from '@/app/features/auth/login/services/userInfoService'
-import { useAddressesQuery } from '@/app/features/addresses/queries/useAddressesQuery'
-import { useCreateAddressMutation } from '@/app/features/addresses/mutations/useCreateAddressMutation'
-import { useDeleteAddressMutation } from '@/app/features/addresses/mutations/useDeleteAddressMutation'
-import { useSetDefaultAddressMutation } from '@/app/features/addresses/mutations/useSetDefaultAddressMutation'
-import { useUpdateAddressMutation } from '@/app/features/addresses/mutations/useUpdateAddressMutation'
+import { PaymentMethodModal } from './components/modal/PaymentMethodModal'
+import type { PaymentMethod } from '@/app/features/payment-methods/types'
+import { Addresses } from '@/app/features/addresses/Addresses'
 import { useUpdateUserProfileMutation } from '@/app/features/users/mutations/useUpdateUserProfileMutation'
 import { useChangePasswordMutation } from '@/app/features/users/mutations/useChangePasswordMutation'
 import {
@@ -25,11 +21,9 @@ import {
   useSetDefaultPaymentMethodMutation,
 } from '@/app/features/payment-methods/mutations/usePaymentMethodMutations'
 import { usePaymentMethodsQuery } from '@/app/features/payment-methods/queries/usePaymentMethodsQuery'
+import { userInfoService } from '@/app/features/auth/login/services/userInfoService'
 import { COUNTRIES } from '@/app/constants/countries'
 import { PHONE_COUNTRY_CODES } from '@/app/constants/phoneCountryCodes'
-import { AddressModal } from './components/modal/AddressModal'
-import { PaymentMethodModal } from './components/modal/PaymentMethodModal'
-import type { PaymentMethod } from '@/app/features/payment-methods/types'
 
 export function Profile() {
   const { data: userInfo, refetch: refetchUserInfo } = useQuery({
@@ -38,13 +32,6 @@ export function Profile() {
     enabled: true,
   })
 
-  const { data: addresses, refetch: refetchAddresses } = useAddressesQuery()
-  const { mutateAsync: createAddress, isPending: isCreatingAddress } =
-    useCreateAddressMutation()
-  const { mutateAsync: deleteAddress } = useDeleteAddressMutation()
-  const { mutateAsync: setDefaultAddress } = useSetDefaultAddressMutation()
-  const { mutateAsync: updateAddress, isPending: isUpdatingAddress } =
-    useUpdateAddressMutation()
   const { mutateAsync: updateProfile, isPending: isUpdatingProfile } =
     useUpdateUserProfileMutation()
   const { mutateAsync: changePassword, isPending: isChangingPassword } =
@@ -60,10 +47,7 @@ export function Profile() {
     useSetDefaultPaymentMethodMutation()
   const { mutateAsync: deletePaymentMethod } = useDeletePaymentMethodMutation()
 
-  const [showAddressForm, setShowAddressForm] = useState(false)
-  const [editingAddress, setEditingAddress] = useState<any>(null)
   const [showPaymentMethodForm, setShowPaymentMethodForm] = useState(false)
-  const [addressForm] = Form.useForm()
   const [profileForm] = Form.useForm()
   const [passwordForm] = Form.useForm()
   const [paymentMethodForm] = Form.useForm()
@@ -92,37 +76,6 @@ export function Profile() {
       }
     }
   }, [userInfo, profileForm])
-
-  const handleCreateAddress = async (values: {
-    street: string
-    city: string
-    state: string
-    zipCode: string
-    country: string
-    reference?: string
-    isDefault?: boolean
-  }) => {
-    try {
-      if (editingAddress) {
-        await updateAddress({
-          addressId: editingAddress.id,
-          data: values,
-        })
-      } else {
-        await createAddress({
-          ...values,
-          isDefault:
-            addresses && addresses.length === 0 ? true : values.isDefault,
-        })
-      }
-      await refetchAddresses()
-      setShowAddressForm(false)
-      setEditingAddress(null)
-      addressForm.resetFields()
-    } catch (error) {
-      console.error('Error saving address:', error)
-    }
-  }
 
   const handleUpdateProfile = async (values: {
     firstName: string
@@ -170,30 +123,6 @@ export function Profile() {
       passwordForm.resetFields()
     } catch (error) {
       console.error('Error changing password:', error)
-    }
-  }
-
-  const handleEditAddress = (address: any) => {
-    setEditingAddress(address)
-    addressForm.setFieldsValue(address)
-    setShowAddressForm(true)
-  }
-
-  const handleDeleteAddress = async (addressId: string) => {
-    try {
-      await deleteAddress(addressId)
-      await refetchAddresses()
-    } catch (error) {
-      console.error('Error deleting address:', error)
-    }
-  }
-
-  const handleSetDefaultAddress = async (addressId: string) => {
-    try {
-      await setDefaultAddress(addressId)
-      await refetchAddresses()
-    } catch (error) {
-      console.error('Error setting default address:', error)
     }
   }
 
@@ -426,112 +355,7 @@ export function Profile() {
           Mis Direcciones
         </span>
       ),
-      children: (
-        <div>
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-coffee-darker">
-              Direcciones Guardadas
-            </h2>
-            <Button
-              type="primary"
-              icon={<Plus size={18} />}
-              onClick={() => {
-                setEditingAddress(null)
-                addressForm.resetFields()
-                setShowAddressForm(true)
-              }}
-              className="bg-gradient-coffee border-none hover:opacity-90"
-            >
-              Agregar Dirección
-            </Button>
-          </div>
-
-          {addresses && addresses.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {addresses.map((address: any) => (
-                <Card
-                  key={address.id}
-                  className={`shadow-coffee ${
-                    address.isDefault ? 'border-2 border-coffee-medium' : ''
-                  }`}
-                >
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-coffee-darker mb-2">
-                        {address.street}
-                      </h3>
-                      <p className="text-sm text-gray-600 mb-1">
-                        {address.city}, {address.state}
-                      </p>
-                      <p className="text-sm text-gray-600 mb-1">
-                        {address.zipCode}, {address.country}
-                      </p>
-                      {address.reference && (
-                        <p className="text-xs text-gray-500 mt-2">
-                          <strong>Referencia:</strong> {address.reference}
-                        </p>
-                      )}
-                      {address.isDefault && (
-                        <span className="mt-2 bg-coffee-medium text-white text-xs px-2 py-1 rounded flex items-center gap-1">
-                          <Home size={12} />
-                          Por defecto
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      {!address.isDefault && (
-                        <button
-                          onClick={() => handleSetDefaultAddress(address.id)}
-                          className="p-2 text-coffee-medium hover:bg-coffee-light rounded-lg transition-colors text-xs"
-                          aria-label="Establecer como predeterminada"
-                          title="Establecer como predeterminada"
-                        >
-                          <Home size={16} />
-                        </button>
-                      )}
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleEditAddress(address)}
-                          className="p-2 text-coffee-medium hover:bg-coffee-light rounded-lg transition-colors"
-                          aria-label="Editar dirección"
-                        >
-                          <Edit size={18} />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteAddress(address.id)}
-                          className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                          aria-label="Eliminar dirección"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12 bg-white rounded-lg shadow-coffee">
-              <MapPin size={48} className="mx-auto text-gray-400 mb-4" />
-              <p className="text-gray-600 mb-4">
-                No tienes direcciones guardadas
-              </p>
-              <Button
-                type="primary"
-                icon={<Plus size={18} />}
-                onClick={() => {
-                  setEditingAddress(null)
-                  addressForm.resetFields()
-                  setShowAddressForm(true)
-                }}
-                className="bg-gradient-coffee border-none hover:opacity-90"
-              >
-                Agregar Primera Dirección
-              </Button>
-            </div>
-          )}
-        </div>
-      ),
+      children: <Addresses />,
     },
     {
       key: 'payment-methods',
@@ -647,21 +471,6 @@ export function Profile() {
         defaultActiveKey="personal"
         items={tabItems}
         className="profile-tabs"
-      />
-
-      <AddressModal
-        open={showAddressForm}
-        onCancel={() => {
-          setShowAddressForm(false)
-          setEditingAddress(null)
-          addressForm.resetFields()
-        }}
-        onFinish={handleCreateAddress}
-        editingAddress={editingAddress}
-        form={addressForm}
-        addresses={addresses}
-        isCreating={isCreatingAddress}
-        isUpdating={isUpdatingAddress}
       />
 
       <PaymentMethodModal

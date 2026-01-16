@@ -1,18 +1,11 @@
 import { Link } from '@tanstack/react-router'
-import { useMemo, useState } from 'react'
-import { Button, Drawer, Empty, Modal } from 'antd'
+import { Drawer, Empty } from 'antd'
+import { Button, useDisclosure } from '@heroui/react'
 import { LogIn, Minus, Plus, ShoppingCart, Trash2, X } from 'lucide-react'
+import { useCartDrawerHook } from '../hooks/useCartDrawerHook'
+import ClearCartModal from './modals/ClearCartModal'
 import type { CartItem } from '@/app/store/cart/cartStore'
-import { useCartStore } from '@/app/store/cart/cartStore'
 import AuthModal from '@/app/features/auth/components/AuthModal'
-import { useAuthStore } from '@/app/store/auth/authStore'
-import { useCartQuery } from '@/app/features/cart/queries/useCartQuery'
-import {
-  useClearCartMutation,
-  useRemoveCartItemMutation,
-  useUpdateCartItemMutation,
-} from '@/app/features/cart/mutations/useCartMutations'
-import { useCurrency } from '@/app/hooks/useCurrency'
 
 interface CartDrawerProps {
   isOpen: boolean
@@ -21,135 +14,28 @@ interface CartDrawerProps {
 
 export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const {
-    items: localItems,
-    updateQuantity,
-    removeItem,
-    clearCart,
-  } = useCartStore()
-  const { token } = useAuthStore()
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
-  const [isClearCartModalOpen, setIsClearCartModalOpen] = useState(false)
-  const { formatPrice } = useCurrency()
+    isAuthModalOpen,
+    setIsAuthModalOpen,
+    isLoadingCart,
+    isClearingCart,
+    items,
+    total,
+    itemCount,
+    isAuthenticated,
+    handleUpdateQuantity,
+    handleRemoveItem,
+    handleCheckout,
+    handleClearCart,
+    calculateItemPrice,
+    formatPrice,
+  } = useCartDrawerHook({ onClose })
 
-  const isAuthenticated = !!token
-
-  // Obtener carrito de BD si está autenticado
-  const { data: dbCartItems, isLoading: isLoadingCart } = useCartQuery({
-    enabled: isAuthenticated,
-  })
-  const { mutateAsync: updateCartItem } = useUpdateCartItemMutation()
-  const { mutateAsync: removeCartItem } = useRemoveCartItemMutation()
-  const { mutateAsync: clearCartMutation, isPending: isClearingCart } =
-    useClearCartMutation()
-
-  // Usar carrito de BD si está autenticado, sino usar localStorage
-  const items = useMemo(() => {
-    if (isAuthenticated && dbCartItems) {
-      // Convertir items de BD al formato del store
-      return dbCartItems.map(
-        (item: {
-          id: string
-          productId: string
-          quantity: number
-          product: {
-            id: string
-            name: string
-            price: number | string
-            discount: number | string
-            images: Array<{ url: string }>
-          }
-        }) => ({
-          id: item.id,
-          productId: item.productId,
-          quantity: item.quantity,
-          product: {
-            id: item.product.id,
-            name: item.product.name,
-            price: Number(item.product.price),
-            discount: Number(item.product.discount),
-            images: item.product.images,
-          },
-        }),
-      )
-    }
-    return localItems
-  }, [isAuthenticated, dbCartItems, localItems])
-
-  const total = useMemo(() => {
-    return items.reduce(
-      (
-        sum: number,
-        item: {
-          product: { price: number; discount: number }
-          quantity: number
-        },
-      ) => {
-        const price = Number(item.product.price)
-        const discount = Number(item.product.discount)
-        const finalPrice = price * (1 - discount / 100)
-        return sum + finalPrice * item.quantity
-      },
-      0,
-    )
-  }, [items])
-
-  const itemCount = items.reduce(
-    (sum: number, item: { quantity: number }) => sum + item.quantity,
-    0,
-  )
-
-  const handleUpdateQuantity = async (
-    itemId: string,
-    productId: string,
-    quantity: number,
-  ) => {
-    if (isAuthenticated) {
-      try {
-        await updateCartItem({ id: itemId, quantity })
-        // La query se invalidará automáticamente
-      } catch (error) {
-        console.error('Error updating cart:', error)
-      }
-    } else {
-      updateQuantity(productId, quantity)
-    }
-  }
-
-  const handleRemoveItem = async (itemId: string, productId: string) => {
-    if (isAuthenticated) {
-      try {
-        await removeCartItem(itemId)
-        // La query se invalidará automáticamente
-      } catch (error) {
-        console.error('Error removing from cart:', error)
-      }
-    } else {
-      removeItem(productId)
-    }
-  }
-
-  const handleCheckout = () => {
-    if (!isAuthenticated) {
-      setIsAuthModalOpen(true)
-      return
-    }
-    onClose()
-    // Navigation will be handled by Link component
-  }
-
-  const handleClearCart = async () => {
-    if (isAuthenticated) {
-      try {
-        await clearCartMutation()
-        setIsClearCartModalOpen(false)
-      } catch (error) {
-        console.error('Error clearing cart:', error)
-      }
-    } else {
-      clearCart()
-      setIsClearCartModalOpen(false)
-    }
-  }
+  // Modal de limpiar carrito usando NextUI
+  const {
+    isOpen: isClearCartModalOpen,
+    onOpen: onOpenClearCartModal,
+    onClose: onCloseClearCartModal,
+  } = useDisclosure()
 
   return (
     <>
@@ -171,6 +57,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         onClose={onClose}
         open={isOpen}
         size={400}
+        maskClosable={!isAuthModalOpen}
         styles={{
           body: {
             padding: 0,
@@ -189,23 +76,24 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 <span className="text-gray-500">Tu carrito está vacío</span>
               }
             />
-            <Link to="/" onClick={onClose}>
-              <Button
-                type="primary"
-                className="bg-gradient-coffee border-none hover:opacity-90 rounded-lg mt-4"
-              >
-                Continuar Comprando
-              </Button>
-            </Link>
+            <Button
+              color="primary"
+              className="bg-gradient-coffee border-none hover:opacity-90 rounded-lg mt-4"
+              as={Link}
+              to="/"
+              onPress={onClose}
+            >
+              Continuar Comprando
+            </Button>
           </div>
         ) : (
           <div className="flex flex-col h-full">
             <div className="flex justify-end px-4 pt-4">
               <Button
-                type="text"
-                danger
-                icon={<X size={16} />}
-                onClick={() => setIsClearCartModalOpen(true)}
+                variant="light"
+                color="danger"
+                startContent={<X size={16} />}
+                onPress={onOpenClearCartModal}
                 className="text-sm"
               >
                 Limpiar Carrito
@@ -213,9 +101,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {items.map((item: CartItem) => {
-                const finalPrice =
-                  Number(item.product.price) *
-                  (1 - Number(item.product.discount) / 100)
+                const finalPrice = calculateItemPrice(item)
                 const mainImage =
                   item.product.images.length > 0
                     ? item.product.images[0].url
@@ -308,25 +194,24 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 </span>
               </div>
               {isAuthenticated ? (
-                <Link to="/checkout" onClick={onClose}>
-                  <Button
-                    type="primary"
-                    block
-                    size="large"
-                    className="bg-gradient-coffee border-none hover:opacity-90 rounded-lg h-12 font-semibold"
-                  >
-                    Proceder al Checkout
-                  </Button>
-                </Link>
+                <Button
+                  color="primary"
+                  size="lg"
+                  className="w-full bg-gradient-coffee border-none hover:opacity-90 rounded-lg h-12 font-semibold"
+                  as={Link}
+                  to="/checkout"
+                  onPress={onClose}
+                >
+                  Proceder al Checkout
+                </Button>
               ) : (
                 <Button
-                  type="primary"
-                  block
-                  size="large"
-                  onClick={handleCheckout}
-                  className="bg-gradient-coffee border-none hover:opacity-90 rounded-lg h-12 font-semibold flex items-center justify-center gap-2"
+                  color="primary"
+                  size="lg"
+                  className="w-full bg-gradient-coffee border-none hover:opacity-90 rounded-lg h-12 font-semibold"
+                  startContent={<LogIn size={18} />}
+                  onPress={handleCheckout}
                 >
-                  <LogIn size={18} />
                   Iniciar Sesión para Continuar
                 </Button>
               )}
@@ -338,23 +223,23 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setIsAuthModalOpen(false)
+          }
+        }}
         initialMode="login"
       />
 
-      <Modal
-        title="Limpiar Carrito"
-        open={isClearCartModalOpen}
-        onOk={handleClearCart}
-        onCancel={() => setIsClearCartModalOpen(false)}
-        okText="Sí, Limpiar"
-        cancelText="Cancelar"
-        okButtonProps={{ danger: true, loading: isClearingCart }}
-      >
-        <p>
-          ¿Estás seguro de que deseas limpiar todo el carrito? Esta acción no se
-          puede deshacer.
-        </p>
-      </Modal>
+      <ClearCartModal
+        isOpen={isClearCartModalOpen}
+        onClose={onCloseClearCartModal}
+        onConfirm={async () => {
+          await handleClearCart()
+          onCloseClearCartModal()
+        }}
+        isLoading={isClearingCart}
+      />
     </>
   )
 }

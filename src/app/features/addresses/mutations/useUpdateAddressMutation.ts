@@ -1,16 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { updateAddressService } from '../services/updateAddressService'
+import type { UpdateAddressData } from '../types'
 import { sonnerResponse } from '@/app/helpers/sonnerResponse'
-
-interface UpdateAddressData {
-  street?: string
-  city?: string
-  state?: string
-  zipCode?: string
-  country?: string
-  reference?: string
-  isDefault?: boolean
-}
 
 export const useUpdateAddressMutation = () => {
   const queryClient = useQueryClient()

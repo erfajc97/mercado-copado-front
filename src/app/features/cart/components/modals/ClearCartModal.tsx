@@ -1,0 +1,55 @@
+import { Button } from '@heroui/react'
+import CustomModalNextUI from '@/components/UI/customModalNextUI/CustomModalNextUI'
+
+interface ClearCartModalProps {
+  isOpen: boolean
+  onClose: () => void
+  onConfirm: () => Promise<void>
+  isLoading?: boolean
+}
+
+export default function ClearCartModal({
+  isOpen,
+  onClose,
+  onConfirm,
+  isLoading = false,
+}: ClearCartModalProps) {
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      onClose()
+    }
+  }
+
+  return (
+    <CustomModalNextUI
+      isOpen={isOpen}
+      onOpenChange={handleOpenChange}
+      isDismissable
+      size="md"
+      placement="center"
+      headerContent="Limpiar Carrito"
+      footerContent={
+        <div className="flex gap-2 justify-end w-full">
+          <Button variant="light" onPress={onClose} isDisabled={isLoading}>
+            Cancelar
+          </Button>
+          <Button
+            color="danger"
+            onPress={async () => {
+              await onConfirm()
+            }}
+            isLoading={isLoading}
+            isDisabled={isLoading}
+          >
+            Sí, Limpiar
+          </Button>
+        </div>
+      }
+    >
+      <p className="text-gray-700">
+        ¿Estás seguro de que deseas limpiar todo el carrito? Esta acción no se
+        puede deshacer.
+      </p>
+    </CustomModalNextUI>
+  )
+}

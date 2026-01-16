@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
-import { Button, message } from 'antd'
-import { DeleteOutlined, UploadOutlined } from '@ant-design/icons'
-import { Image as ImageIcon } from 'lucide-react'
+import { Button } from '@heroui/react'
+import { message } from 'antd'
+import { Image as ImageIcon, Trash2, Upload } from 'lucide-react'
 
 interface CashDepositUploadProps {
   onImageSelect: (file: File | null) => void
@@ -136,13 +136,11 @@ export const CashDepositUpload = ({
               </p>
             </div>
             <Button
-              type="primary"
-              icon={<UploadOutlined />}
+              color="primary"
+              startContent={<Upload size={18} />}
               className="bg-gradient-coffee border-none hover:opacity-90"
-              disabled={disabled}
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
+              isDisabled={disabled}
+              onPress={() => {
                 if (!disabled) {
                   fileInputRef.current?.click()
                 }
@@ -172,10 +170,10 @@ export const CashDepositUpload = ({
                   {selectedImage?.name || 'Imagen cargada'}
                 </p>
                 <Button
-                  danger
-                  icon={<DeleteOutlined />}
-                  onClick={handleRemove}
-                  size="small"
+                  color="danger"
+                  startContent={<Trash2 size={16} />}
+                  onPress={handleRemove}
+                  size="sm"
                 >
                   Eliminar
                 </Button>

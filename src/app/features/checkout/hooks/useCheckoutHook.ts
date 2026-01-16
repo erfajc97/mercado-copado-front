@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Form } from 'antd'
+import { calculateItemPrice } from '../helpers/calculateItemPrice'
+import type { Address } from '@/app/features/addresses/types'
 import type { PaymentMethod } from '@/app/features/payment-methods/types'
 import { useCartQuery } from '@/app/features/cart/queries/useCartQuery'
 import { useAddressesQuery } from '@/app/features/addresses/queries/useAddressesQuery'
@@ -15,9 +17,16 @@ import { formatUSD } from '@/app/services/currencyService'
 
 export const useCheckoutHook = () => {
   const { data: cartItems } = useCartQuery()
-  const { data: addresses, refetch: refetchAddresses } = useAddressesQuery()
+  const { roles, token, getToken } = useAuthStore()
+  const isAuthenticated = Boolean(token || getToken())
+
+  const { data: addresses, refetch: refetchAddresses } = useAddressesQuery({
+    enabled: isAuthenticated,
+  })
   const { data: paymentMethods, refetch: refetchPaymentMethods } =
-    usePaymentMethodsQuery()
+    usePaymentMethodsQuery({
+      enabled: isAuthenticated,
+    })
   const { mutateAsync: createPaymentTransactionWithoutOrder, isPending } =
     useCreatePaymentTransactionWithoutOrderMutation()
   const { mutateAsync: cashDeposit, isPending: isProcessingDeposit } =
@@ -29,7 +38,6 @@ export const useCheckoutHook = () => {
     isPending: isCreatingPaymentMethod,
   } = useCreatePaymentMethodMutation()
   const { formatPrice, currency } = useCurrency()
-  const { roles } = useAuthStore()
   const isAdmin = roles === 'ADMIN'
 
   const [selectedAddressId, setSelectedAddressId] = useState<string>('')
@@ -46,50 +54,56 @@ export const useCheckoutHook = () => {
   const [showAddressForm, setShowAddressForm] = useState(false)
   const [showAddressSelector, setShowAddressSelector] = useState(false)
   const [showPaymentMethodForm, setShowPaymentMethodForm] = useState(false)
+  const [showAuthModal, setShowAuthModal] = useState(false)
   const [form] = Form.useForm()
   const [paymentMethodForm] = Form.useForm()
 
-  const defaultAddress = addresses?.find((addr: any) => addr.isDefault)
-  const defaultPaymentMethod = paymentMethods?.find(
-    (pm: PaymentMethod) => pm.isDefault,
+  const handleAddAddressClick = () => {
+    if (!isAuthenticated) {
+      setShowAuthModal(true)
+    } else {
+      setShowAddressForm(true)
+    }
+  }
+
+  const defaultAddress = useMemo(
+    () => addresses?.find((addr: any) => addr.isDefault),
+    [addresses],
+  )
+  const defaultPaymentMethod = useMemo(
+    () => paymentMethods?.find((pm: PaymentMethod) => pm.isDefault),
+    [paymentMethods],
   )
 
-  // Seleccionar automáticamente la dirección por defecto o la primera disponible
+  // Calcular dirección inicial usando useMemo
+  const initialAddressId = useMemo(() => {
+    if (!addresses || addresses.length === 0) return ''
+    if (defaultAddress) return defaultAddress.id
+    return addresses[0].id
+  }, [addresses, defaultAddress])
+
+  // Calcular payment method inicial usando useMemo
+  const initialPaymentMethodId = useMemo(() => {
+    if (!paymentMethods || paymentMethods.length === 0) return ''
+    if (defaultPaymentMethod) return defaultPaymentMethod.id
+    return paymentMethods[0].id
+  }, [paymentMethods, defaultPaymentMethod])
+
+  // Inicializar selecciones cuando los datos estén disponibles (useEffect mínimo necesario)
+  // Combinado en un solo useEffect para optimización
   useEffect(() => {
-    if (!addresses || addresses.length === 0) {
-      // No hay direcciones, no hacer nada
-      return
+    if (initialAddressId && !selectedAddressId) {
+      setSelectedAddressId(initialAddressId)
     }
-
-    // Si ya hay una dirección seleccionada, no cambiar
-    if (selectedAddressId) {
-      return
+    if (initialPaymentMethodId && !selectedPaymentMethodId) {
+      setSelectedPaymentMethodId(initialPaymentMethodId)
     }
-
-    // Si hay dirección por defecto, seleccionarla
-    if (defaultAddress) {
-      setSelectedAddressId(defaultAddress.id)
-      return
-    }
-
-    // Si no hay dirección por defecto pero hay direcciones, seleccionar la primera
-    if (addresses.length > 0) {
-      setSelectedAddressId(addresses[0].id)
-    }
-  }, [addresses, defaultAddress, selectedAddressId])
-
-  useEffect(() => {
-    if (
-      !defaultPaymentMethod &&
-      !selectedPaymentMethodId &&
-      paymentMethods &&
-      paymentMethods.length > 0
-    ) {
-      setSelectedPaymentMethodId(paymentMethods[0].id)
-    } else if (defaultPaymentMethod && !selectedPaymentMethodId) {
-      setSelectedPaymentMethodId(defaultPaymentMethod.id)
-    }
-  }, [paymentMethods, defaultPaymentMethod, selectedPaymentMethodId])
+  }, [
+    initialAddressId,
+    selectedAddressId,
+    initialPaymentMethodId,
+    selectedPaymentMethodId,
+  ])
 
   const handleCreateAddress = async (values: {
     street: string
@@ -115,15 +129,17 @@ export const useCheckoutHook = () => {
     }
   }
 
-  const calculateTotal = () => {
+  // Calcular total usando useMemo para optimización
+  const total = useMemo(() => {
     if (!cartItems) return 0
-    return cartItems.reduce((total: number, item: any) => {
-      const price = Number(item.product.price)
-      const discount = Number(item.product.discount || 0)
-      const finalPrice = price * (1 - discount / 100)
-      return total + finalPrice * item.quantity
+    return cartItems.reduce((sum: number, item: any) => {
+      const finalPrice = calculateItemPrice(
+        item.product.price,
+        item.product.discount || 0,
+      )
+      return sum + finalPrice * item.quantity
     }, 0)
-  }
+  }, [cartItems])
 
   const handleCreatePaymentMethod = async (values: {
     gatewayToken: string
@@ -224,7 +240,30 @@ export const useCheckoutHook = () => {
     }
   }
 
-  const total = calculateTotal()
+  // Calcular dirección a mostrar usando useMemo
+  const displayAddress = useMemo(() => {
+    if (!addresses || addresses.length === 0) return null
+    if (selectedAddressId) {
+      return (
+        addresses.find((addr: Address) => addr.id === selectedAddressId) || null
+      )
+    }
+    return defaultAddress || addresses[0] || null
+  }, [addresses, selectedAddressId, defaultAddress])
+
+  // Calcular si es dirección por defecto o seleccionada
+  const isDefaultAddress = useMemo(() => {
+    return displayAddress?.id === defaultAddress?.id
+  }, [displayAddress, defaultAddress])
+
+  const isSelectedAddress = useMemo(() => {
+    return displayAddress?.id === selectedAddressId
+  }, [displayAddress, selectedAddressId])
+
+  // Helper para calcular precio final de un item
+  const calculateItemFinalPrice = (item: any) => {
+    return calculateItemPrice(item.product.price, item.product.discount || 0)
+  }
 
   return {
     cartItems,
@@ -244,6 +283,8 @@ export const useCheckoutHook = () => {
     setShowAddressSelector,
     showPaymentMethodForm,
     setShowPaymentMethodForm,
+    showAuthModal,
+    setShowAuthModal,
     form,
     paymentMethodForm,
     defaultAddress,
@@ -251,12 +292,17 @@ export const useCheckoutHook = () => {
     handleCreateAddress,
     handleCreatePaymentMethod,
     handleCreatePaymentTransaction,
-    calculateTotal,
+    handleAddAddressClick,
+    calculateItemFinalPrice,
     total,
+    displayAddress,
+    isDefaultAddress,
+    isSelectedAddress,
     formatPrice,
     formatUSD,
     currency,
     isAdmin,
+    isAuthenticated,
     isPending: isPending || isProcessingDeposit,
     isCreatingAddress,
     isCreatingPaymentMethod,

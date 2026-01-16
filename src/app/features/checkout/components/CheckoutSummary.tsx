@@ -1,11 +1,12 @@
+import { Button } from '@heroui/react'
 import type { CheckoutHookReturn } from './types'
 
 interface CheckoutSummaryProps {
   checkout: CheckoutHookReturn
-  onSuccess: () => void
+  onSuccess?: () => void
 }
 
-export const CheckoutSummary = ({ checkout, onSuccess }: CheckoutSummaryProps) => {
+export const CheckoutSummary = ({ checkout }: CheckoutSummaryProps) => {
   return (
     <div className="space-y-6">
       {/* Order Summary */}
@@ -15,9 +16,7 @@ export const CheckoutSummary = ({ checkout, onSuccess }: CheckoutSummaryProps) =
         </h2>
         <div className="space-y-4">
           {checkout.cartItems?.map((item: any) => {
-            const price = Number(item.product.price)
-            const discount = Number(item.product.discount || 0)
-            const finalPrice = price * (1 - discount / 100)
+            const finalPrice = checkout.calculateItemFinalPrice(item)
             const mainImage =
               item.product.images && item.product.images.length > 0
                 ? item.product.images[0].url
@@ -45,21 +44,26 @@ export const CheckoutSummary = ({ checkout, onSuccess }: CheckoutSummaryProps) =
                     </span>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    {discount > 0 && (
+                    {item.product.discount > 0 && (
                       <>
                         <span className="text-gray-400 line-through text-sm">
-                          {checkout.isAdmin ? checkout.formatUSD(price) : checkout.formatPrice(price)}
+                          {checkout.isAdmin
+                            ? checkout.formatUSD(Number(item.product.price))
+                            : checkout.formatPrice(Number(item.product.price))}
                         </span>
                         {checkout.isAdmin && checkout.currency === 'ARS' && (
                           <span className="text-gray-400 line-through text-sm">
-                            {checkout.formatPrice(price)}
+                            {checkout.formatPrice(Number(item.product.price))}
                           </span>
                         )}
                       </>
                     )}
                     <div className="flex items-center gap-2">
                       <span className="text-coffee-dark font-bold">
-                        {checkout.isAdmin ? checkout.formatUSD(finalPrice) : checkout.formatPrice(finalPrice)} c/u
+                        {checkout.isAdmin
+                          ? checkout.formatUSD(finalPrice)
+                          : checkout.formatPrice(finalPrice)}{' '}
+                        c/u
                       </span>
                       {checkout.isAdmin && checkout.currency === 'ARS' && (
                         <span className="text-sm font-semibold text-coffee-medium">
@@ -72,7 +76,9 @@ export const CheckoutSummary = ({ checkout, onSuccess }: CheckoutSummaryProps) =
                 <div className="text-right">
                   <div className="flex flex-col items-end gap-1">
                     <span className="text-lg font-bold text-coffee-darker">
-                      {checkout.isAdmin ? checkout.formatUSD(finalPrice * item.quantity) : checkout.formatPrice(finalPrice * item.quantity)}
+                      {checkout.isAdmin
+                        ? checkout.formatUSD(finalPrice * item.quantity)
+                        : checkout.formatPrice(finalPrice * item.quantity)}
                     </span>
                     {checkout.isAdmin && checkout.currency === 'ARS' && (
                       <span className="text-sm font-semibold text-coffee-medium">
@@ -94,7 +100,11 @@ export const CheckoutSummary = ({ checkout, onSuccess }: CheckoutSummaryProps) =
           <div className="flex justify-between">
             <span>Subtotal:</span>
             <div className="flex items-center gap-2">
-              <span>{checkout.isAdmin ? checkout.formatUSD(checkout.total) : checkout.formatPrice(checkout.total)}</span>
+              <span>
+                {checkout.isAdmin
+                  ? checkout.formatUSD(checkout.total)
+                  : checkout.formatPrice(checkout.total)}
+              </span>
               {checkout.isAdmin && checkout.currency === 'ARS' && (
                 <span className="text-sm font-semibold text-coffee-medium">
                   / {checkout.formatPrice(checkout.total)}
@@ -105,7 +115,11 @@ export const CheckoutSummary = ({ checkout, onSuccess }: CheckoutSummaryProps) =
           <div className="flex justify-between font-bold text-xl pt-4 border-t">
             <span>Total:</span>
             <div className="flex items-center gap-2">
-              <span>{checkout.isAdmin ? checkout.formatUSD(checkout.total) : checkout.formatPrice(checkout.total)}</span>
+              <span>
+                {checkout.isAdmin
+                  ? checkout.formatUSD(checkout.total)
+                  : checkout.formatPrice(checkout.total)}
+              </span>
               {checkout.isAdmin && checkout.currency === 'ARS' && (
                 <span className="text-base font-semibold text-coffee-medium">
                   / {checkout.formatPrice(checkout.total)}
@@ -125,26 +139,30 @@ export const CheckoutSummary = ({ checkout, onSuccess }: CheckoutSummaryProps) =
             </p>
           </div>
         ) : !checkout.clientTransactionId ? (
-          <button
-            onClick={checkout.handleCreatePaymentTransaction}
-            disabled={
+          <Button
+            color="primary"
+            onPress={checkout.handleCreatePaymentTransaction}
+            isDisabled={
               checkout.isPending ||
               !checkout.selectedAddressId ||
               !checkout.selectedPaymentProvider ||
               (checkout.selectedPaymentProvider === 'CASH_DEPOSIT' &&
                 !checkout.depositImage)
             }
-            className="w-full bg-gradient-coffee text-white py-3 rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold mb-4 shadow-coffee hover:shadow-coffee-md transition-all duration-200"
+            isLoading={checkout.isPending}
+            className="w-full bg-gradient-coffee border-none hover:opacity-90 font-semibold mb-4 shadow-coffee hover:shadow-coffee-md"
+            size="lg"
           >
             {checkout.isPending ? 'Preparando pago...' : 'Pagar'}
-          </button>
+          </Button>
         ) : (
           <div className="space-y-4">
             <p className="text-green-600 font-semibold text-center">
               Transacción creada exitosamente
             </p>
             <p className="text-sm text-gray-600 text-center">
-              Completa el pago usando las opciones en la sección de Método de Pago
+              Completa el pago usando las opciones en la sección de Método de
+              Pago
             </p>
           </div>
         )}
@@ -152,4 +170,3 @@ export const CheckoutSummary = ({ checkout, onSuccess }: CheckoutSummaryProps) =
     </div>
   )
 }
-

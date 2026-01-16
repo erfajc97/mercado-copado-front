@@ -9,7 +9,7 @@ import { HeroUIProvider, ToastProvider } from '@heroui/react'
 
 import Header from '../components/Header'
 import Footer from '../components/Footer'
-import { useCartSync } from '../app/hooks/useCartSync'
+import { useCartSync } from '../app/features/cart/hooks/useCartSync'
 
 // import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 

@@ -1,67 +1,25 @@
 import { Link } from '@tanstack/react-router'
 import { Minus, Plus, Trash2 } from 'lucide-react'
-import { useCartQuery } from '@/app/features/cart/queries/useCartQuery'
-import {
-  useRemoveCartItemMutation,
-  useUpdateCartItemMutation,
-} from '@/app/features/cart/mutations/useCartMutations'
-import { useCartStore } from '@/app/store/cart/cartStore'
-import { useCurrency } from '@/app/hooks/useCurrency'
+import { useCartHook } from './hooks/useCartHook'
+import { EmptyCart } from './components/EmptyCart'
 
 export function Cart() {
-  const { data: cartItems, isLoading } = useCartQuery()
-  const { updateQuantity, removeItem } = useCartStore()
-  const { mutateAsync: updateItem } = useUpdateCartItemMutation()
-  const { mutateAsync: removeCartItem } = useRemoveCartItemMutation()
-  const { formatPrice } = useCurrency()
-
-  const handleUpdateQuantity = async (id: string, quantity: number) => {
-    try {
-      await updateItem({ id, quantity })
-      updateQuantity(id, quantity)
-    } catch (error) {
-      console.error('Error updating cart:', error)
-    }
-  }
-
-  const handleRemoveItem = async (id: string, productId: string) => {
-    try {
-      await removeCartItem(id)
-      removeItem(productId)
-    } catch (error) {
-      console.error('Error removing from cart:', error)
-    }
-  }
-
-  const calculateTotal = () => {
-    if (!cartItems) return 0
-    return cartItems.reduce((total: number, item: any) => {
-      const price = Number(item.product.price)
-      const discount = Number(item.product.discount || 0)
-      const finalPrice = price * (1 - discount / 100)
-      return total + finalPrice * item.quantity
-    }, 0)
-  }
+  const {
+    cartItems,
+    isLoading,
+    total,
+    formatPrice,
+    handleUpdateQuantity,
+    handleRemoveItem,
+    calculateItemPrice,
+  } = useCartHook()
 
   if (isLoading) {
     return <div className="container mx-auto px-4 py-8">Cargando...</div>
   }
 
   if (!cartItems || cartItems.length === 0) {
-    return (
-      <div className="container mx-auto px-4 py-8 text-center">
-        <h1 className="text-2xl font-bold mb-4 text-coffee-darker">
-          Carrito Vacío
-        </h1>
-        <p className="text-gray-600 mb-6">No tienes productos en tu carrito</p>
-        <Link
-          to="/"
-          className="inline-block bg-gradient-coffee text-white px-6 py-3 rounded-lg hover:opacity-90 shadow-coffee hover:shadow-coffee-md transition-all duration-200 font-semibold border-2 border-coffee-medium"
-        >
-          Continuar Comprando
-        </Link>
-      </div>
-    )
+    return <EmptyCart />
   }
 
   return (
@@ -72,10 +30,9 @@ export function Cart() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
         <div className="lg:col-span-2 space-y-4">
           {cartItems.map((item: any) => {
-            const price = Number(item.product.price)
-            const discount = Number(item.product.discount || 0)
-            const finalPrice = price * (1 - discount / 100)
+            const finalPrice = calculateItemPrice(item)
             const mainImage = item.product.images?.[0]?.url
+            const discount = Number(item.product.discount || 0)
 
             return (
               <div
@@ -97,7 +54,7 @@ export function Cart() {
                     <div>
                       {discount > 0 && (
                         <span className="text-gray-500 line-through mr-2 text-xs sm:text-sm">
-                          ${price.toFixed(2)}
+                          ${Number(item.product.price).toFixed(2)}
                         </span>
                       )}
                       <span className="text-lg sm:text-xl font-bold text-coffee-dark">
@@ -131,7 +88,7 @@ export function Cart() {
                       </button>
                     </div>
                     <button
-                      onClick={() => handleRemoveItem(item.id, item.productId)}
+                      onClick={() => handleRemoveItem(item.id)}
                       className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-colors flex items-center justify-center gap-1 w-full sm:w-auto"
                     >
                       <Trash2 size={16} />
@@ -157,15 +114,11 @@ export function Cart() {
             <div className="space-y-2 mb-4">
               <div className="flex justify-between text-gray-600">
                 <span>Subtotal:</span>
-                <span className="font-semibold">
-                  {formatPrice(calculateTotal())}
-                </span>
+                <span className="font-semibold">{formatPrice(total)}</span>
               </div>
               <div className="flex justify-between font-bold text-xl pt-4 border-t-2 border-coffee-medium">
                 <span className="text-coffee-darker">Total:</span>
-                <span className="text-coffee-dark">
-                  {formatPrice(calculateTotal())}
-                </span>
+                <span className="text-coffee-dark">{formatPrice(total)}</span>
               </div>
             </div>
             <Link

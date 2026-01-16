@@ -9,8 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ProfileRouteImport } from './routes/profile'
-import { Route as OrdersRouteImport } from './routes/orders'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as UnauthenticatedRouteImport } from './routes/_unauthenticated'
@@ -19,26 +17,17 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as PayResponseIndexRouteImport } from './routes/pay-response/index'
 import { Route as ProductsProductIdRouteImport } from './routes/products.$productId'
 import { Route as PaymentTransactionIdRouteImport } from './routes/payment.$transactionId'
-import { Route as OrdersOrderIdRouteImport } from './routes/orders.$orderId'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedOrdersRouteImport } from './routes/_authenticated/orders'
+import { Route as AuthenticatedOrdersOrderIdRouteImport } from './routes/_authenticated/orders.$orderId'
 import { Route as AuthenticatedDashboardDashboardRouteImport } from './routes/_authenticated/dashboard/dashboard'
 import { Route as AuthenticatedDashboardUsersIndexRouteImport } from './routes/_authenticated/dashboard/users/index'
 import { Route as AuthenticatedDashboardProductsIndexRouteImport } from './routes/_authenticated/dashboard/products/index'
 import { Route as AuthenticatedDashboardOrdersIndexRouteImport } from './routes/_authenticated/dashboard/orders/index'
 import { Route as AuthenticatedDashboardCategoriesIndexRouteImport } from './routes/_authenticated/dashboard/categories/index'
-import { Route as AuthenticatedDashboardProductsNewRouteImport } from './routes/_authenticated/dashboard/products/new'
 import { Route as AuthenticatedAdminOrdersOrderIdRouteImport } from './routes/_authenticated/admin/orders/$orderId'
 
-const ProfileRoute = ProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OrdersRoute = OrdersRouteImport.update({
-  id: '/orders',
-  path: '/orders',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const CheckoutRoute = CheckoutRouteImport.update({
   id: '/checkout',
   path: '/checkout',
@@ -77,16 +66,27 @@ const PaymentTransactionIdRoute = PaymentTransactionIdRouteImport.update({
   path: '/payment/$transactionId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OrdersOrderIdRoute = OrdersOrderIdRouteImport.update({
-  id: '/$orderId',
-  path: '/$orderId',
-  getParentRoute: () => OrdersRoute,
-} as any)
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
   id: '/auth/callback',
   path: '/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedOrdersRoute = AuthenticatedOrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedOrdersOrderIdRoute =
+  AuthenticatedOrdersOrderIdRouteImport.update({
+    id: '/$orderId',
+    path: '/$orderId',
+    getParentRoute: () => AuthenticatedOrdersRoute,
+  } as any)
 const AuthenticatedDashboardDashboardRoute =
   AuthenticatedDashboardDashboardRouteImport.update({
     id: '/dashboard/dashboard',
@@ -117,12 +117,6 @@ const AuthenticatedDashboardCategoriesIndexRoute =
     path: '/dashboard/categories/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedDashboardProductsNewRoute =
-  AuthenticatedDashboardProductsNewRouteImport.update({
-    id: '/dashboard/products/new',
-    path: '/dashboard/products/new',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
 const AuthenticatedAdminOrdersOrderIdRoute =
   AuthenticatedAdminOrdersOrderIdRouteImport.update({
     id: '/admin/orders/$orderId',
@@ -134,16 +128,15 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
-  '/orders': typeof OrdersRouteWithChildren
-  '/profile': typeof ProfileRoute
+  '/orders': typeof AuthenticatedOrdersRouteWithChildren
+  '/profile': typeof AuthenticatedProfileRoute
   '/auth/callback': typeof AuthCallbackRoute
-  '/orders/$orderId': typeof OrdersOrderIdRoute
   '/payment/$transactionId': typeof PaymentTransactionIdRoute
   '/products/$productId': typeof ProductsProductIdRoute
   '/pay-response': typeof PayResponseIndexRoute
   '/dashboard/dashboard': typeof AuthenticatedDashboardDashboardRoute
+  '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/admin/orders/$orderId': typeof AuthenticatedAdminOrdersOrderIdRoute
-  '/dashboard/products/new': typeof AuthenticatedDashboardProductsNewRoute
   '/dashboard/categories': typeof AuthenticatedDashboardCategoriesIndexRoute
   '/dashboard/orders': typeof AuthenticatedDashboardOrdersIndexRoute
   '/dashboard/products': typeof AuthenticatedDashboardProductsIndexRoute
@@ -153,16 +146,15 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
-  '/orders': typeof OrdersRouteWithChildren
-  '/profile': typeof ProfileRoute
+  '/orders': typeof AuthenticatedOrdersRouteWithChildren
+  '/profile': typeof AuthenticatedProfileRoute
   '/auth/callback': typeof AuthCallbackRoute
-  '/orders/$orderId': typeof OrdersOrderIdRoute
   '/payment/$transactionId': typeof PaymentTransactionIdRoute
   '/products/$productId': typeof ProductsProductIdRoute
   '/pay-response': typeof PayResponseIndexRoute
   '/dashboard/dashboard': typeof AuthenticatedDashboardDashboardRoute
+  '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/admin/orders/$orderId': typeof AuthenticatedAdminOrdersOrderIdRoute
-  '/dashboard/products/new': typeof AuthenticatedDashboardProductsNewRoute
   '/dashboard/categories': typeof AuthenticatedDashboardCategoriesIndexRoute
   '/dashboard/orders': typeof AuthenticatedDashboardOrdersIndexRoute
   '/dashboard/products': typeof AuthenticatedDashboardProductsIndexRoute
@@ -175,16 +167,15 @@ export interface FileRoutesById {
   '/_unauthenticated': typeof UnauthenticatedRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
-  '/orders': typeof OrdersRouteWithChildren
-  '/profile': typeof ProfileRoute
+  '/_authenticated/orders': typeof AuthenticatedOrdersRouteWithChildren
+  '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/auth/callback': typeof AuthCallbackRoute
-  '/orders/$orderId': typeof OrdersOrderIdRoute
   '/payment/$transactionId': typeof PaymentTransactionIdRoute
   '/products/$productId': typeof ProductsProductIdRoute
   '/pay-response/': typeof PayResponseIndexRoute
   '/_authenticated/dashboard/dashboard': typeof AuthenticatedDashboardDashboardRoute
+  '/_authenticated/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/_authenticated/admin/orders/$orderId': typeof AuthenticatedAdminOrdersOrderIdRoute
-  '/_authenticated/dashboard/products/new': typeof AuthenticatedDashboardProductsNewRoute
   '/_authenticated/dashboard/categories/': typeof AuthenticatedDashboardCategoriesIndexRoute
   '/_authenticated/dashboard/orders/': typeof AuthenticatedDashboardOrdersIndexRoute
   '/_authenticated/dashboard/products/': typeof AuthenticatedDashboardProductsIndexRoute
@@ -199,13 +190,12 @@ export interface FileRouteTypes {
     | '/orders'
     | '/profile'
     | '/auth/callback'
-    | '/orders/$orderId'
     | '/payment/$transactionId'
     | '/products/$productId'
     | '/pay-response'
     | '/dashboard/dashboard'
+    | '/orders/$orderId'
     | '/admin/orders/$orderId'
-    | '/dashboard/products/new'
     | '/dashboard/categories'
     | '/dashboard/orders'
     | '/dashboard/products'
@@ -218,13 +208,12 @@ export interface FileRouteTypes {
     | '/orders'
     | '/profile'
     | '/auth/callback'
-    | '/orders/$orderId'
     | '/payment/$transactionId'
     | '/products/$productId'
     | '/pay-response'
     | '/dashboard/dashboard'
+    | '/orders/$orderId'
     | '/admin/orders/$orderId'
-    | '/dashboard/products/new'
     | '/dashboard/categories'
     | '/dashboard/orders'
     | '/dashboard/products'
@@ -236,16 +225,15 @@ export interface FileRouteTypes {
     | '/_unauthenticated'
     | '/cart'
     | '/checkout'
-    | '/orders'
-    | '/profile'
+    | '/_authenticated/orders'
+    | '/_authenticated/profile'
     | '/auth/callback'
-    | '/orders/$orderId'
     | '/payment/$transactionId'
     | '/products/$productId'
     | '/pay-response/'
     | '/_authenticated/dashboard/dashboard'
+    | '/_authenticated/orders/$orderId'
     | '/_authenticated/admin/orders/$orderId'
-    | '/_authenticated/dashboard/products/new'
     | '/_authenticated/dashboard/categories/'
     | '/_authenticated/dashboard/orders/'
     | '/_authenticated/dashboard/products/'
@@ -258,8 +246,6 @@ export interface RootRouteChildren {
   UnauthenticatedRoute: typeof UnauthenticatedRoute
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
-  OrdersRoute: typeof OrdersRouteWithChildren
-  ProfileRoute: typeof ProfileRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   PaymentTransactionIdRoute: typeof PaymentTransactionIdRoute
   ProductsProductIdRoute: typeof ProductsProductIdRoute
@@ -268,20 +254,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/profile': {
-      id: '/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof ProfileRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/orders': {
-      id: '/orders'
-      path: '/orders'
-      fullPath: '/orders'
-      preLoaderRoute: typeof OrdersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/checkout': {
       id: '/checkout'
       path: '/checkout'
@@ -338,19 +310,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PaymentTransactionIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/orders/$orderId': {
-      id: '/orders/$orderId'
-      path: '/$orderId'
-      fullPath: '/orders/$orderId'
-      preLoaderRoute: typeof OrdersOrderIdRouteImport
-      parentRoute: typeof OrdersRoute
-    }
     '/auth/callback': {
       id: '/auth/callback'
       path: '/auth/callback'
       fullPath: '/auth/callback'
       preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/orders': {
+      id: '/_authenticated/orders'
+      path: '/orders'
+      fullPath: '/orders'
+      preLoaderRoute: typeof AuthenticatedOrdersRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/orders/$orderId': {
+      id: '/_authenticated/orders/$orderId'
+      path: '/$orderId'
+      fullPath: '/orders/$orderId'
+      preLoaderRoute: typeof AuthenticatedOrdersOrderIdRouteImport
+      parentRoute: typeof AuthenticatedOrdersRoute
     }
     '/_authenticated/dashboard/dashboard': {
       id: '/_authenticated/dashboard/dashboard'
@@ -387,13 +373,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardCategoriesIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/dashboard/products/new': {
-      id: '/_authenticated/dashboard/products/new'
-      path: '/dashboard/products/new'
-      fullPath: '/dashboard/products/new'
-      preLoaderRoute: typeof AuthenticatedDashboardProductsNewRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/admin/orders/$orderId': {
       id: '/_authenticated/admin/orders/$orderId'
       path: '/admin/orders/$orderId'
@@ -404,10 +383,22 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedOrdersRouteChildren {
+  AuthenticatedOrdersOrderIdRoute: typeof AuthenticatedOrdersOrderIdRoute
+}
+
+const AuthenticatedOrdersRouteChildren: AuthenticatedOrdersRouteChildren = {
+  AuthenticatedOrdersOrderIdRoute: AuthenticatedOrdersOrderIdRoute,
+}
+
+const AuthenticatedOrdersRouteWithChildren =
+  AuthenticatedOrdersRoute._addFileChildren(AuthenticatedOrdersRouteChildren)
+
 interface AuthenticatedRouteChildren {
+  AuthenticatedOrdersRoute: typeof AuthenticatedOrdersRouteWithChildren
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedDashboardDashboardRoute: typeof AuthenticatedDashboardDashboardRoute
   AuthenticatedAdminOrdersOrderIdRoute: typeof AuthenticatedAdminOrdersOrderIdRoute
-  AuthenticatedDashboardProductsNewRoute: typeof AuthenticatedDashboardProductsNewRoute
   AuthenticatedDashboardCategoriesIndexRoute: typeof AuthenticatedDashboardCategoriesIndexRoute
   AuthenticatedDashboardOrdersIndexRoute: typeof AuthenticatedDashboardOrdersIndexRoute
   AuthenticatedDashboardProductsIndexRoute: typeof AuthenticatedDashboardProductsIndexRoute
@@ -415,10 +406,10 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedOrdersRoute: AuthenticatedOrdersRouteWithChildren,
+  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedDashboardDashboardRoute: AuthenticatedDashboardDashboardRoute,
   AuthenticatedAdminOrdersOrderIdRoute: AuthenticatedAdminOrdersOrderIdRoute,
-  AuthenticatedDashboardProductsNewRoute:
-    AuthenticatedDashboardProductsNewRoute,
   AuthenticatedDashboardCategoriesIndexRoute:
     AuthenticatedDashboardCategoriesIndexRoute,
   AuthenticatedDashboardOrdersIndexRoute:
@@ -432,25 +423,12 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
   AuthenticatedRouteChildren,
 )
 
-interface OrdersRouteChildren {
-  OrdersOrderIdRoute: typeof OrdersOrderIdRoute
-}
-
-const OrdersRouteChildren: OrdersRouteChildren = {
-  OrdersOrderIdRoute: OrdersOrderIdRoute,
-}
-
-const OrdersRouteWithChildren =
-  OrdersRoute._addFileChildren(OrdersRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   UnauthenticatedRoute: UnauthenticatedRoute,
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
-  OrdersRoute: OrdersRouteWithChildren,
-  ProfileRoute: ProfileRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   PaymentTransactionIdRoute: PaymentTransactionIdRoute,
   ProductsProductIdRoute: ProductsProductIdRoute,

@@ -12,9 +12,9 @@ import {
   ShoppingCart,
   UserPlus,
 } from 'lucide-react'
-import CartDrawer from '../CartDrawer'
 import UserAvatar from '../UserAvatar'
 import { useHeaderHook } from './hooks/useHeaderHook'
+import CartDrawer from '@/app/features/cart/components/CartDrawer'
 import AuthModal from '@/app/features/auth/components/AuthModal'
 
 export default function Header() {
@@ -173,14 +173,14 @@ export default function Header() {
               {/* Cart Icon */}
               <Button
                 onPress={onOpenCart}
-                className="relative p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all duration-200 shadow-coffee hover:shadow-coffee-md"
+                className="relative p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all duration-200 shadow-coffee hover:shadow-coffee-md overflow-visible"
                 aria-label="Abrir carrito"
                 isIconOnly
               >
                 <ShoppingCart size={24} className="text-white" />
                 {itemCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                    {itemCount > 9 ? '9+' : itemCount}
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] h-5 px-1.5 flex items-center justify-center leading-none">
+                    {itemCount > 99 ? '99+' : itemCount}
                   </span>
                 )}
               </Button>

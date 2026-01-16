@@ -99,7 +99,22 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             </p>
           </Link>
         </div>
-        {location.pathname === '/dashboard' ? <DashboardStats /> : children}
+        {(() => {
+          const isDashboardHome =
+            location.pathname === '/dashboard' ||
+            location.pathname === '/dashboard/dashboard'
+          const isAnyCardSelected =
+            location.pathname.startsWith('/dashboard/products') ||
+            location.pathname.startsWith('/dashboard/categories') ||
+            location.pathname.startsWith('/dashboard/orders') ||
+            location.pathname.startsWith('/dashboard/users')
+
+          return isDashboardHome || !isAnyCardSelected ? (
+            <DashboardStats />
+          ) : (
+            children
+          )
+        })()}
       </div>
     </div>
   )
