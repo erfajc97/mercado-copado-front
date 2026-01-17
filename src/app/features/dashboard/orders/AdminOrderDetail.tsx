@@ -165,6 +165,26 @@ export function AdminOrderDetail({ orderId }: AdminOrderDetailProps) {
           </div>
         </div>
 
+        {/* Imagen del Depósito si existe */}
+        {order.depositImageUrl && (
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-coffee-darker mb-3">
+              Comprobante de Depósito
+            </h3>
+            <div className="p-4 bg-gray-50 rounded-lg">
+              <img
+                src={order.depositImageUrl}
+                alt="Comprobante de depósito"
+                className="max-w-full h-auto rounded-lg shadow-md cursor-pointer hover:opacity-90 transition-opacity"
+                onClick={() => window.open(order.depositImageUrl, '_blank')}
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                Haz clic en la imagen para verla en tamaño completo
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="mb-6">
           <h3 className="text-lg font-semibold text-coffee-darker mb-3">
             Productos

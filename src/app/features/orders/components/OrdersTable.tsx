@@ -155,14 +155,12 @@ export const OrdersTable = ({
         renderCell={renderCell}
         loading={isLoading}
         bottomContent={
-          totalPages > 1 ? (
-            <CustomPagination
-              page={page}
-              pages={totalPages}
-              setPage={onPageChange}
-              isLoading={isLoading}
-            />
-          ) : null
+          <CustomPagination
+            page={page}
+            pages={totalPages}
+            setPage={onPageChange}
+            isLoading={isLoading}
+          />
         }
       />
     </div>

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button } from '@heroui/react'
 import { Form, Input } from 'antd'
 import { Edit, Trash2 } from 'lucide-react'
@@ -48,22 +48,28 @@ export default function EditCategoryModal({
     subcategoryToDelete,
   } = useEditCategoryModalHook()
 
-  // Actualizar la categoría local cuando cambia el prop
-  if (category && category !== localCategory) {
-    setLocalCategory(category)
-  }
+  // Sincronizar localCategory con el prop category cuando cambia
+  useEffect(() => {
+    if (category) {
+      setLocalCategory(category)
+    }
+  }, [category])
 
   // Inicializar el formulario cuando la modal se abre (solo una vez)
-  if (isOpen && !previousIsOpenRef.current && localCategory) {
-    form.setFieldsValue({ name: localCategory.name })
-    resetForm()
-    previousIsOpenRef.current = true
-  }
+  useEffect(() => {
+    if (isOpen && !previousIsOpenRef.current && localCategory) {
+      form.setFieldsValue({ name: localCategory.name })
+      resetForm()
+      previousIsOpenRef.current = true
+    }
+  }, [isOpen, localCategory, form, resetForm])
 
   // Resetear la referencia cuando la modal se cierra
-  if (!isOpen && previousIsOpenRef.current) {
-    previousIsOpenRef.current = false
-  }
+  useEffect(() => {
+    if (!isOpen && previousIsOpenRef.current) {
+      previousIsOpenRef.current = false
+    }
+  }, [isOpen])
 
   const handleFormSubmit = async (values: any) => {
     const success = await handleSubmit(values, localCategory)
@@ -74,32 +80,54 @@ export default function EditCategoryModal({
 
   // Actualizar la subcategoría en el estado local cuando se edita
   const handleUpdateSubcategoryWithRefresh = async () => {
-    const success = await handleUpdateSubcategory()
-    if (success && localCategory && editingSubcategoryId) {
-      // Actualizar el estado local de la categoría
-      setLocalCategory({
-        ...localCategory,
-        subcategories: localCategory.subcategories?.map((sub) =>
-          sub.id === editingSubcategoryId
-            ? { ...sub, name: editingSubcategoryName.trim() }
-            : sub,
-        ),
+    if (!localCategory || !editingSubcategoryId) return
+    
+    const subcategoryIdToUpdate = editingSubcategoryId
+    const newName = editingSubcategoryName.trim()
+    
+    try {
+      // useUpdateSubcategoryMutation ya maneja sonnerResponse y invalida queries
+      await handleUpdateSubcategory()
+      // Actualizar el estado local inmediatamente después de la mutation exitosa
+      setLocalCategory((prev) => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          subcategories: prev.subcategories?.map((sub) =>
+            sub.id === subcategoryIdToUpdate
+              ? { ...sub, name: newName }
+              : sub,
+          ),
+        }
       })
+    } catch (error) {
+      console.error('Error updating subcategory:', error)
+      // El sonner ya se muestra en la mutation onError
     }
   }
 
   // Eliminar la subcategoría del estado local cuando se elimina
   const handleDeleteSubcategoryWithRefresh = async () => {
+    if (!localCategory || !subcategoryToDelete) return
+    
     const subcategoryIdToDelete = subcategoryToDelete
-    const success = await handleDeleteSubcategory()
-    if (success && localCategory && subcategoryIdToDelete) {
-      // Actualizar el estado local de la categoría
-      setLocalCategory({
-        ...localCategory,
-        subcategories: localCategory.subcategories?.filter(
-          (sub) => sub.id !== subcategoryIdToDelete,
-        ),
+    
+    try {
+      // useDeleteSubcategoryMutation ya maneja sonnerResponse y invalida queries
+      await handleDeleteSubcategory()
+      // Actualizar el estado local inmediatamente después de la mutation exitosa
+      setLocalCategory((prev) => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          subcategories: prev.subcategories?.filter(
+            (sub) => sub.id !== subcategoryIdToDelete,
+          ),
+        }
       })
+    } catch (error) {
+      console.error('Error deleting subcategory:', error)
+      // El sonner ya se muestra en la mutation onError
     }
   }
 
@@ -212,7 +240,15 @@ export default function EditCategoryModal({
                 key={index}
                 name={['newSubcategories', index]}
                 rules={[
-                  { required: true, message: 'Por favor ingresa el nombre' },
+                  {
+                    validator: (_rule, value) => {
+                      // Campo opcional: solo validar si tiene valor
+                      if (!value || value.trim() === '') {
+                        return Promise.resolve()
+                      }
+                      return Promise.resolve()
+                    },
+                  },
                 ]}
               >
                 <div className="flex gap-2">

@@ -10,6 +10,7 @@ export const useCreateProductMutation = () => {
     mutationFn: createProductService,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboardStats'] })
       sonnerResponse('Producto creado exitosamente', 'success')
     },
     onError: (error) => {
@@ -87,6 +88,7 @@ export const useUpdateProductMutation = () => {
         queryClient.invalidateQueries({
           queryKey: ['product', variables.productId],
         })
+        queryClient.invalidateQueries({ queryKey: ['dashboardStats'] })
       }, 500)
       sonnerResponse('Producto actualizado exitosamente', 'success')
     },
@@ -112,6 +114,7 @@ export const useDeleteProductMutation = () => {
     mutationFn: deleteProductService,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboardStats'] })
       sonnerResponse('Producto eliminado exitosamente', 'success')
     },
     onError: (error) => {

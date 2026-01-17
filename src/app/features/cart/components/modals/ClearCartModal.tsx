@@ -28,6 +28,10 @@ export default function ClearCartModal({
       size="md"
       placement="center"
       headerContent="Limpiar Carrito"
+      classNames={{
+        wrapper: '!z-[1050]',
+        backdrop: '!z-[1050]',
+      }}
       footerContent={
         <div className="flex gap-2 justify-end w-full">
           <Button variant="light" onPress={onClose} isDisabled={isLoading}>

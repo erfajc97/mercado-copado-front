@@ -62,9 +62,12 @@ export const useEditCategoryModalHook = () => {
   }
 
   const handleUpdateSubcategory = async () => {
-    if (!editingSubcategoryId || !editingSubcategoryName.trim()) return
+    if (!editingSubcategoryId || !editingSubcategoryName.trim()) {
+      return false
+    }
 
     try {
+      // useUpdateSubcategoryMutation ya maneja sonnerResponse en onSuccess y onError
       await updateSubcategory({
         subcategoryId: editingSubcategoryId,
         name: editingSubcategoryName.trim(),
@@ -75,20 +78,25 @@ export const useEditCategoryModalHook = () => {
       return true
     } catch (error) {
       console.error('Error updating subcategory:', error)
+      // El sonner ya se muestra en la mutation onError
       return false
     }
   }
 
   const handleDeleteSubcategory = async () => {
-    if (!subcategoryToDelete) return
+    if (!subcategoryToDelete) {
+      return false
+    }
 
     try {
+      // useDeleteSubcategoryMutation ya maneja sonnerResponse en onSuccess y onError
       await deleteSubcategory(subcategoryToDelete)
       setDeleteSubcategoryModalOpen(false)
       setSubcategoryToDelete(null)
       return true
     } catch (error) {
       console.error('Error deleting subcategory:', error)
+      // El sonner ya se muestra en la mutation onError
       return false
     }
   }

@@ -8,6 +8,7 @@ export const useDeleteUserMutation = () => {
     mutationFn: deleteUserService,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminUsers'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboardStats'] })
       sonnerResponse('Usuario eliminado exitosamente', 'success')
     },
     onError: (error) => {

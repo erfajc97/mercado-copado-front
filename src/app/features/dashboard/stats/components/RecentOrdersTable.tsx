@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
-import { ShoppingCart } from 'lucide-react'
+import { Button } from '@heroui/react'
+import { Eye, ShoppingCart } from 'lucide-react'
 import { getStatusColor } from '../helpers/getStatusColor'
 import { getStatusLabel } from '../helpers/getStatusLabel'
 import type { Column } from '@/components/UI/table-nextui/CustomTableNextUi'
@@ -39,6 +40,11 @@ export const RecentOrdersTable = ({ recentOrders }: RecentOrdersTableProps) => {
       name: 'Estado',
       uid: 'status',
     },
+    {
+      name: 'Acciones',
+      uid: 'actions',
+      width: 100,
+    },
   ]
 
   const renderCell = (order: any, columnKey: React.Key) => {
@@ -46,7 +52,7 @@ export const RecentOrdersTable = ({ recentOrders }: RecentOrdersTableProps) => {
       case 'id':
         return (
           <Link
-            to="/admin/orders/$orderId"
+            to="/dashboard/orders/$orderId"
             params={{ orderId: order.id }}
             className="text-coffee-medium hover:text-coffee-darker font-semibold"
           >
@@ -76,6 +82,20 @@ export const RecentOrdersTable = ({ recentOrders }: RecentOrdersTableProps) => {
           >
             {getStatusLabel(order.status)}
           </span>
+        )
+      case 'actions':
+        return (
+          <div className="flex gap-2">
+            <Link to="/dashboard/orders/$orderId" params={{ orderId: order.id }}>
+              <Button
+                variant="light"
+                size="sm"
+                isIconOnly
+              >
+                <Eye size={16} />
+              </Button>
+            </Link>
+          </div>
         )
       default:
         return null

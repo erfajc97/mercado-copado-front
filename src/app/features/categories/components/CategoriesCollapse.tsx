@@ -107,14 +107,12 @@ export const CategoriesCollapse = ({ hook }: CategoriesCollapseProps) => {
           ))}
         </Collapse>
       </div>
-      {hook.totalPages > 1 && (
-        <CustomPagination
-          page={currentPage}
-          pages={hook.totalPages}
-          setPage={setCurrentPage}
-          isLoading={hook.isLoading}
-        />
-      )}
+      <CustomPagination
+        page={currentPage}
+        pages={hook.totalPages}
+        setPage={setCurrentPage}
+        isLoading={hook.isLoading}
+      />
     </div>
   )
 }

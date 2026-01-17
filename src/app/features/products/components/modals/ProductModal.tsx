@@ -74,7 +74,7 @@ export default function ProductModal({
       isOpen={isOpen}
       onOpenChange={handleOpenChange}
       isDismissable
-      size="5xl"
+      size="2xl"
       placement="center"
       headerContent={isEditMode ? 'Editar Producto' : 'Nuevo Producto'}
     >
@@ -96,11 +96,12 @@ export default function ProductModal({
           />
 
           {/* Botones */}
-          <div className="flex gap-3 mt-4">
+          <div className="flex gap-2 mt-2">
             <Button
               variant="light"
               onPress={handleCancel}
               className="flex-1"
+              size="sm"
             >
               Cancelar
             </Button>
@@ -110,6 +111,7 @@ export default function ProductModal({
               isLoading={isPending}
               isDisabled={isPending}
               className="flex-1 bg-gradient-coffee border-none hover:opacity-90"
+              size="sm"
             >
               {isEditMode ? 'Guardar Cambios' : 'Crear Producto'}
             </Button>

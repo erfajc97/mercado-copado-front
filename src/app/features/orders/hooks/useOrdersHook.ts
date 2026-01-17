@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useAllOrdersQuery, useMyOrdersQuery } from '../queries/useOrdersQuery'
 import {
@@ -10,6 +10,7 @@ import { useCurrency } from '@/app/hooks/useCurrency'
 import { useAuthStore } from '@/app/store/auth/authStore'
 import { getAddressesService } from '@/app/features/addresses/services/getAddressesService'
 import { getPaymentMethodsService } from '@/app/features/payment-cards/services/getPaymentMethodsService'
+import { extractItems, extractPagination } from '@/app/helpers/parsePaginatedResponse'
 
 const pageSize = 10
 
@@ -59,14 +60,16 @@ export const useOrdersHook = () => {
     queryFn: getPaymentMethodsService,
   })
 
-  // Extraer órdenes y paginación de la respuesta
-  // Asegurar que orders siempre sea un array
-  const orders = Array.isArray(ordersData)
-    ? ordersData
-    : Array.isArray(ordersData?.content)
-      ? ordersData.content
-      : []
-  const pagination = ordersData?.pagination
+  // Extraer órdenes y paginación de la respuesta usando helpers
+  const orders = useMemo(() => {
+    if (!ordersData) return []
+    return extractItems(ordersData)
+  }, [ordersData])
+
+  const pagination = useMemo(() => {
+    if (!ordersData) return undefined
+    return extractPagination(ordersData)
+  }, [ordersData])
 
   // Usar hook de verificación de pagos
   usePaymentVerificationHook({

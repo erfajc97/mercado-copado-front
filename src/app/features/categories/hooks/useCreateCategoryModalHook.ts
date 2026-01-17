@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useCreateCategoryMutation } from '../mutations/useCategoryMutations'
-import { useCreateSubcategoryMutation } from '../mutations/useCreateSubcategoryMutation'
+import { useCreateSubcategoryMutation } from '../mutations/useSubcategoryMutations'
 
 export const useCreateCategoryModalHook = () => {
   const { mutateAsync: createCategory, isPending: isCreatingCategory } =

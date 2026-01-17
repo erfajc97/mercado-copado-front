@@ -165,14 +165,12 @@ export const ProductsTable = ({ hook }: ProductsTableProps) => {
         renderCell={renderCell}
         loading={hook.isLoading}
         bottomContent={
-          hook.totalPages > 1 ? (
-            <CustomPagination
-              page={hook.currentPage}
-              pages={hook.totalPages}
-              setPage={hook.setCurrentPage}
-              isLoading={hook.isLoading}
-            />
-          ) : null
+          <CustomPagination
+            page={hook.currentPage}
+            pages={hook.totalPages}
+            setPage={hook.setCurrentPage}
+            isLoading={hook.isLoading}
+          />
         }
       />
     </div>

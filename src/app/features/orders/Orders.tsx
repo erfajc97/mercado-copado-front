@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useOrdersHook } from './hooks/useOrdersHook'
 import { OrderCard } from './components/OrderCard'
 import { OrderProductsModal } from './components/OrderProductsModal'
-import { OrdersPagination } from './components/OrdersPagination'
+import CustomPagination from '@/components/UI/table-nextui/CustomPagination'
 import { PaymentRetryModal } from '@/app/features/payments/components/payphone/components/PaymentRetryModal'
 
 export function Orders() {
@@ -88,15 +88,12 @@ export function Orders() {
         currency={currency}
       />
 
-      {pagination && (
-        <OrdersPagination
-          currentPage={pagination.page || 1}
-          totalPages={pagination.totalPages || 1}
-          total={pagination.total || 0}
-          isLoading={isLoading}
-          onPageChange={handlePageChange}
-        />
-      )}
+      <CustomPagination
+        page={pagination?.page || 1}
+        pages={pagination?.totalPages || 1}
+        setPage={handlePageChange}
+        isLoading={isLoading}
+      />
 
       {/* Modal de retry de pago */}
       {selectedOrderForPayment && (

@@ -6,6 +6,7 @@ import {
 // import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 // import { TanStackDevtools } from '@tanstack/react-devtools'
 import { HeroUIProvider, ToastProvider } from '@heroui/react'
+import { Toaster } from 'sonner'
 
 import Header from '../components/Header'
 import Footer from '../components/Footer'
@@ -50,6 +51,7 @@ function RootComponent() {
       <div className="min-h-screen flex flex-col">
         <Header />
         <ToastProvider placement="top-right" />
+        <Toaster position="top-right" />
         <main className="flex-1">
           <Outlet />
         </main>

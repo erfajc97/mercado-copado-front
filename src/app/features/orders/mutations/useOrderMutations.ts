@@ -16,6 +16,7 @@ export const useCreateOrderMutation = () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] })
       queryClient.invalidateQueries({ queryKey: ['orders', 'my-orders'] })
       queryClient.invalidateQueries({ queryKey: ['orders', 'all'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboardStats'] })
       clearCart() // Limpiar el carrito local después de crear la orden
       sonnerResponse('Orden creada exitosamente', 'success')
     },
@@ -42,6 +43,7 @@ export const useUpdateOrderStatusMutation = () => {
       queryClient.invalidateQueries({ queryKey: ['orders', 'my-orders'] })
       queryClient.invalidateQueries({ queryKey: ['orders', 'all'] })
       queryClient.invalidateQueries({ queryKey: ['order'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboardStats'] })
       sonnerResponse('Estado de la orden actualizado exitosamente', 'success')
     },
     onError: (error) => {

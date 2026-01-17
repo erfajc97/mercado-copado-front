@@ -26,6 +26,7 @@ import { Route as AuthenticatedDashboardUsersIndexRouteImport } from './routes/_
 import { Route as AuthenticatedDashboardProductsIndexRouteImport } from './routes/_authenticated/dashboard/products/index'
 import { Route as AuthenticatedDashboardOrdersIndexRouteImport } from './routes/_authenticated/dashboard/orders/index'
 import { Route as AuthenticatedDashboardCategoriesIndexRouteImport } from './routes/_authenticated/dashboard/categories/index'
+import { Route as AuthenticatedDashboardOrdersOrderIdRouteImport } from './routes/_authenticated/dashboard/orders/$orderId'
 import { Route as AuthenticatedAdminOrdersOrderIdRouteImport } from './routes/_authenticated/admin/orders/$orderId'
 
 const CheckoutRoute = CheckoutRouteImport.update({
@@ -117,6 +118,12 @@ const AuthenticatedDashboardCategoriesIndexRoute =
     path: '/dashboard/categories/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedDashboardOrdersOrderIdRoute =
+  AuthenticatedDashboardOrdersOrderIdRouteImport.update({
+    id: '/dashboard/orders/$orderId',
+    path: '/dashboard/orders/$orderId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedAdminOrdersOrderIdRoute =
   AuthenticatedAdminOrdersOrderIdRouteImport.update({
     id: '/admin/orders/$orderId',
@@ -137,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/dashboard': typeof AuthenticatedDashboardDashboardRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/admin/orders/$orderId': typeof AuthenticatedAdminOrdersOrderIdRoute
+  '/dashboard/orders/$orderId': typeof AuthenticatedDashboardOrdersOrderIdRoute
   '/dashboard/categories': typeof AuthenticatedDashboardCategoriesIndexRoute
   '/dashboard/orders': typeof AuthenticatedDashboardOrdersIndexRoute
   '/dashboard/products': typeof AuthenticatedDashboardProductsIndexRoute
@@ -155,6 +163,7 @@ export interface FileRoutesByTo {
   '/dashboard/dashboard': typeof AuthenticatedDashboardDashboardRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/admin/orders/$orderId': typeof AuthenticatedAdminOrdersOrderIdRoute
+  '/dashboard/orders/$orderId': typeof AuthenticatedDashboardOrdersOrderIdRoute
   '/dashboard/categories': typeof AuthenticatedDashboardCategoriesIndexRoute
   '/dashboard/orders': typeof AuthenticatedDashboardOrdersIndexRoute
   '/dashboard/products': typeof AuthenticatedDashboardProductsIndexRoute
@@ -176,6 +185,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard/dashboard': typeof AuthenticatedDashboardDashboardRoute
   '/_authenticated/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/_authenticated/admin/orders/$orderId': typeof AuthenticatedAdminOrdersOrderIdRoute
+  '/_authenticated/dashboard/orders/$orderId': typeof AuthenticatedDashboardOrdersOrderIdRoute
   '/_authenticated/dashboard/categories/': typeof AuthenticatedDashboardCategoriesIndexRoute
   '/_authenticated/dashboard/orders/': typeof AuthenticatedDashboardOrdersIndexRoute
   '/_authenticated/dashboard/products/': typeof AuthenticatedDashboardProductsIndexRoute
@@ -196,6 +206,7 @@ export interface FileRouteTypes {
     | '/dashboard/dashboard'
     | '/orders/$orderId'
     | '/admin/orders/$orderId'
+    | '/dashboard/orders/$orderId'
     | '/dashboard/categories'
     | '/dashboard/orders'
     | '/dashboard/products'
@@ -214,6 +225,7 @@ export interface FileRouteTypes {
     | '/dashboard/dashboard'
     | '/orders/$orderId'
     | '/admin/orders/$orderId'
+    | '/dashboard/orders/$orderId'
     | '/dashboard/categories'
     | '/dashboard/orders'
     | '/dashboard/products'
@@ -234,6 +246,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard/dashboard'
     | '/_authenticated/orders/$orderId'
     | '/_authenticated/admin/orders/$orderId'
+    | '/_authenticated/dashboard/orders/$orderId'
     | '/_authenticated/dashboard/categories/'
     | '/_authenticated/dashboard/orders/'
     | '/_authenticated/dashboard/products/'
@@ -373,6 +386,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardCategoriesIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/dashboard/orders/$orderId': {
+      id: '/_authenticated/dashboard/orders/$orderId'
+      path: '/dashboard/orders/$orderId'
+      fullPath: '/dashboard/orders/$orderId'
+      preLoaderRoute: typeof AuthenticatedDashboardOrdersOrderIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/admin/orders/$orderId': {
       id: '/_authenticated/admin/orders/$orderId'
       path: '/admin/orders/$orderId'
@@ -399,6 +419,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedDashboardDashboardRoute: typeof AuthenticatedDashboardDashboardRoute
   AuthenticatedAdminOrdersOrderIdRoute: typeof AuthenticatedAdminOrdersOrderIdRoute
+  AuthenticatedDashboardOrdersOrderIdRoute: typeof AuthenticatedDashboardOrdersOrderIdRoute
   AuthenticatedDashboardCategoriesIndexRoute: typeof AuthenticatedDashboardCategoriesIndexRoute
   AuthenticatedDashboardOrdersIndexRoute: typeof AuthenticatedDashboardOrdersIndexRoute
   AuthenticatedDashboardProductsIndexRoute: typeof AuthenticatedDashboardProductsIndexRoute
@@ -410,6 +431,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedDashboardDashboardRoute: AuthenticatedDashboardDashboardRoute,
   AuthenticatedAdminOrdersOrderIdRoute: AuthenticatedAdminOrdersOrderIdRoute,
+  AuthenticatedDashboardOrdersOrderIdRoute:
+    AuthenticatedDashboardOrdersOrderIdRoute,
   AuthenticatedDashboardCategoriesIndexRoute:
     AuthenticatedDashboardCategoriesIndexRoute,
   AuthenticatedDashboardOrdersIndexRoute:

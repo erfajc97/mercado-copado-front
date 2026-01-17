@@ -4,7 +4,6 @@ import { StatsCards } from './components/StatsCards'
 import { AdditionalStatsCards } from './components/AdditionalStatsCards'
 import { RecentOrdersTable } from './components/RecentOrdersTable'
 import { getDolarBlueRate } from '@/app/services/currencyService'
-import { useAllOrdersQuery } from '@/app/features/orders/queries/useOrdersQuery'
 
 export default function DashboardStats() {
   const { data: stats, isLoading } = useQuery({
@@ -19,17 +18,8 @@ export default function DashboardStats() {
     refetchInterval: 60 * 60 * 1000,
   })
 
-  const { data: recentOrdersData } = useAllOrdersQuery({
-    page: 1,
-    limit: 5,
-  })
-
-  // Asegurar que recentOrders siempre sea un array
-  const recentOrders = Array.isArray(recentOrdersData)
-    ? recentOrdersData
-    : Array.isArray(recentOrdersData?.content)
-      ? recentOrdersData.content
-      : []
+  // Usar las órdenes recientes del stats (últimas 10)
+  const recentOrders = stats?.recentOrders || []
 
   if (isLoading) {
     return (

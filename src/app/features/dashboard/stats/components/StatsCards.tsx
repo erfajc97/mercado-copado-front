@@ -46,6 +46,7 @@ export const StatsCards = ({ stats }: StatsCardsProps) => {
         <p className="text-3xl font-bold text-purple-600">
           {stats?.totalOrders || 0}
         </p>
+        <p className="text-xs text-gray-500 mt-1">Histórico</p>
       </div>
 
       <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow border-l-4 border-l-yellow-500 p-6">
@@ -65,6 +66,7 @@ export const StatsCards = ({ stats }: StatsCardsProps) => {
               }).format(stats.totalRevenue)
             : '$0.00'}
         </p>
+        <p className="text-xs text-gray-500 mt-1">Solo órdenes completadas</p>
       </div>
     </div>
   )
