@@ -840,7 +840,183 @@ export function FormAddresses({ form, onFinish }: Props) {
 - Mantener layout vertical del Form pero con campos lado a lado dentro de cada grupo
 - Priorizar formularios compactos que ocupen menos espacio vertical
 
-### 8. Organización de Tabs
+### 8. Evitar Duplicación de Modales con Mismo Formulario
+
+**REQUERIMIENTO OBLIGATORIO:**
+
+Si dos modales (crear/editar) usan el mismo formulario, **DEBEN unificarse en una sola modal** para evitar duplicación de código.
+
+**Patrón de Unificación:**
+
+- ✅ Una sola modal que recibe `entityId: string | null` como prop
+- ✅ Si `entityId` es `null`, es modo creación
+- ✅ Si `entityId` tiene valor, es modo edición
+- ✅ El hook detecta el modo y usa la mutación correspondiente
+- ✅ El formulario es un componente separado reutilizable (`Form{Entity}.tsx`)
+- ✅ Título y botones dinámicos según el modo
+
+**Estructura:**
+
+```
+components/
+├── modals/
+│   └── {Entity}Modal.tsx      # Modal unificada (crear/editar)
+└── Form{Entity}.tsx           # Formulario reutilizable
+hooks/
+└── use{Entity}ModalHook.ts    # Hook unificado que detecta modo
+```
+
+**Ejemplo Completo:**
+
+```typescript
+// hooks/useProductModalHook.ts
+export const useProductModalHook = (
+  productId: string | null,
+  isOpen: boolean,
+) => {
+  const isEditMode = !!productId
+  
+  // Si es edición, cargar datos
+  const { data: product, isLoading } = useProductQuery(
+    productId || '',
+    { enabled: isEditMode && isOpen },
+  )
+  
+  // Mutations según el modo
+  const { mutateAsync: createProduct } = useCreateProductMutation()
+  const { mutateAsync: updateProduct } = useUpdateProductMutation()
+  
+  const handleSubmit = async (values: any) => {
+    if (isEditMode) {
+      await updateProduct({ productId: productId!, data: values })
+    } else {
+      await createProduct(values)
+    }
+  }
+  
+  return {
+    // ... otros valores
+    isEditMode,
+    handleSubmit,
+  }
+}
+```
+
+```typescript
+// components/modals/ProductModal.tsx
+interface ProductModalProps {
+  isOpen: boolean
+  onClose: () => void
+  productId: string | null // null = crear, string = editar
+}
+
+export default function ProductModal({
+  isOpen,
+  onClose,
+  productId,
+}: ProductModalProps) {
+  const [form] = Form.useForm()
+  const {
+    categories,
+    subcategories,
+    handleSubmit,
+    isEditMode,
+    // ... otros valores
+  } = useProductModalHook(productId, isOpen)
+
+  return (
+    <CustomModalNextUI
+      isOpen={isOpen}
+      onOpenChange={handleOpenChange}
+      headerContent={isEditMode ? 'Editar Producto' : 'Nuevo Producto'}
+    >
+      <FormProduct
+        form={form}
+        categories={categories}
+        subcategories={subcategories}
+        isEditMode={isEditMode}
+        onFinish={handleSubmit}
+      />
+      <Button onPress={() => form.submit()}>
+        {isEditMode ? 'Guardar Cambios' : 'Crear Producto'}
+      </Button>
+    </CustomModalNextUI>
+  )
+}
+```
+
+```typescript
+// components/FormProduct.tsx
+interface FormProductProps {
+  form: FormInstance
+  categories: Array<Category>
+  subcategories: Array<Subcategory>
+  isEditMode?: boolean
+  onFinish?: (values: any) => void
+}
+
+export const FormProduct = ({
+  form,
+  categories,
+  subcategories,
+  isEditMode = false,
+  onFinish,
+}: FormProductProps) => {
+  return (
+    <Form form={form} layout="vertical" onFinish={onFinish}>
+      {/* Campos del formulario */}
+    </Form>
+  )
+}
+```
+
+**Uso en el componente principal:**
+
+```typescript
+// Products.tsx
+const { productModalOpen, productToEdit, setProductModalOpen } = useProductsStore()
+
+// Para crear: productToEdit = null
+<Button onPress={() => {
+  setProductToEdit(null)
+  setProductModalOpen(true)
+}}>
+  Nuevo Producto
+</Button>
+
+// Para editar: productToEdit = "product-id"
+<Button onPress={() => {
+  setProductToEdit(product.id)
+  setProductModalOpen(true)
+}}>
+  Editar
+</Button>
+
+// Una sola modal
+<ProductModal
+  isOpen={productModalOpen}
+  onClose={() => setProductModalOpen(false)}
+  productId={productToEdit} // null = crear, string = editar
+/>
+```
+
+**Ventajas:**
+
+- ✅ Elimina duplicación de código
+- ✅ Mantiene consistencia entre crear y editar
+- ✅ Facilita mantenimiento (un solo lugar para cambios)
+- ✅ Reduce tamaño del código
+- ✅ Mejora la experiencia de desarrollo
+
+**Reglas Importantes:**
+
+- ❌ NO crear modales separadas para crear y editar si usan el mismo formulario
+- ❌ NO duplicar el JSX del formulario en múltiples modales
+- ✅ SÍ unificar en una sola modal con `entityId: string | null`
+- ✅ SÍ extraer el formulario a un componente reutilizable
+- ✅ SÍ usar un hook unificado que detecte el modo
+
+### 9. Organización de Tabs
 
 **REQUERIMIENTO OBLIGATORIO:**
 
@@ -1018,7 +1194,7 @@ export const PaymentRetryModal = ({ open, onCancel, ...props }) => {
 - ✅ SÍ crear un componente separado para cada tab
 - ✅ SÍ reutilizar componentes existentes dentro de las tabs
 
-### 9. Manejo de Estado Global (Zustand)
+### 10. Manejo de Estado Global (Zustand)
 
 **Cuándo usar Zustand:**
 
@@ -1069,7 +1245,7 @@ export const useCartStore = create(
 )
 ```
 
-### 10. Servicios (API Calls)
+### 11. Servicios (API Calls)
 
 **Estructura:**
 
@@ -1099,7 +1275,7 @@ export const getCartService = async () => {
 }
 ```
 
-### 11. Helpers
+### 12. Helpers
 
 **Cuándo crear helpers:**
 
@@ -1122,7 +1298,7 @@ export const calculateItemPrice = (
 }
 ```
 
-### 12. Código Limpio
+### 13. Código Limpio
 
 **Reglas:**
 
@@ -1158,7 +1334,7 @@ const total = useMemo(() => {
 }, [items])
 ```
 
-### 13. Sincronización de Estado
+### 14. Sincronización de Estado
 
 **Patrón para sincronizar estado local con servidor:**
 
@@ -1207,6 +1383,110 @@ export function useCartSync() {
   }, [token, localItems.length, dbItems, syncLocalToDB])
 }
 ```
+
+### 15. Uso de sonnerResponse para Notificaciones
+
+**REQUERIMIENTO OBLIGATORIO:**
+
+Las notificaciones al usuario mediante `sonnerResponse` deben estar centralizadas en las mutations para mantener consistencia y evitar duplicación de código.
+
+**Reglas Fundamentales:**
+
+- ✅ **SOLO se usa en mutations** (create, update, delete)
+- ✅ **NO se usa en componentes, modales, hooks, servicios, stores o queries**
+- ✅ Debe importarse desde `@/app/helpers/sonnerResponse`
+- ✅ Debe usarse en `onSuccess` y `onError` de las mutations
+- ✅ **NO se usa en mutations de GET/read** (solo create, update, delete)
+- ✅ Mensajes deben ser claros y descriptivos
+
+**Estructura Correcta:**
+
+```typescript
+// ✅ CORRECTO - En mutation
+// mutations/useCreateProductMutation.ts
+import { sonnerResponse } from '@/app/helpers/sonnerResponse'
+
+export const useCreateProductMutation = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: createProductService,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] })
+      sonnerResponse('Producto creado exitosamente', 'success')
+    },
+    onError: (error) => {
+      const message =
+        error instanceof Error ? error.message : 'Error al crear el producto'
+      sonnerResponse(message, 'error')
+    },
+  })
+}
+```
+
+**Ejemplos de Uso Incorrecto:**
+
+```typescript
+// ❌ INCORRECTO - En componente
+// components/ProductCard.tsx
+import { sonnerResponse } from '@/app/helpers/sonnerResponse' // ❌ NO
+
+const handleAdd = async () => {
+  await addToCart(...)
+  sonnerResponse('Producto agregado', 'success') // ❌ NO
+}
+```
+
+```typescript
+// ❌ INCORRECTO - En hook
+// hooks/useProductHook.ts
+import { sonnerResponse } from '@/app/helpers/sonnerResponse' // ❌ NO
+
+const handleSubmit = async () => {
+  await createProduct(...)
+  sonnerResponse('Creado', 'success') // ❌ NO
+}
+```
+
+```typescript
+// ❌ INCORRECTO - En servicio
+// services/createProductService.ts
+import { sonnerResponse } from '@/app/helpers/sonnerResponse' // ❌ NO
+
+export const createProductService = async (data) => {
+  const response = await axiosInstance.post(...)
+  sonnerResponse('Creado', 'success') // ❌ NO
+  return response.data
+}
+```
+
+**Casos Especiales:**
+
+1. **Carrito Local (localStorage):**
+   - Si una acción no pasa por mutation (ej: agregar al carrito local cuando no hay autenticación), se puede usar `sonnerResponse` directamente en el componente
+   - Esto es una excepción porque no hay mutation involucrada
+
+2. **Validaciones de Formulario:**
+   - Las validaciones locales de formulario pueden mostrar errores, pero preferiblemente usar el sistema de validación del formulario
+   - Si se necesita `sonnerResponse` para validaciones, considerar mover la lógica a un helper de validación
+
+**Ventajas de este Patrón:**
+
+- ✅ Centralización de notificaciones
+- ✅ Consistencia en mensajes de éxito/error
+- ✅ Facilita mantenimiento (un solo lugar para cambiar mensajes)
+- ✅ Evita duplicación de código
+- ✅ Las mutations son el lugar natural para notificaciones de operaciones CRUD
+
+**Checklist de Verificación:**
+
+- [ ] Todas las mutations de create tienen `sonnerResponse` en `onSuccess` y `onError`
+- [ ] Todas las mutations de update tienen `sonnerResponse` en `onSuccess` y `onError`
+- [ ] Todas las mutations de delete tienen `sonnerResponse` en `onSuccess` y `onError`
+- [ ] No hay `sonnerResponse` en componentes (excepto casos especiales documentados)
+- [ ] No hay `sonnerResponse` en hooks
+- [ ] No hay `sonnerResponse` en servicios
+- [ ] No hay `sonnerResponse` en stores
+- [ ] No hay `sonnerResponse` en queries
 
 ## 📋 Checklist de Refactorización
 

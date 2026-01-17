@@ -29,11 +29,13 @@ export const useOrderQuery = (orderId: string) => {
 interface UseAllOrdersQueryParams {
   page?: number
   limit?: number
+  search?: string
+  status?: string
 }
 
 export const useAllOrdersQuery = (params?: UseAllOrdersQueryParams) => {
   return useQuery({
-    queryKey: ['orders', 'all', params?.page, params?.limit],
+    queryKey: ['orders', 'all', params?.page, params?.limit, params?.search, params?.status],
     queryFn: () => getAllOrdersService(params),
     refetchOnMount: true,
     refetchOnWindowFocus: true,

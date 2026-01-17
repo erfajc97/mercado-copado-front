@@ -129,10 +129,13 @@ export const UsersTable = ({
     }
   }
 
+  // Asegurar que users siempre sea un array
+  const safeUsers = Array.isArray(users) ? users : []
+
   return (
     <div>
       <CustomTableNextUi
-        items={users}
+        items={safeUsers}
         columns={columns}
         renderCell={renderCell}
         loading={isLoading}

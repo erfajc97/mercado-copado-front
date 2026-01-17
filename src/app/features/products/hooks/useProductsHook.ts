@@ -1,114 +1,98 @@
-import { useMemo, useState } from 'react'
-import { useAllCategoriesQuery } from '@/app/features/categories/queries/useCategoriesQuery'
+import { useMemo } from 'react'
 import { useProductsQuery } from '../queries/useProductsQuery'
+import type { Category } from '@/app/features/categories/types'
+import { useAllCategoriesQuery } from '@/app/features/categories/queries/useCategoriesQuery'
+import { useCurrency } from '@/app/hooks/useCurrency'
+import { formatUSD } from '@/app/services/currencyService'
+import { extractItems, extractPagination } from '@/app/helpers/parsePaginatedResponse'
+import { useProductsStore } from '@/app/store/products/productsStore'
 import {
   useDeleteProductMutation,
   useUpdateProductMutation,
-} from '../mutations/useProductMutations'
-import { useCurrency } from '@/app/hooks/useCurrency'
-import { formatUSD } from '@/app/services/currencyService'
+} from '@/app/features/products/mutations/useProductMutations'
 
 export const useProductsHook = () => {
-  const { data: products, isLoading } = useProductsQuery({
-    includeInactive: true,
-  })
-  const { data: categories } = useAllCategoriesQuery()
-  const { mutateAsync: deleteProduct } = useDeleteProductMutation()
-  const { mutateAsync: updateProduct } = useUpdateProductMutation()
-  const { formatPrice, currency } = useCurrency()
-
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false)
-  const [productToDelete, setProductToDelete] = useState<string | null>(null)
-  const [editModalVisible, setEditModalVisible] = useState(false)
-  const [productToEdit, setProductToEdit] = useState<string | null>(null)
-  const [searchText, setSearchText] = useState('')
-  const [categoryFilter, setCategoryFilter] = useState<string>('')
-  const [subcategoryFilter, setSubcategoryFilter] = useState<string>('')
-  const [priceFilter, setPriceFilter] = useState<string>('')
-  const [statusFilter, setStatusFilter] = useState<string>('all')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [pageSize, setPageSize] = useState(10)
-
-  const subcategories = useMemo(() => {
-    if (!categoryFilter || !categories) return []
-    const category = categories.find((cat: any) => cat.id === categoryFilter)
-    return category?.subcategories || []
-  }, [categoryFilter, categories])
-
-  const filteredProducts = useMemo(() => {
-    if (!products) return []
-
-    let filtered = [...products]
-
-    if (searchText) {
-      filtered = filtered.filter(
-        (product: any) =>
-          product.name.toLowerCase().includes(searchText.toLowerCase()) ||
-          product.description?.toLowerCase().includes(searchText.toLowerCase()),
-      )
-    }
-
-    if (categoryFilter) {
-      filtered = filtered.filter(
-        (product: any) => product.categoryId === categoryFilter,
-      )
-    }
-
-    if (subcategoryFilter) {
-      filtered = filtered.filter(
-        (product: any) => product.subcategoryId === subcategoryFilter,
-      )
-    }
-
-    if (priceFilter) {
-      filtered = filtered.filter((product: any) => {
-        const productPrice = Number(product.price)
-        switch (priceFilter) {
-          case '0-50':
-            return productPrice >= 0 && productPrice <= 50
-          case '50-100':
-            return productPrice > 50 && productPrice <= 100
-          case '100-200':
-            return productPrice > 100 && productPrice <= 200
-          case '200+':
-            return productPrice > 200
-          default:
-            return true
-        }
-      })
-    }
-
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(
-        (product: any) =>
-          (statusFilter === 'active' && product.isActive) ||
-          (statusFilter === 'inactive' && !product.isActive),
-      )
-    }
-
-    filtered.sort((a: any, b: any) => {
-      const dateA = new Date(a.createdAt).getTime()
-      const dateB = new Date(b.createdAt).getTime()
-      return dateB - dateA
-    })
-
-    return filtered
-  }, [
-    products,
+  const {
     searchText,
     categoryFilter,
     subcategoryFilter,
     priceFilter,
     statusFilter,
-  ])
+    currentPage,
+    pageSize,
+    setSearchText,
+    setCategoryFilter,
+    setSubcategoryFilter,
+    setPriceFilter,
+    setStatusFilter,
+    setCurrentPage,
+    setPageSize,
+    setProductToDelete,
+    setDeleteModalVisible,
+    setProductToEdit,
+    setProductModalOpen,
+  } = useProductsStore()
 
-  const paginatedProducts = useMemo(() => {
-    const start = (currentPage - 1) * pageSize
-    const end = start + pageSize
-    return filteredProducts.slice(start, end)
-  }, [filteredProducts, currentPage, pageSize])
+  // Determinar si incluir inactivos basado en el filtro de estado
+  const includeInactive = statusFilter === 'all' || statusFilter === 'inactive'
 
-  const totalPages = Math.ceil(filteredProducts.length / pageSize)
+  const { data: productsData, isLoading } = useProductsQuery({
+    search: searchText || undefined,
+    categoryId: categoryFilter || undefined,
+    subcategoryId: subcategoryFilter || undefined,
+    includeInactive: includeInactive,
+    page: currentPage,
+    limit: pageSize,
+  })
+
+  const { data: categoriesData } = useAllCategoriesQuery()
+  const categories = extractItems(categoriesData) as Array<Category>
+  const { mutateAsync: deleteProduct } = useDeleteProductMutation()
+  const { mutateAsync: updateProduct } = useUpdateProductMutation()
+  const { formatPrice, currency } = useCurrency()
+
+  // Extraer productos y paginación de la respuesta usando helpers
+  const products = useMemo(() => {
+    if (!productsData) return []
+    return extractItems(productsData)
+  }, [productsData])
+
+  const pagination = useMemo(() => {
+    if (!productsData) return undefined
+    return extractPagination(productsData)
+  }, [productsData])
+
+  const totalPages = pagination?.totalPages || 1
+  const totalProducts = pagination?.total || products.length
+
+  const subcategories = useMemo(() => {
+    if (!categoryFilter) return []
+    const category = categories.find((cat) => cat.id === categoryFilter)
+    return category?.subcategories || []
+  }, [categoryFilter, categories])
+
+  // Filtrar por precio localmente (no está en el backend)
+  const filteredProducts = useMemo(() => {
+    if (products.length === 0) return []
+
+    if (!priceFilter) return products
+
+    return products.filter((product: any) => {
+      const productPrice = Number(product.price)
+      switch (priceFilter) {
+        case '0-50':
+          return productPrice >= 0 && productPrice <= 50
+        case '50-100':
+          return productPrice > 50 && productPrice <= 100
+        case '100-200':
+          return productPrice > 100 && productPrice <= 200
+        case '200+':
+          return productPrice > 200
+        default:
+          return true
+      }
+    })
+  }, [products, priceFilter])
 
   const handleDeleteClick = (productId: string) => {
     setProductToDelete(productId)
@@ -117,20 +101,21 @@ export const useProductsHook = () => {
 
   const handleEditClick = (productId: string) => {
     setProductToEdit(productId)
-    setEditModalVisible(true)
+    setProductModalOpen(true)
   }
 
   const handleConfirmDelete = async () => {
-    if (productToDelete) {
-      await deleteProduct(productToDelete)
-      setDeleteModalVisible(false)
-      setProductToDelete(null)
+    const store = useProductsStore.getState()
+    if (store.productToDelete) {
+      await deleteProduct(store.productToDelete)
+      store.setDeleteModalVisible(false)
+      store.setProductToDelete(null)
     }
   }
 
   const handleToggleActive = async (product: any) => {
     try {
-      const currentProduct = products?.find((p: any) => p.id === product.id)
+      const currentProduct = products.find((p: any) => p.id === product.id) as any
       const currentStatus = currentProduct?.isActive ?? product.isActive
       const newStatus = !currentStatus
 
@@ -143,35 +128,53 @@ export const useProductsHook = () => {
     }
   }
 
+  // Resetear página cuando cambian los filtros
+  const handleSearchChange = (value: string) => {
+    setSearchText(value)
+    setCurrentPage(1)
+  }
+
+  const handleCategoryFilterChange = (value: string) => {
+    setCategoryFilter(value)
+    setSubcategoryFilter('')
+  }
+
+  const handleSubcategoryFilterChange = (value: string) => {
+    setSubcategoryFilter(value)
+    setCurrentPage(1)
+  }
+
+  const handlePriceFilterChange = (value: string) => {
+    setPriceFilter(value)
+    setCurrentPage(1)
+  }
+
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value)
+    setCurrentPage(1)
+  }
+
   return {
-    products: paginatedProducts,
+    products: filteredProducts,
     isLoading,
     categories,
     subcategories,
-    deleteModalVisible,
-    setDeleteModalVisible,
-    productToDelete,
-    setProductToDelete,
-    editModalVisible,
-    setEditModalVisible,
-    productToEdit,
-    setProductToEdit,
     searchText,
-    setSearchText,
+    setSearchText: handleSearchChange,
     categoryFilter,
-    setCategoryFilter,
+    setCategoryFilter: handleCategoryFilterChange,
     subcategoryFilter,
-    setSubcategoryFilter,
+    setSubcategoryFilter: handleSubcategoryFilterChange,
     priceFilter,
-    setPriceFilter,
+    setPriceFilter: handlePriceFilterChange,
     statusFilter,
-    setStatusFilter,
+    setStatusFilter: handleStatusFilterChange,
     currentPage,
     setCurrentPage,
     pageSize,
     setPageSize,
     totalPages,
-    totalProducts: filteredProducts.length,
+    totalProducts,
     handleDeleteClick,
     handleEditClick,
     handleConfirmDelete,

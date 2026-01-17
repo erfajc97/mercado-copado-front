@@ -232,11 +232,7 @@ export const useCheckoutHook = () => {
       setTransactionTotal(Number(transaction.amount))
     } catch (error) {
       console.error('Error creating payment transaction:', error)
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : 'Error al crear la transacción de pago. Por favor, intenta nuevamente.'
-      sonnerResponse(errorMessage, 'error')
+      // useCreatePaymentTransactionWithoutOrderMutation ya maneja sonnerResponse en onError
     }
   }
 

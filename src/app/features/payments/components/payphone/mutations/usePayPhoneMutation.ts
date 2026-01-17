@@ -12,6 +12,7 @@ export const useLinkPayphoneMutation = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
+      sonnerResponse('Link de pago generado exitosamente', 'success')
     },
     onError: (error) => {
       const message =
@@ -59,6 +60,7 @@ export const usePhonePayphoneMutation = () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] })
       queryClient.invalidateQueries({ queryKey: ['orders', 'my-orders'] })
       queryClient.invalidateQueries({ queryKey: ['orders', 'all'] })
+      sonnerResponse('Pago por teléfono procesado exitosamente', 'success')
     },
     onError: (error) => {
       const message =

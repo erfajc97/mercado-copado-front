@@ -1,86 +1,134 @@
-import { Input, Select } from 'antd'
-import { Search } from 'lucide-react'
-import type { ReturnType } from '../hooks/useProductsHook'
-
-const { Option } = Select
+import { Input, Select, SelectItem } from '@heroui/react'
+import { Search, X } from 'lucide-react'
+import type { useProductsHook } from '../hooks/useProductsHook'
 
 interface ProductsFiltersProps {
-  hook: ReturnType<typeof import('../hooks/useProductsHook').useProductsHook>
+  hook: ReturnType<typeof useProductsHook>
 }
 
 export const ProductsFilters = ({ hook }: ProductsFiltersProps) => {
+  const priceOptions = [
+    { key: '0-50', label: '$0 - $50' },
+    { key: '50-100', label: '$50 - $100' },
+    { key: '100-200', label: '$100 - $200' },
+    { key: '200+', label: '$200+' },
+  ]
+
+  const statusOptions = [
+    { key: 'all', label: 'Todos' },
+    { key: 'active', label: 'Activos' },
+    { key: 'inactive', label: 'Inactivos' },
+  ]
+
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <Input
           placeholder="Buscar por nombre..."
-          prefix={<Search size={16} />}
+          startContent={<Search size={16} className="text-gray-400" />}
           value={hook.searchText}
-          onChange={(e) => {
-            hook.setSearchText(e.target.value)
+          onValueChange={(value) => {
+            hook.setSearchText(value)
             hook.setCurrentPage(1)
           }}
-          allowClear
+          endContent={
+            hook.searchText ? (
+              <button
+                onClick={() => {
+                  hook.setSearchText('')
+                  hook.setCurrentPage(1)
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X size={16} />
+              </button>
+            ) : null
+          }
+          classNames={{
+            input: 'text-sm',
+            inputWrapper: 'h-10',
+          }}
         />
         <Select
           placeholder="Filtrar por categoría"
-          value={hook.categoryFilter || undefined}
-          onChange={(value) => {
+          selectedKeys={hook.categoryFilter ? [hook.categoryFilter] : []}
+          onSelectionChange={(keys) => {
+            const value = Array.from(keys)[0] as string
             hook.setCategoryFilter(value || '')
             hook.setSubcategoryFilter('')
             hook.setCurrentPage(1)
           }}
-          allowClear
-          showSearch
+          selectionMode="single"
+          disallowEmptySelection={false}
+          classNames={{
+            trigger: 'h-10',
+          }}
         >
-          {hook.categories?.map((category: any) => (
-            <Option key={category.id} value={category.id}>
+          {hook.categories.map((category: any) => (
+            <SelectItem key={category.id}>
               {category.name}
-            </Option>
+            </SelectItem>
           ))}
         </Select>
         <Select
           placeholder="Filtrar por subcategoría"
-          value={hook.subcategoryFilter || undefined}
-          onChange={(value) => {
+          selectedKeys={hook.subcategoryFilter ? [hook.subcategoryFilter] : []}
+          onSelectionChange={(keys) => {
+            const value = Array.from(keys)[0] as string
             hook.setSubcategoryFilter(value || '')
             hook.setCurrentPage(1)
           }}
-          allowClear
-          disabled={!hook.categoryFilter}
-          showSearch
+          selectionMode="single"
+          disallowEmptySelection={false}
+          isDisabled={!hook.categoryFilter}
+          classNames={{
+            trigger: 'h-10',
+          }}
         >
           {hook.subcategories.map((subcategory: any) => (
-            <Option key={subcategory.id} value={subcategory.id}>
+            <SelectItem key={subcategory.id}>
               {subcategory.name}
-            </Option>
+            </SelectItem>
           ))}
         </Select>
         <Select
           placeholder="Filtrar por precio"
-          value={hook.priceFilter || undefined}
-          onChange={(value) => {
+          selectedKeys={hook.priceFilter ? [hook.priceFilter] : []}
+          onSelectionChange={(keys) => {
+            const value = Array.from(keys)[0] as string
             hook.setPriceFilter(value || '')
             hook.setCurrentPage(1)
           }}
-          allowClear
+          selectionMode="single"
+          disallowEmptySelection={false}
+          classNames={{
+            trigger: 'h-10',
+          }}
         >
-          <Option value="0-50">$0 - $50</Option>
-          <Option value="50-100">$50 - $100</Option>
-          <Option value="100-200">$100 - $200</Option>
-          <Option value="200+">$200+</Option>
+          {priceOptions.map((option) => (
+            <SelectItem key={option.key}>
+              {option.label}
+            </SelectItem>
+          ))}
         </Select>
         <Select
           placeholder="Filtrar por estado"
-          value={hook.statusFilter}
-          onChange={(value) => {
-            hook.setStatusFilter(value)
+          selectedKeys={[hook.statusFilter]}
+          onSelectionChange={(keys) => {
+            const value = Array.from(keys)[0] as string
+            hook.setStatusFilter(value || 'all')
             hook.setCurrentPage(1)
           }}
+          selectionMode="single"
+          classNames={{
+            trigger: 'h-10',
+          }}
         >
-          <Option value="all">Todos</Option>
-          <Option value="active">Activos</Option>
-          <Option value="inactive">Inactivos</Option>
+          {statusOptions.map((option) => (
+            <SelectItem key={option.key}>
+              {option.label}
+            </SelectItem>
+          ))}
         </Select>
       </div>
     </div>

@@ -1,13 +1,16 @@
-import React, { useEffect, useState } from 'react'
-import { Form, Input, Button, Select, InputNumber } from 'antd'
-import type { FormInstance } from 'antd'
+import React, { useState } from 'react'
+import { Form, Input, InputNumber, Select } from 'antd'
+import { Button } from '@heroui/react'
 import { IoImagesOutline } from 'react-icons/io5'
 import { HiOutlinePencil } from 'react-icons/hi2'
 import { FaPlus, FaRegTrashCan } from 'react-icons/fa6'
+import { useQuery } from '@tanstack/react-query'
 import useFormHook from '../hooks/useFormHook'
+import type { FormInstance } from 'antd'
 import CustomUpload from '@/app/components/CustomUpload/CustomUpload'
-import { getAllCategoriesService } from '@/app/features/categories/services/getAllCategoriesService'
+import { useAllCategoriesQuery } from '@/app/features/categories/queries/useCategoriesQuery'
 import { getSubcategoriesByCategoryService } from '@/app/features/categories/services/getSubcategoriesByCategoryService'
+import { extractItems } from '@/app/helpers/parsePaginatedResponse'
 
 const { TextArea } = Input
 
@@ -24,8 +27,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
   onSuccess,
   onDelete,
 }) => {
-  const [categories, setCategories] = useState<any[]>([])
-  const [subcategories, setSubcategories] = useState<any[]>([])
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>()
 
   const { handleSubmit, handleFieldsChange, fieldErrors, isPending } =
@@ -33,6 +34,16 @@ const ProductForm: React.FC<ProductFormProps> = ({
       form,
       onSuccess,
     })
+
+  const { data: categoriesData } = useAllCategoriesQuery()
+  const categories = extractItems(categoriesData)
+
+  const { data: subcategoriesData } = useQuery({
+    queryKey: ['subcategories', selectedCategoryId],
+    queryFn: () => getSubcategoriesByCategoryService(selectedCategoryId!),
+    enabled: !!selectedCategoryId,
+  })
+  const subcategories = subcategoriesData || []
 
   const initialValues = {
     name: '',
@@ -45,7 +56,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   }
 
   const handleFinish = async (values: any) => {
-    await handleSubmit({ values, id: productId })
+    await handleSubmit({ values })
   }
 
   const normFile = (e: any) => {
@@ -57,36 +68,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
       e.preventDefault()
     }
   }
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await getAllCategoriesService()
-        setCategories(response || [])
-      } catch (error) {
-        console.error('Error fetching categories:', error)
-      }
-    }
-    fetchCategories()
-  }, [])
-
-  useEffect(() => {
-    if (selectedCategoryId) {
-      const fetchSubcategories = async () => {
-        try {
-          const response = await getSubcategoriesByCategoryService(
-            selectedCategoryId,
-          )
-          setSubcategories(response || [])
-        } catch (error) {
-          console.error('Error fetching subcategories:', error)
-        }
-      }
-      fetchSubcategories()
-    } else {
-      setSubcategories([])
-    }
-  }, [selectedCategoryId])
 
   return (
     <Form
@@ -134,7 +115,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
               form.setFieldsValue({ subcategoryId: null })
             }}
           >
-            {categories.map((category) => (
+            {categories.map((category: any) => (
               <Select.Option key={category.id} value={category.id}>
                 {category.name}
               </Select.Option>
@@ -154,7 +135,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
             status={fieldErrors['subcategoryId'] ? 'error' : ''}
             disabled={!selectedCategoryId}
           >
-            {subcategories.map((subcategory) => (
+            {subcategories.map((subcategory: any) => (
               <Select.Option key={subcategory.id} value={subcategory.id}>
                 {subcategory.name}
               </Select.Option>
@@ -261,18 +242,19 @@ const ProductForm: React.FC<ProductFormProps> = ({
         <div className="flex gap-x-2 ml-auto">
           {productId && (
             <Button
-              danger
-              onClick={onDelete}
-              icon={<FaRegTrashCan />}
+              color="danger"
+              onPress={onDelete}
+              startContent={<FaRegTrashCan />}
             >
               Eliminar producto
             </Button>
           )}
           <Button
-            type="primary"
-            htmlType="submit"
-            loading={isPending}
-            icon={productId ? <HiOutlinePencil /> : <FaPlus />}
+            color="primary"
+            type="submit"
+            isLoading={isPending}
+            startContent={productId ? <HiOutlinePencil /> : <FaPlus />}
+            className="bg-gradient-coffee border-none hover:opacity-90"
           >
             {productId ? 'Editar' : 'Crear'} producto
           </Button>

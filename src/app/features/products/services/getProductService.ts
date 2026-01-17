@@ -1,7 +1,7 @@
 import { AxiosError } from 'axios'
+import type { Product } from '../types'
 import { API_ENDPOINTS } from '@/app/api/endpoints'
 import axiosInstance from '@/app/config/axiosConfig'
-import type { Product } from '../types'
 
 export const getProductService = async (id: string): Promise<Product> => {
   try {

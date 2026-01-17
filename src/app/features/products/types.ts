@@ -30,5 +30,7 @@ export interface ProductFilters {
   subcategoryId?: string
   search?: string
   includeInactive?: boolean
+  page?: number
+  limit?: number
 }
 

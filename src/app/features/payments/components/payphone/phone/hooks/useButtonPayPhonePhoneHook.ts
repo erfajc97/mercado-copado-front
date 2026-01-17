@@ -96,10 +96,7 @@ export const useButtonPayPhonePhoneHook = ({
       // 3. Si Payphone responde exitosamente, crear transacción+orden en el backend
       setShowPhoneModal(false)
       setPhoneNumber('')
-      sonnerResponse(
-        'Solicitud de pago enviada. Revisa tu app de Payphone para confirmar el pago.',
-        'success',
-      )
+      // usePhonePayphoneMutation ya maneja sonnerResponse en onSuccess
       onSuccess?.()
 
       // 4. Crear transacción+orden en el backend DESPUÉS
@@ -125,11 +122,7 @@ export const useButtonPayPhonePhoneHook = ({
           '[useButtonPayPhonePhoneHook] Error al crear transacción/orden en backend:',
           backendError,
         )
-        const errorMessage =
-          backendError instanceof Error
-            ? backendError.message
-            : 'Error al crear la orden. Por favor, verifica en "Mis Órdenes" si se creó correctamente.'
-        sonnerResponse(errorMessage, 'error')
+        // Las mutations ya manejan sonnerResponse en onError
       }
 
       if (!orderId) {

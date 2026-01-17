@@ -3,6 +3,8 @@ import { UsersTable } from './components/UsersTable'
 import { UsersFilters } from './components/UsersFilters'
 import { DeleteUserModal } from './components/modals/DeleteUserModal'
 import { EditUserModal } from './components/modals/EditUserModal'
+import type { UserData } from './hooks/useUsersHook'
+import { useUsersStore } from '@/app/store/users/usersStore'
 
 export function Users() {
   const {
@@ -15,10 +17,6 @@ export function Users() {
     setSearchText,
     countryFilter,
     setCountryFilter,
-    deleteModalVisible,
-    setDeleteModalVisible,
-    setUserToDelete,
-    editModalVisible,
     form,
     isDeleting,
     isUpdating,
@@ -30,6 +28,13 @@ export function Users() {
     formatTotalSpent,
     formatDate,
   } = useUsersHook()
+
+  const {
+    deleteModalVisible,
+    editModalVisible,
+    setDeleteModalVisible,
+    setUserToDelete,
+  } = useUsersStore()
 
   return (
     <div className="p-6">
@@ -45,7 +50,7 @@ export function Users() {
       />
 
       <UsersTable
-        users={users}
+        users={users as unknown as Array<UserData>}
         isLoading={isLoading}
         page={page}
         totalPages={totalPages}

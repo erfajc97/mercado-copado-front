@@ -105,21 +105,13 @@ export const useButtonPayPhoneLinkHook = ({
             '[useButtonPayPhoneLinkHook] Error al crear transacción/orden en backend:',
             backendError,
           )
-          const errorMessage =
-            backendError instanceof Error
-              ? backendError.message
-              : 'Error al crear la orden. Por favor, verifica en "Mis Órdenes" si se creó correctamente.'
-          sonnerResponse(errorMessage, 'error')
+          // Las mutations ya manejan sonnerResponse en onError
         }
       }
     } catch (e) {
       console.error('Error al generar link de pago:', e)
       setShowLinkConfirmationModal(false)
-      const errorMessage =
-        e instanceof Error
-          ? e.message
-          : 'Error al procesar el pago. Por favor, intenta nuevamente.'
-      sonnerResponse(errorMessage, 'error')
+      // useLinkPayphoneMutation ya maneja sonnerResponse en onError
     }
   }
 

@@ -1,16 +1,33 @@
-import { useState } from 'react'
 import { Button } from '@heroui/react'
 import { Plus } from 'lucide-react'
 import { useProductsHook } from './hooks/useProductsHook'
 import { ProductsFilters } from './components/ProductsFilters'
 import { ProductsTable } from './components/ProductsTable'
-import CreateProductModal from './components/modals/CreateProductModal'
-import EditProductModal from './components/modals/EditProductModal'
+import ProductModal from './components/modals/ProductModal'
 import { DeleteProductModal } from './components/modals/DeleteProductModal'
+import { useProductsStore } from '@/app/store/products/productsStore'
 
 export function Products() {
   const hook = useProductsHook()
-  const [createProductModalOpen, setCreateProductModalOpen] = useState(false)
+  const {
+    productModalOpen,
+    deleteModalVisible,
+    productToEdit,
+    setProductModalOpen,
+    setDeleteModalVisible,
+    setProductToEdit,
+    setProductToDelete,
+  } = useProductsStore()
+
+  const handleOpenProductModal = () => {
+    setProductToEdit(null) // null = crear
+    setProductModalOpen(true)
+  }
+
+  const handleCloseProductModal = () => {
+    setProductModalOpen(false)
+    setProductToEdit(null)
+  }
 
   return (
     <div className="p-6">
@@ -19,7 +36,7 @@ export function Products() {
         <Button
           color="primary"
           startContent={<Plus size={16} />}
-          onPress={() => setCreateProductModalOpen(true)}
+          onPress={handleOpenProductModal}
           className="bg-gradient-coffee border-none hover:opacity-90"
         >
           Nuevo Producto
@@ -29,25 +46,17 @@ export function Products() {
       <ProductsFilters hook={hook} />
       <ProductsTable hook={hook} />
 
-      <CreateProductModal
-        isOpen={createProductModalOpen}
-        onClose={() => setCreateProductModalOpen(false)}
-      />
-
-      <EditProductModal
-        isOpen={hook.editModalVisible}
-        onClose={() => {
-          hook.setEditModalVisible(false)
-          hook.setProductToEdit(null)
-        }}
-        productId={hook.productToEdit}
+      <ProductModal
+        isOpen={productModalOpen}
+        onClose={handleCloseProductModal}
+        productId={productToEdit}
       />
 
       <DeleteProductModal
-        isOpen={hook.deleteModalVisible}
+        isOpen={deleteModalVisible}
         onClose={() => {
-          hook.setDeleteModalVisible(false)
-          hook.setProductToDelete(null)
+          setDeleteModalVisible(false)
+          setProductToDelete(null)
         }}
         onConfirm={hook.handleConfirmDelete}
         isLoading={false}

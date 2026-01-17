@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useForgotPasswordMutation } from '../mutations/useForgotPasswordMutation'
-import { sonnerResponse } from '@/app/helpers/sonnerResponse'
 
 type UseForgotPasswordHookProps = {
   onSuccess?: () => void
@@ -15,17 +14,11 @@ export const useForgotPasswordHook = ({
 
   const handleForgotPassword = async (values: { email: string }) => {
     try {
+      // useForgotPasswordMutation ya maneja sonnerResponse en onSuccess y onError
       await forgotPassword(values)
       setEmailSent(true)
-      sonnerResponse(
-        'Se ha enviado un correo con las instrucciones para recuperar tu contraseña',
-        'success',
-      )
       onSuccess?.()
     } catch (error: any) {
-      const message =
-        error?.message || 'Error al enviar el correo de recuperación'
-      sonnerResponse(message, 'error')
       throw error
     }
   }

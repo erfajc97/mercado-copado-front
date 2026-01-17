@@ -1,4 +1,5 @@
 import { AxiosError } from 'axios'
+import { parsePaginatedResponse } from '@/app/helpers/parsePaginatedResponse'
 import { API_ENDPOINTS } from '@/app/api/endpoints'
 import axiosInstance from '@/app/config/axiosConfig'
 
@@ -7,6 +8,8 @@ export const getAllProductsService = async (params?: {
   subcategoryId?: string
   search?: string
   includeInactive?: boolean
+  page?: number
+  limit?: number
 }) => {
   try {
     const queryParams = new URLSearchParams()
@@ -18,6 +21,8 @@ export const getAllProductsService = async (params?: {
     if (params?.includeInactive) {
       queryParams.append('includeInactive', 'true')
     }
+    if (params?.page) queryParams.append('page', params.page.toString())
+    if (params?.limit) queryParams.append('limit', params.limit.toString())
 
     const queryString = queryParams.toString()
     const url = queryString
@@ -25,7 +30,7 @@ export const getAllProductsService = async (params?: {
       : API_ENDPOINTS.PRODUCTS
 
     const response = await axiosInstance.get(url)
-    return response.data.content
+    return parsePaginatedResponse(response.data)
   } catch (error: unknown) {
     if (error instanceof AxiosError && error.response?.data?.message) {
       throw new Error(error.response.data.message)

@@ -1,13 +1,13 @@
 import { Link } from '@tanstack/react-router'
-import { Button, Switch, Chip } from '@heroui/react'
+import { Button, Chip, Switch } from '@heroui/react'
 import { Delete, Edit, Eye } from 'lucide-react'
+import type { useProductsHook } from '../hooks/useProductsHook'
+import type { Column } from '@/components/UI/table-nextui/CustomTableNextUi'
 import CustomTableNextUi from '@/components/UI/table-nextui/CustomTableNextUi'
 import CustomPagination from '@/components/UI/table-nextui/CustomPagination'
-import type { Column } from '@/components/UI/table-nextui/CustomTableNextUi'
-import type { ReturnType } from '../hooks/useProductsHook'
 
 interface ProductsTableProps {
-  hook: ReturnType<typeof import('../hooks/useProductsHook').useProductsHook>
+  hook: ReturnType<typeof useProductsHook>
 }
 
 export const ProductsTable = ({ hook }: ProductsTableProps) => {
@@ -66,7 +66,7 @@ export const ProductsTable = ({ hook }: ProductsTableProps) => {
 
   const renderCell = (product: any, columnKey: React.Key) => {
     switch (columnKey) {
-      case 'image':
+      case 'image': {
         const imageUrl = product.images?.length > 0 ? product.images[0]?.url : null
         return imageUrl ? (
           <img
@@ -79,13 +79,14 @@ export const ProductsTable = ({ hook }: ProductsTableProps) => {
             Sin imagen
           </div>
         )
+      }
       case 'name':
         return <span className="font-semibold">{product.name}</span>
       case 'category':
         return product.category?.name || '-'
       case 'subcategory':
         return product.subcategory?.name || '-'
-      case 'price':
+      case 'price': {
         const priceNum = Number(product.price)
         const discount = Number(product.discount || 0)
         const finalPrice = priceNum * (1 - discount / 100)
@@ -99,6 +100,7 @@ export const ProductsTable = ({ hook }: ProductsTableProps) => {
             )}
           </div>
         )
+      }
       case 'discount':
         return product.discount > 0 ? (
           <Chip color="danger" size="sm" variant="flat">

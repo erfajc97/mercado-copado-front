@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import { Form } from 'antd'
 import { useAdminUsersQuery } from '../queries/useAdminUsersQuery'
 import { useDeleteUserMutation } from '../mutations/useDeleteUserMutation'
 import { useUpdateUserAdminMutation } from '../mutations/useUpdateUserAdminMutation'
+import { extractItems, extractPagination } from '@/app/helpers/parsePaginatedResponse'
+import { useUsersStore } from '@/app/store/users/usersStore'
 
 export interface UserData {
   id: string
@@ -18,14 +20,20 @@ export interface UserData {
 }
 
 export const useUsersHook = () => {
-  const [searchText, setSearchText] = useState('')
-  const [countryFilter, setCountryFilter] = useState<string>('')
-  const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(10)
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false)
-  const [userToDelete, setUserToDelete] = useState<string | null>(null)
-  const [editModalVisible, setEditModalVisible] = useState(false)
-  const [userToEdit, setUserToEdit] = useState<UserData | null>(null)
+  const {
+    searchText,
+    countryFilter,
+    page,
+    pageSize,
+    setSearchText,
+    setCountryFilter,
+    setPage,
+    setPageSize,
+    setUserToDelete,
+    setDeleteModalVisible,
+    setUserToEdit,
+    setEditModalVisible,
+  } = useUsersStore()
   const [form] = Form.useForm()
 
   const { data: usersData, isLoading } = useAdminUsersQuery({
@@ -41,9 +49,20 @@ export const useUsersHook = () => {
   const { mutateAsync: updateUser, isPending: isUpdating } =
     useUpdateUserAdminMutation()
 
-  const users = usersData?.users || []
-  const total = usersData?.pagination?.total || 0
-  const totalPages = Math.ceil(total / pageSize)
+  // El helper parsePaginatedResponse normaliza usuarios para usar 'content' en lugar de 'users'
+  // Extraer usando extractItems y extractPagination
+  const users = useMemo(() => {
+    if (!usersData) return []
+    return extractItems(usersData)
+  }, [usersData])
+
+  const pagination = useMemo(() => {
+    if (!usersData) return undefined
+    return extractPagination(usersData)
+  }, [usersData])
+
+  const total = pagination?.total || 0
+  const totalPages = pagination?.totalPages || Math.ceil(total / pageSize)
 
   const handleDeleteClick = (userId: string) => {
     setUserToDelete(userId)
@@ -51,10 +70,11 @@ export const useUsersHook = () => {
   }
 
   const handleConfirmDelete = async () => {
-    if (userToDelete) {
-      await deleteUser(userToDelete)
-      setDeleteModalVisible(false)
-      setUserToDelete(null)
+    const store = useUsersStore.getState()
+    if (store.userToDelete) {
+      await deleteUser(store.userToDelete)
+      store.setDeleteModalVisible(false)
+      store.setUserToDelete(null)
     }
   }
 
@@ -78,12 +98,13 @@ export const useUsersHook = () => {
   }
 
   const handleEditSubmit = async () => {
-    if (!userToEdit) return
+    const store = useUsersStore.getState()
+    if (!store.userToEdit) return
 
     try {
       const values = await form.validateFields()
       await updateUser({
-        userId: userToEdit.id,
+        userId: store.userToEdit.id,
         data: {
           firstName: values.firstName,
           lastName: values.lastName || undefined,
@@ -101,19 +122,11 @@ export const useUsersHook = () => {
 
   const handleSearchChange = (value: string) => {
     setSearchText(value)
-    setPage(1)
   }
 
   const handleCountryFilterChange = (value: string) => {
     setCountryFilter(value)
-    setPage(1)
   }
-
-  useEffect(() => {
-    if (!editModalVisible) {
-      form.resetFields()
-    }
-  }, [editModalVisible, form])
 
   const formatTotalSpent = (amount: number) => {
     return new Intl.NumberFormat('es-SV', {
@@ -143,14 +156,6 @@ export const useUsersHook = () => {
     setSearchText: handleSearchChange,
     countryFilter,
     setCountryFilter: handleCountryFilterChange,
-    deleteModalVisible,
-    setDeleteModalVisible,
-    userToDelete,
-    setUserToDelete,
-    editModalVisible,
-    setEditModalVisible,
-    userToEdit,
-    setUserToEdit,
     form,
     isDeleting,
     isUpdating,

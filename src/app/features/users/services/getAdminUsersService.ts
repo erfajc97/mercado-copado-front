@@ -1,4 +1,5 @@
 import { AxiosError } from 'axios'
+import { parsePaginatedResponse } from '@/app/helpers/parsePaginatedResponse'
 import { API_ENDPOINTS } from '@/app/api/endpoints'
 import axiosInstance from '@/app/config/axiosConfig'
 
@@ -20,7 +21,13 @@ export const getAdminUsersService = async (params: AdminUsersQueryParams) => {
     const response = await axiosInstance.get(
       `${API_ENDPOINTS.ADMIN_USERS}?${queryParams.toString()}`,
     )
-    return response.data.content
+    
+    // El interceptor envuelve en {statusCode, message, content}
+    // El service retorna {message: '...', data: {users: [...], pagination: {...}}}
+    // El interceptor extrae 'data' y lo pone en 'content'
+    // Entonces response.data = {statusCode: 200, message: '...', content: {users: [...], pagination: {...}}}
+    // Usar el helper para parsear, que maneja el caso especial de 'users'
+    return parsePaginatedResponse(response.data)
   } catch (error: unknown) {
     if (error instanceof AxiosError && error.response?.data?.message) {
       throw new Error(error.response.data.message)

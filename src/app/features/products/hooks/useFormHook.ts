@@ -15,7 +15,7 @@ const useFormHook = ({ form, onSuccess }: UseFormHookProps) => {
     console.log('Failed:', errorInfo)
   }
 
-  const handleSubmit = async ({ values, id }: { values: any; id?: string }) => {
+  const handleSubmit = async ({ values }: { values: any }) => {
     try {
       // Extraer archivos de las imágenes
       const images: Array<File> = []

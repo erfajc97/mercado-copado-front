@@ -1,6 +1,6 @@
 import { Link, useNavigate } from '@tanstack/react-router'
 import { ShoppingCart } from 'lucide-react'
-import { Button } from 'antd'
+import { Button } from '@heroui/react'
 import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import type { Product } from '../types'
@@ -63,19 +63,15 @@ export const ProductCard = ({ product }: ProductCardProps) => {
 
   const addProductToCart = async () => {
     // Si está autenticado, solo agregar al backend (no al carrito local)
+    // La mutation useAddToCartMutation ya maneja sonnerResponse en onSuccess y onError
     if (isAuthenticated) {
-      try {
-        await addToCart({
-          productId: product.id,
-          quantity: 1,
-        })
-        sonnerResponse('Producto agregado al carrito', 'success')
-      } catch (error) {
-        console.error('Error adding to cart:', error)
-        sonnerResponse('Error al agregar producto al carrito', 'error')
-      }
+      await addToCart({
+        productId: product.id,
+        quantity: 1,
+      })
     } else {
       // Si no está autenticado, agregar al carrito local (localStorage)
+      // Caso especial: no pasa por mutation, así que se mantiene sonnerResponse
       addItem({
         id: '', // Se generará en el servidor si se autentica después
         productId: product.id,
@@ -88,19 +84,16 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         },
         quantity: 1,
       })
+      // Caso especial: carrito local sin mutation, mantener sonnerResponse
       sonnerResponse('Producto agregado al carrito', 'success')
     }
   }
 
-  const handleAddToCart = async (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
+  const handleAddToCart = async () => {
     await addProductToCart()
   }
 
-  const handleBuyNow = async (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
+  const handleBuyNow = async () => {
     await addProductToCart()
     navigate({ to: '/checkout' })
   }
@@ -206,17 +199,19 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         {/* Botones de acción */}
         <div className="px-2 sm:px-4 pb-2 sm:pb-4 flex gap-2">
           <Button
-            type="default"
-            icon={<ShoppingCart size={16} className="sm:w-[18px] sm:h-[18px]" />}
-            onClick={handleAddToCart}
-            loading={isPending && isAuthenticated}
+            variant="bordered"
+            startContent={<ShoppingCart size={16} className="sm:w-[18px] sm:h-[18px]" />}
+            onPress={handleAddToCart}
+            isLoading={isPending && isAuthenticated}
             className="flex-1 border-coffee-medium text-coffee-dark hover:bg-coffee-light rounded-lg h-9 sm:h-10 text-xs sm:text-sm"
             title="Agregar al Carrito"
-          />
+          >
+            Agregar
+          </Button>
           <Button
-            type="primary"
-            onClick={handleBuyNow}
-            loading={isPending && isAuthenticated}
+            color="primary"
+            onPress={handleBuyNow}
+            isLoading={isPending && isAuthenticated}
             className="flex-1 bg-gradient-coffee border-none hover:opacity-90 rounded-lg h-9 sm:h-10 font-semibold text-xs sm:text-sm"
           >
             Comprar

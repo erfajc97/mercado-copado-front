@@ -8,7 +8,7 @@ import {
   Star,
   Truck,
 } from 'lucide-react'
-import { Button } from 'antd'
+import { Button } from '@heroui/react'
 import { useQuery } from '@tanstack/react-query'
 import { useRef, useState } from 'react'
 import type { Product } from '@/app/features/products/types'
@@ -59,19 +59,15 @@ export function ProductDetail({ productId }: ProductDetailProps) {
     if (!product) return
 
     // Si está autenticado, solo agregar al backend (no al carrito local)
+    // La mutation useAddToCartMutation ya maneja sonnerResponse en onSuccess y onError
     if (isAuthenticated) {
-      try {
-        await addToCart({
-          productId: product.id,
-          quantity: 1,
-        })
-        sonnerResponse('Producto agregado al carrito', 'success')
-      } catch (error) {
-        console.error('Error adding to cart:', error)
-        sonnerResponse('Error al agregar producto al carrito', 'error')
-      }
+      await addToCart({
+        productId: product.id,
+        quantity: 1,
+      })
     } else {
       // Si no está autenticado, agregar al carrito local (localStorage)
+      // Caso especial: no pasa por mutation, así que se mantiene sonnerResponse
       addItem({
         id: '', // Se generará en el servidor si se autentica después
         productId: product.id,
@@ -84,6 +80,7 @@ export function ProductDetail({ productId }: ProductDetailProps) {
         },
         quantity: 1,
       })
+      // Caso especial: carrito local sin mutation, mantener sonnerResponse
       sonnerResponse('Producto agregado al carrito', 'success')
     }
   }
@@ -319,22 +316,22 @@ export function ProductDetail({ productId }: ProductDetailProps) {
               {/* Botones de acción */}
               <div className="space-y-2 mb-4">
                 <Button
-                  type="default"
-                  onClick={handleBuyNow}
-                  disabled={isPending || isProductInactive}
-                  loading={isPending && isAuthenticated}
-                  size="large"
+                  color="primary"
+                  onPress={handleBuyNow}
+                  isDisabled={isPending || isProductInactive}
+                  isLoading={isPending && isAuthenticated}
+                  size="lg"
                   className="w-full bg-gradient-coffee border-none hover:opacity-90 h-12 text-base font-bold shadow-coffee hover:shadow-coffee-md text-white"
                 >
                   {isProductInactive ? 'No disponible' : 'Comprar ahora'}
                 </Button>
                 <Button
-                  type="default"
-                  icon={<ShoppingCart size={18} />}
-                  onClick={handleAddToCart}
-                  disabled={isPending || isProductInactive}
-                  loading={isPending && isAuthenticated}
-                  size="large"
+                  variant="bordered"
+                  startContent={<ShoppingCart size={18} />}
+                  onPress={handleAddToCart}
+                  isDisabled={isPending || isProductInactive}
+                  isLoading={isPending && isAuthenticated}
+                  size="lg"
                   className="w-full border-2 border-coffee-medium text-coffee-dark hover:bg-coffee-light h-11 text-sm font-semibold"
                 >
                   {isProductInactive ? 'No disponible' : 'Agregar al carrito'}

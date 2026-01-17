@@ -8,6 +8,7 @@ export const useCreatePaymentTransactionWithoutOrderMutation = () => {
     mutationFn: createPaymentTransactionWithoutOrderService,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
+      sonnerResponse('Transacción de pago creada exitosamente', 'success')
     },
     onError: (error) => {
       const message =
