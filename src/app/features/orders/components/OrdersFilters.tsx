@@ -11,7 +11,7 @@ const ORDER_STATUSES = [
   { value: 'completed', label: 'Completada' },
   { value: 'delivered', label: 'Entregada' },
   { value: 'cancelled', label: 'Cancelada' },
-  { value: 'paid_pending_review', label: 'Procesando Pago' },
+  { value: 'paid_pending_review', label: 'Pago en Revisión' },
 ]
 
 interface OrdersFiltersProps {

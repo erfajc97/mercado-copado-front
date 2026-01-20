@@ -19,6 +19,11 @@ interface OrderData {
   total: number | string
   status: string
   items?: Array<{ quantity?: number }>
+  payments?: Array<{
+    clientTransactionId?: string
+    status: string
+    payphoneData?: { paymentId?: string } | string
+  }>
 }
 
 interface OrdersTableProps {
@@ -29,6 +34,8 @@ interface OrdersTableProps {
   onPageChange: (page: number) => void
   onViewOrder: (orderId: string) => void
   formatDate: (date: string) => string
+  onVerifyOrderPayment?: (order: OrderData) => void
+  verifyingOrders?: Set<string>
 }
 
 export const OrdersTable = ({
@@ -39,6 +46,8 @@ export const OrdersTable = ({
   onPageChange,
   onViewOrder,
   formatDate,
+  onVerifyOrderPayment,
+  verifyingOrders = new Set(),
 }: OrdersTableProps) => {
   const columns: Array<Column> = [
     {
@@ -124,9 +133,54 @@ export const OrdersTable = ({
             {order.items?.length || 0} item(s)
           </span>
         )
-      case 'actions':
+      case 'actions': {
+        const isPending = order.status === 'pending'
+        const hasPendingPayment =
+          isPending &&
+          order.payments &&
+          order.payments.some(
+            (p) => p.clientTransactionId && p.status === 'pending',
+          )
+        const isVerifying = verifyingOrders.has(order.id)
+
+        // Detectar si es un pago por link (no se puede verificar manualmente)
+        let isLinkPayment = false
+        if (hasPendingPayment && order.payments) {
+          const payment = order.payments.find(
+            (p) => p.clientTransactionId && p.status === 'pending',
+          )
+          if (payment?.payphoneData) {
+            const payphoneDataRaw = payment.payphoneData
+            if (typeof payphoneDataRaw === 'string') {
+              try {
+                const parsed = JSON.parse(payphoneDataRaw)
+                isLinkPayment = !!parsed?.paymentId
+              } catch (e) {
+                // Ignorar error de parsing
+              }
+            } else if (typeof payphoneDataRaw === 'object') {
+              isLinkPayment = !!payphoneDataRaw.paymentId
+            }
+          }
+        }
+
+        // Solo mostrar el botón de verificación para pagos por teléfono (no link)
+        const canVerify = hasPendingPayment && !isLinkPayment
+
         return (
           <div className="flex gap-2">
+            {canVerify && onVerifyOrderPayment && (
+              <Button
+                variant="solid"
+                color="primary"
+                size="sm"
+                onPress={() => onVerifyOrderPayment(order)}
+                isLoading={isVerifying}
+                disabled={isVerifying}
+              >
+                Verificar pago
+              </Button>
+            )}
             <Button
               variant="light"
               size="sm"
@@ -137,6 +191,7 @@ export const OrdersTable = ({
             </Button>
           </div>
         )
+      }
       default:
         return null
     }

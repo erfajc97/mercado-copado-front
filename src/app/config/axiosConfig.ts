@@ -87,10 +87,14 @@ axiosInstance.interceptors.response.use(
       }
     }
 
-    // Si no se puede refrescar, limpia y redirige
+    // Si no se puede refrescar, limpia y redirige (excepto en checkout)
     if (error.response?.status === 401) {
       useAuthStore.getState().removeToken()
-      window.location.href = '/'
+      // No redirigir si estamos en checkout - permitir que el usuario vea el mensaje de login
+      const currentPath = window.location.pathname
+      if (currentPath !== '/checkout') {
+        window.location.href = '/'
+      }
     }
 
     return Promise.reject(error)

@@ -12,6 +12,7 @@ export const useRegenerateTransactionMutation = () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] })
       queryClient.invalidateQueries({ queryKey: ['orders', 'my-orders'] })
       queryClient.invalidateQueries({ queryKey: ['orders', 'all'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboardStats'] })
       sonnerResponse('Transacción regenerada exitosamente', 'success')
     },
     onError: (error) => {

@@ -3,6 +3,7 @@ import { Form } from 'antd'
 import { calculateItemPrice } from '../helpers/calculateItemPrice'
 import type { Address } from '@/app/features/addresses/types'
 import type { PaymentMethod } from '@/app/features/payment-cards/types'
+import type { CartItem } from '@/app/store/cart/cartStore'
 import { useCartQuery } from '@/app/features/cart/queries/useCartQuery'
 import { useAddressesQuery } from '@/app/features/addresses/queries/useAddressesQuery'
 import { useCreateAddressMutation } from '@/app/features/addresses/mutations/useCreateAddressMutation'
@@ -13,20 +14,68 @@ import { useCashDepositMutation } from '@/app/features/payments/mutations/useCas
 import { useCurrency } from '@/app/hooks/useCurrency'
 import { sonnerResponse } from '@/app/helpers/sonnerResponse'
 import { useAuthStore } from '@/app/store/auth/authStore'
+import { useCartStore } from '@/app/store/cart/cartStore'
 import { formatUSD } from '@/app/services/currencyService'
 
 export const useCheckoutHook = () => {
-  const { data: cartItems } = useCartQuery()
   const { roles, token, getToken } = useAuthStore()
   const isAuthenticated = Boolean(token || getToken())
-
-  const { data: addresses, refetch: refetchAddresses } = useAddressesQuery({
+  
+  // Obtener carrito de BD si está autenticado
+  const { data: dbCartItems } = useCartQuery({
     enabled: isAuthenticated,
   })
-  const { data: paymentMethods, refetch: refetchPaymentMethods } =
+  
+  // Obtener carrito local si no está autenticado
+  const { items: localCartItems } = useCartStore()
+  
+  // Convertir items de BD al formato del store
+  const convertDbItemToCartItem = (item: {
+    id: string
+    productId: string
+    quantity: number
+    product: {
+      id: string
+      name: string
+      price: number | string
+      discount: number | string
+      images: Array<{ url: string }>
+    }
+  }): CartItem => ({
+    id: item.id,
+    productId: item.productId,
+    quantity: item.quantity,
+    product: {
+      id: item.product.id,
+      name: item.product.name,
+      price: Number(item.product.price),
+      discount: Number(item.product.discount),
+      images: item.product.images,
+    },
+  })
+  
+  // Usar carrito de BD si está autenticado, sino usar localStorage
+  const cartItems = useMemo(() => {
+    if (isAuthenticated && dbCartItems) {
+      return dbCartItems.map(convertDbItemToCartItem)
+    }
+    return localCartItems
+  }, [isAuthenticated, dbCartItems, localCartItems])
+
+  const { data: addressesData, refetch: refetchAddresses } = useAddressesQuery({
+    enabled: isAuthenticated,
+    placeholderData: undefined, // No usar datos cacheados cuando está deshabilitado
+  })
+  const { data: paymentMethodsData, refetch: refetchPaymentMethods } =
     usePaymentMethodsQuery({
       enabled: isAuthenticated,
+      placeholderData: undefined, // No usar datos cacheados cuando está deshabilitado
     })
+  
+  // Forzar addresses y paymentMethods a undefined si no está autenticado
+  // Esto previene que React Query devuelva datos cacheados de localStorage
+  const addresses = isAuthenticated ? addressesData : undefined
+  const paymentMethods = isAuthenticated ? paymentMethodsData : undefined
   const { mutateAsync: createPaymentTransactionWithoutOrder, isPending } =
     useCreatePaymentTransactionWithoutOrderMutation()
   const { mutateAsync: cashDeposit, isPending: isProcessingDeposit } =

@@ -13,9 +13,10 @@ export function useCartSync() {
   const { items: localCartItems, clearCart } = useCartStore()
   const queryClient = useQueryClient()
   const hasSyncedRef = useRef(false)
+  const previousTokenRef = useRef<string | null>(null)
 
   // Obtener carrito de BD si está autenticado
-  const { data: dbCartItems } = useCartQuery({
+  const { data: dbCartItems, isFetched } = useCartQuery({
     enabled: !!token,
   })
 
@@ -69,24 +70,45 @@ export function useCartSync() {
     queryClient,
   ])
 
+  // Detectar cuando el usuario se autentica (token cambia de null a un valor)
   useEffect(() => {
+    const tokenChanged = previousTokenRef.current === null && token !== null
+    previousTokenRef.current = token
+
     // Resetear el flag cuando el usuario cierra sesión
     if (!token) {
       hasSyncedRef.current = false
       return
     }
 
-    // Sincronizar cuando el usuario se autentica y hay items en localStorage
-    // Esperar a que dbCartItems esté disponible (puede ser array vacío o undefined inicialmente)
+    // Si el token cambió (usuario se logueó) y hay items en localStorage, resetear el flag
+    // para permitir la sincronización incluso si queryClient.clear() se llamó
+    if (tokenChanged && localCartItems.length > 0) {
+      hasSyncedRef.current = false
+    }
+  }, [token, localCartItems.length])
+
+  // Sincronizar cuando el usuario se autentica y hay items en localStorage
+  useEffect(() => {
+    if (!token) return
+
+    // Sincronizar cuando:
+    // 1. Hay token (usuario autenticado)
+    // 2. Hay items en localStorage
+    // 3. No se ha sincronizado aún
+    // 4. La query se haya ejecutado completamente (isFetched === true)
+    // 5. dbCartItems esté disponible (puede ser array vacío, pero no undefined)
+    // Esto maneja el caso cuando queryClient.clear() se llama durante el login
     if (
       token &&
       localCartItems.length > 0 &&
       !hasSyncedRef.current &&
+      isFetched &&
       dbCartItems !== undefined
     ) {
       syncLocalCartToDB()
     }
-  }, [token, localCartItems.length, dbCartItems, syncLocalCartToDB])
+  }, [token, localCartItems.length, isFetched, dbCartItems, syncLocalCartToDB])
 
   return {
     isSyncing: false,

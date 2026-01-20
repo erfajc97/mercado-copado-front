@@ -28,11 +28,24 @@ export const getStatusTransactionService = async (
       const fullTransactionId = String(transactionId).trim()
       const fullPaymentId = String(paymentId).trim()
 
+      // El id debe ser un número (Int64) según la API de Payphone
+      // Si paymentId es un string alfanumérico (como "kzLKq8Ua0ClzLSwdfQYzg"), 
+      // significa que es el paymentId string, no el id numérico
+      // El id numérico solo viene en la URL de respuesta después del pago
+      const numericId = Number(fullPaymentId)
+      
+      // Si no es un número válido, no podemos verificar
+      if (isNaN(numericId)) {
+        throw new Error(
+          `No se puede verificar el pago por link: el id debe ser un número. Se recibió: ${fullPaymentId}. El id numérico solo está disponible después de que el usuario completa el pago.`,
+        )
+      }
+
       const linkEndpoint =
         'https://pay.payphonetodoesposible.com/api/button/V2/Confirm'
 
       const requestBody = {
-        id: fullPaymentId,
+        id: numericId,
         clientTxId: fullTransactionId,
       }
 
@@ -49,11 +62,6 @@ export const getStatusTransactionService = async (
 
       return response.data
     }
-
-    // Si no hay paymentId, es un pago por teléfono - usar endpoint de Sale
-    console.log(
-      `[getStatusTransactionService] Verificando pago por teléfono con clientTransactionId: ${transactionId}`,
-    )
     const phoneEndpoint = `https://pay.payphonetodoesposible.com/api/Sale/client/${transactionId}`
     const response = await axios.get<Array<PayphoneStatusResponse>>(
       phoneEndpoint,
@@ -66,12 +74,21 @@ export const getStatusTransactionService = async (
     )
 
     // Payphone devuelve un array, tomamos el primer elemento
-    return response.data[0] || response.data
-  } catch (error: unknown) {
-    console.error('Error en getStatusTransactionService:', error)
+    const result = response.data[0] || response.data
+ 
 
+    return result
+  } catch (error: unknown) {
     if (error instanceof AxiosError) {
       const payphoneError = error.response?.data as PayphoneError
+
+      // Si es un 404, puede ser que la transacción no existe (pago por link)
+      if (error.response?.status === 404) {
+        throw new Error(
+          payphoneError.message ||
+            'La transacción no existe en el sistema de pagos por teléfono. Puede ser un pago por link.',
+        )
+      }
 
       if (payphoneError.message) {
         throw new Error(payphoneError.message)

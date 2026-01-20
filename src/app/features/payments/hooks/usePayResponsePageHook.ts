@@ -1,7 +1,7 @@
-import { useEffect } from 'react'
-import { useNavigate } from '@tanstack/react-router'
+import { useEffect, useState } from 'react'
 import { usePaymentConfirmationByPayphoneMutation } from '@/app/features/payments/components/payphone/mutations/usePayPhoneMutation'
 import { useUpdatePaymentStatusMutation } from '@/app/features/payments/mutations/usePaymentMutations'
+import { sonnerResponse } from '@/app/helpers/sonnerResponse'
 
 interface UsePayResponsePageHookProps {
   id: string
@@ -12,7 +12,8 @@ export const usePayResponsePageHook = ({
   id,
   clientTransactionId,
 }: UsePayResponsePageHookProps) => {
-  const navigate = useNavigate()
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const {
     mutateAsync: paymentConfirmationByPayphone,
     isPending,
@@ -21,48 +22,64 @@ export const usePayResponsePageHook = ({
   const { mutateAsync: updateStatusTransaction } =
     useUpdatePaymentStatusMutation()
 
-  const handlePaymentConfirmation = async () => {
-    try {
-      const response = await paymentConfirmationByPayphone({
-        id,
-        clientTxId: clientTransactionId,
-      })
-      const { statusCode } = response
-      if (statusCode === 3) {
-        // Pago completado exitosamente - actualizar estado de transacción y orden
-        // La orden ya existe (se creó cuando se inició el pago), solo actualizar su estado
-        await updateStatusTransaction({
-          clientTransactionId,
-          status: 'completed',
-        })
-        // El carrito ya se limpió cuando se creó la orden, no es necesario limpiarlo de nuevo
-        // Redirigir directamente a órdenes
-        navigate({ to: '/orders' })
-      } else {
-        // Pago pendiente o en proceso - redirigir a órdenes para verificar
-        navigate({ to: '/orders' })
-      }
-    } catch (error) {
-      console.error('Error al confirmar el pago:', error)
-      // Si hay error, redirigir a órdenes para que el usuario pueda verificar el estado
-      navigate({ to: '/orders' })
-    }
-  }
-
   useEffect(() => {
-    if (!id || !clientTransactionId) {
-      console.warn('Faltan parámetros requeridos: id o clientTransactionId')
-      navigate({ to: '/' })
+    // Normalizar clientTransactionId (puede venir como array)
+    const clientTxIdNormalized = Array.isArray(clientTransactionId)
+      ? clientTransactionId[0]
+      : String(clientTransactionId || '')
+
+    if (!id || !clientTxIdNormalized) {
       return
     }
-    if (!isError) {
-      handlePaymentConfirmation()
+
+    const handlePaymentConfirmation = async () => {
+      const clientTxIdString = clientTxIdNormalized
+
+      try {
+        const response = await paymentConfirmationByPayphone({
+          id,
+          clientTxId: clientTxIdString,
+        })
+
+        const { statusCode } = response
+        if (statusCode === 3) {
+          try {
+            await updateStatusTransaction({
+              clientTransactionId: clientTxIdString,
+              status: 'completed',
+            })
+            setPaymentConfirmed(true)
+          } catch (updateError) {
+            const msg = 'Pago confirmado pero error al actualizar estado'
+            setErrorMessage(msg)
+            sonnerResponse(msg, 'error')
+          }
+        } else {
+          const msg = `El pago aún no está confirmado. StatusCode: ${statusCode}`
+          setErrorMessage(msg)
+          sonnerResponse(msg, 'error')
+        }
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : 'Error desconocido al confirmar el pago'
+        setErrorMessage(errorMsg)
+        sonnerResponse(`Error al confirmar el pago: ${errorMsg}`, 'error')
+      }
     }
-  }, [id, clientTransactionId, isError])
+
+    handlePaymentConfirmation()
+  
+  }, [id, clientTransactionId])
+
+  // Normalizar clientTransactionId para la validación
+  const clientTxIdNormalized = Array.isArray(clientTransactionId)
+    ? clientTransactionId[0]
+    : String(clientTransactionId || '')
 
   return {
     isPending,
-    isError,
-    hasRequiredParams: Boolean(id && clientTransactionId),
+    isError: isError || !!errorMessage,
+    hasRequiredParams: Boolean(id && clientTxIdNormalized),
+    paymentConfirmed,
+    errorMessage,
   }
 }

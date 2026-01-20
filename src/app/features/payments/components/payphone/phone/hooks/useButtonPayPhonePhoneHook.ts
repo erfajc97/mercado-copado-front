@@ -101,11 +101,21 @@ export const useButtonPayPhonePhoneHook = ({
 
       // 4. Crear transacción+orden en el backend DESPUÉS
       try {
+        console.log(
+          '[useButtonPayPhonePhoneHook] Creando/regenerando transacción con TELÉFONO:',
+          {
+            orderId: orderId || 'nueva orden',
+            clientTransactionId: transactionId,
+            phoneNumber: phoneNumberToSend,
+          },
+        )
+
         if (orderId) {
           await regenerateTransaction({
             orderId,
             paymentProvider: 'PAYPHONE',
             ...(isValidUUID(paymentMethodId) ? { paymentMethodId } : {}),
+            // Los pagos por teléfono no necesitan payphoneData con paymentId
           })
           onSuccess?.()
         } else {
@@ -114,6 +124,7 @@ export const useButtonPayPhonePhoneHook = ({
             clientTransactionId: transactionId,
             paymentProvider: 'PAYPHONE',
             ...(isValidUUID(paymentMethodId) ? { paymentMethodId } : {}),
+            // Los pagos por teléfono no necesitan payphoneData con paymentId
           })
           onSuccess?.()
         }

@@ -34,45 +34,46 @@ export const usePaymentVerificationHook = ({
     queryClientRef.current = queryClient
   }, [refetch, queryClient])
 
-  // Función para verificar el estado de un pago
   const handleVerifyPaymentStatus = useCallback(
     async (clientTransactionId: string, payment?: any) => {
       if (!clientTransactionId) return false
 
       try {
-        // Extraer paymentId de payphoneData si existe (para pagos por link)
-        const payphoneData = payment?.payphoneData as
-          | { paymentId?: string }
-          | null
-          | undefined
-        const paymentId = payphoneData?.paymentId
+        const payphoneDataRaw = payment?.payphoneData
+        let paymentId: string | undefined
+
+        if (payphoneDataRaw) {
+          if (typeof payphoneDataRaw === 'string') {
+            try {
+              const parsed = JSON.parse(payphoneDataRaw)
+              paymentId = parsed?.paymentId
+            } catch {
+              // Ignorar error de parsing
+            }
+          } else if (typeof payphoneDataRaw === 'object' && payphoneDataRaw !== null) {
+            paymentId = (payphoneDataRaw as { paymentId?: string }).paymentId
+          }
+        }
+
+        if (paymentId) {
+          return false
+        }
 
         const response = await getStatusTransactionService(
           clientTransactionId,
-          paymentId,
+          undefined,
         )
         const { statusCode } = response
 
         if (statusCode === 3) {
-          // Pago completado - actualizar estado
           await updatePaymentStatus({
             clientTransactionId,
             status: 'completed',
           })
           return true
-        } else {
-          // Pago aún pendiente
-          console.log(
-            `La transacción ${clientTransactionId} aún está pendiente (statusCode: ${statusCode})`,
-          )
-          return false
         }
-      } catch (error) {
-        console.error(
-          'Error al verificar el estado de la transacción:',
-          clientTransactionId,
-          error,
-        )
+        return false
+      } catch {
         return false
       }
     },
@@ -90,7 +91,17 @@ export const usePaymentVerificationHook = ({
     const safeOrders = Array.isArray(orders) ? orders : []
 
     // Solo verificar una vez al montar el componente o cuando cambian las órdenes
-    if (hasVerifiedRef.current || safeOrders.length === 0) {
+    // Usar una clave única basada en orders.length y currentPage para detectar cambios
+    const verificationKey = `${safeOrders.length}-${currentPage}`
+    const lastVerificationKey = (hasVerifiedRef as any).lastKey
+
+    if (hasVerifiedRef.current && verificationKey === lastVerificationKey) {
+      return
+    }
+
+    if (safeOrders.length === 0) {
+      hasVerifiedRef.current = true
+      ;(hasVerifiedRef as any).lastKey = verificationKey
       return
     }
 
@@ -109,6 +120,7 @@ export const usePaymentVerificationHook = ({
 
     // Marcar como verificado inmediatamente para evitar múltiples ejecuciones
     hasVerifiedRef.current = true
+    ;(hasVerifiedRef as any).lastKey = verificationKey
 
     // Verificar cada orden pendiente
     const verifyPromises = pendingOrders.map(async (order: any) => {
@@ -117,34 +129,45 @@ export const usePaymentVerificationHook = ({
       )
 
       if (payment?.clientTransactionId) {
-        return handleVerifyPaymentStatus(payment.clientTransactionId, payment)
+        const payphoneDataRaw = payment?.payphoneData
+        let hasPaymentId = false
+
+        if (payphoneDataRaw) {
+          let parsedData: any = payphoneDataRaw
+          if (typeof payphoneDataRaw === 'string') {
+            try {
+              parsedData = JSON.parse(payphoneDataRaw)
+            } catch {
+              // Ignorar error de parsing
+            }
+          }
+          hasPaymentId = !!parsedData?.paymentId
+        }
+
+        if (!hasPaymentId) {
+          return handleVerifyPaymentStatus(payment.clientTransactionId, payment)
+        }
+        return false
       }
       return false
     })
 
-    // Ejecutar todas las verificaciones
     Promise.all(verifyPromises)
       .then((results) => {
         const hasUpdates = results.some((updated) => updated === true)
         if (hasUpdates) {
-          // Refetch órdenes después de actualizar estados (tanto mis órdenes como dashboard)
-          // Usar setTimeout para evitar loops infinitos y dar tiempo a que se complete la actualización
           setTimeout(() => {
             queryClientRef.current.invalidateQueries({
               queryKey: ['orders'],
-              exact: false, // Invalidar todas las variantes de orders
+              exact: false,
             })
             refetchRef.current()
-          }, 2000) // Aumentar a 2 segundos para dar más tiempo
+          }, 2000)
         }
       })
-      .catch((error) => {
-        console.error('Error al verificar pagos pendientes:', error)
-        // Resetear el ref en caso de error para permitir reintentos
+      .catch(() => {
         hasVerifiedRef.current = false
       })
-    // Dependencias: solo orders.length y currentPage para evitar loops infinitos
-    // handleVerifyPaymentStatus es estable (useCallback) y se accede a través del closure
   }, [orders.length, currentPage])
 
   return {

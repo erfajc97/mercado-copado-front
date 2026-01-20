@@ -7,7 +7,7 @@ export const getStatusLabel = (status: string): string => {
     completed: 'Completada',
     delivered: 'Entregada',
     cancelled: 'Cancelada',
-    paid_pending_review: 'Procesando Pago',
+    paid_pending_review: 'Pago en Revisión',
   }
   return statusMap[status] || status
 }

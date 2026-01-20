@@ -11,7 +11,7 @@ interface OrderCardProps {
   isAdmin: boolean
   formatPrice: (price: number) => string
   currency: string
-  onViewProducts: (order: any, e: React.MouseEvent) => void
+  onViewProducts: (order: any, e?: React.MouseEvent | any) => void
   onPayNow: (order: any) => void
   isPaymentButtonDisabled: (order: any) => boolean
   getPaymentButtonText: (order: any) => string
@@ -71,7 +71,7 @@ export const OrderCard = ({
             <Button
               color="primary"
               startContent={<Eye size={16} />}
-              onPress={(e) => onViewProducts(order, e as any)}
+              onPress={() => onViewProducts(order, undefined)}
               className="bg-gradient-coffee border-none hover:opacity-90"
             >
               Ver Productos

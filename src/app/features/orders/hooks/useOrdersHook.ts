@@ -6,13 +6,26 @@ import {
   isPaymentButtonDisabled,
 } from '../helpers/calculatePaymentCooldown'
 import { usePaymentVerificationHook } from './usePaymentVerificationHook'
+import type { PaginatedResponse } from '@/app/helpers/parsePaginatedResponse'
+import { extractItems, extractPagination } from '@/app/helpers/parsePaginatedResponse'
 import { useCurrency } from '@/app/hooks/useCurrency'
 import { useAuthStore } from '@/app/store/auth/authStore'
 import { getAddressesService } from '@/app/features/addresses/services/getAddressesService'
 import { getPaymentMethodsService } from '@/app/features/payment-cards/services/getPaymentMethodsService'
-import { extractItems, extractPagination } from '@/app/helpers/parsePaginatedResponse'
 
 const pageSize = 10
+
+// Tipo para órdenes con pagos, compatible con usePaymentVerificationHook
+type OrderWithPayments = {
+  id: string
+  status: string
+  payments?: Array<{
+    clientTransactionId?: string
+    status: string
+    payphoneData?: { paymentId?: string }
+  }>
+  [key: string]: any
+}
 
 export const useOrdersHook = () => {
   const [currentPage, setCurrentPage] = useState(1)
@@ -63,7 +76,9 @@ export const useOrdersHook = () => {
   // Extraer órdenes y paginación de la respuesta usando helpers
   const orders = useMemo(() => {
     if (!ordersData) return []
-    return extractItems(ordersData)
+    return extractItems<OrderWithPayments>(
+      ordersData as Array<OrderWithPayments> | PaginatedResponse<OrderWithPayments> | null | undefined
+    )
   }, [ordersData])
 
   const pagination = useMemo(() => {
@@ -78,9 +93,13 @@ export const useOrdersHook = () => {
     refetch,
   })
 
-  const handleViewProducts = (order: any, e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
+  const handleViewProducts = (order: any, e?: React.MouseEvent | any) => {
+    if (e?.preventDefault) {
+      e.preventDefault()
+    }
+    if (e?.stopPropagation) {
+      e.stopPropagation()
+    }
     setSelectedOrder(order)
     setIsModalOpen(true)
   }

@@ -83,7 +83,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               to="/"
               onPress={onClose}
             >
-              Continuar Comprando
+              <p className="text-white">Seguir Comprando</p>
             </Button>
           </div>
         ) : (
@@ -202,17 +202,17 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   to="/checkout"
                   onPress={onClose}
                 >
-                  Proceder al Checkout
+                  <p className="text-white">Finalizar Compra</p>
                 </Button>
               ) : (
                 <Button
                   color="primary"
                   size="lg"
                   className="w-full bg-gradient-coffee border-none hover:opacity-90 rounded-lg h-12 font-semibold"
-                  startContent={<LogIn size={18} />}
+                  startContent={<LogIn size={18} className="text-white" />}
                   onPress={handleCheckout}
                 >
-                  Iniciar Sesión para Continuar
+                  <p className="text-white">Iniciar Sesión para Continuar</p>
                 </Button>
               )}
             </div>

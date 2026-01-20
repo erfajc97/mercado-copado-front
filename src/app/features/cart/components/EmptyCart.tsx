@@ -17,7 +17,7 @@ export function EmptyCart() {
         size="lg"
         className="bg-gradient-coffee border-none hover:opacity-90 shadow-coffee hover:shadow-coffee-md"
       >
-        Continuar Comprando
+        <p className="text-white">Seguir Comprando</p>
       </Button>
     </div>
   )

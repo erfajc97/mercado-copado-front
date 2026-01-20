@@ -125,7 +125,7 @@ export function Cart() {
               to="/checkout"
               className="block w-full bg-gradient-coffee text-white py-3 rounded-lg hover:opacity-90 shadow-coffee hover:shadow-coffee-md transition-all duration-200 font-semibold text-center"
             >
-              Proceder al Checkout
+              Finalizar Compra
             </Link>
           </div>
         </div>

@@ -36,9 +36,7 @@ export const usePaymentConfirmationByPayphoneMutation = () => {
       sonnerResponse('Pago confirmado exitosamente', 'success')
     },
     onError: (error) => {
-      const message =
-        error instanceof Error ? error.message : 'Error al confirmar el pago'
-      sonnerResponse(message, 'error')
+      sonnerResponse(error.message, 'error')
     },
   })
 }

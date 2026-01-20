@@ -76,15 +76,35 @@ export const useButtonPayPhoneLinkHook = ({
 
         // 4. Crear transacción+orden en el backend DESPUÉS
         try {
+          // Validar que payphoneResponse tiene la estructura correcta
+          if (!payphoneResponse.paymentId) {
+            throw new Error(
+              'Error: payphoneResponse no contiene paymentId. No se puede crear la transacción.',
+            )
+          }
+
+          // Estructura correcta de payphoneData para links
+          const payphoneDataForLink = {
+            paymentId: payphoneResponse.paymentId,
+            payWithCard: payphoneResponse.payWithCard,
+          }
+
+          console.log(
+            '[useButtonPayPhoneLinkHook] Creando/regenerando transacción con LINK:',
+            {
+              orderId: orderId || 'nueva orden',
+              clientTransactionId: transactionId,
+              paymentId: payphoneDataForLink.paymentId,
+              hasPayWithCard: !!payphoneDataForLink.payWithCard,
+            },
+          )
+
           if (orderId) {
             await regenerateTransaction({
               orderId,
               paymentProvider: 'PAYPHONE',
               ...(isValidUUID(paymentMethodId) ? { paymentMethodId } : {}),
-              payphoneData: {
-                paymentId: payphoneResponse.paymentId,
-                payWithCard: payphoneResponse.payWithCard,
-              },
+              payphoneData: payphoneDataForLink,
             })
             onSuccess?.()
           } else {
@@ -93,10 +113,7 @@ export const useButtonPayPhoneLinkHook = ({
               clientTransactionId: transactionId,
               paymentProvider: 'PAYPHONE',
               ...(isValidUUID(paymentMethodId) ? { paymentMethodId } : {}),
-              payphoneData: {
-                paymentId: payphoneResponse.paymentId,
-                payWithCard: payphoneResponse.payWithCard,
-              },
+              payphoneData: payphoneDataForLink,
             })
             onSuccess?.()
           }

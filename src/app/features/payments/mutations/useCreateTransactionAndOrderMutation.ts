@@ -14,6 +14,7 @@ export const useCreateTransactionAndOrderMutation = () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] })
       queryClient.invalidateQueries({ queryKey: ['orders', 'my-orders'] })
       queryClient.invalidateQueries({ queryKey: ['orders', 'all'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboardStats'] })
       queryClient.invalidateQueries({ queryKey: ['cart'] })
       clearCart() // Limpiar el carrito después de crear la orden
       sonnerResponse('Orden creada exitosamente', 'success')

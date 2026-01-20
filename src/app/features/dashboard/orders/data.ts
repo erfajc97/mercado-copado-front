@@ -6,24 +6,29 @@ export const allStatusOptions = [
   { label: 'Completada', value: 'completed' },
   { label: 'Entregada', value: 'delivered' },
   { label: 'Cancelada', value: 'cancelled' },
-  { label: 'Procesando Pago', value: 'paid_pending_review' },
+  { label: 'Pago en Revisión', value: 'paid_pending_review' },
 ]
 
 export const getValidStatusOptions = (currentStatus: string) => {
   const statusFlow: Record<string, Array<string>> = {
-    pending: ['processing', 'cancelled'],
-    created: ['processing', 'cancelled'],
-    processing: ['shipping', 'cancelled'],
+    pending: ['shipping', 'completed', 'cancelled'],
+    created: ['shipping', 'completed', 'cancelled'],
+    processing: ['shipping', 'completed', 'cancelled'],
     shipping: ['completed', 'delivered', 'cancelled'],
-    paid_pending_review: ['processing', 'cancelled'],
+    paid_pending_review: ['shipping', 'completed', 'cancelled'],
     completed: ['delivered'],
     delivered: [],
     cancelled: [],
   }
 
-  const validStatuses = statusFlow[currentStatus]
-  return allStatusOptions.filter((option) =>
-    validStatuses.includes(option.value),
+  // Estados que solo se asignan automáticamente, no manualmente
+  const automaticOnlyStatuses = ['processing', 'paid_pending_review']
+
+  const validStatuses = statusFlow[currentStatus] ?? []
+  return allStatusOptions.filter(
+    (option) =>
+      validStatuses.includes(option.value) &&
+      !automaticOnlyStatuses.includes(option.value),
   )
 }
 
@@ -35,7 +40,7 @@ export const statusColors: Record<string, string> = {
   completed: 'bg-green-100 text-green-800',
   delivered: 'bg-green-100 text-green-800',
   cancelled: 'bg-red-100 text-red-800',
-  paid_pending_review: 'bg-purple-100 text-purple-800',
+  paid_pending_review: 'bg-orange-100 text-orange-800',
 }
 
 export const statusOptions = allStatusOptions
