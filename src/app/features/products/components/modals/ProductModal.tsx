@@ -75,48 +75,47 @@ export default function ProductModal({
       onOpenChange={handleOpenChange}
       isDismissable
       size="2xl"
-      placement="center"
+      placement="top"
+      scrollBehavior="inside"
       headerContent={isEditMode ? 'Editar Producto' : 'Nuevo Producto'}
+      footerContent={
+        <div className="flex gap-2 w-full">
+          <Button
+            variant="light"
+            onPress={handleCancel}
+            className="flex-1"
+            size="sm"
+          >
+            Cancelar
+          </Button>
+          <Button
+            color="primary"
+            onPress={() => form.submit()}
+            isLoading={isPending}
+            isDisabled={isPending}
+            className="flex-1 bg-gradient-coffee border-none hover:opacity-90"
+            size="sm"
+          >
+            {isEditMode ? 'Guardar Cambios' : 'Crear Producto'}
+          </Button>
+        </div>
+      }
     >
       {isLoadingProduct ? (
         <div className="text-center py-8">Cargando producto...</div>
       ) : (
-        <>
-          <FormProduct
-            form={form}
-            categories={categories}
-            subcategories={subcategories}
-            selectedCategory={selectedCategory}
-            setSelectedCategory={setSelectedCategory}
-            fileList={fileList}
-            handleUploadChange={handleUploadChange}
-            handleRemove={handleRemove}
-            isEditMode={isEditMode}
-            onFinish={handleFormSubmit}
-          />
-
-          {/* Botones */}
-          <div className="flex gap-2 mt-2">
-            <Button
-              variant="light"
-              onPress={handleCancel}
-              className="flex-1"
-              size="sm"
-            >
-              Cancelar
-            </Button>
-            <Button
-              color="primary"
-              onPress={() => form.submit()}
-              isLoading={isPending}
-              isDisabled={isPending}
-              className="flex-1 bg-gradient-coffee border-none hover:opacity-90"
-              size="sm"
-            >
-              {isEditMode ? 'Guardar Cambios' : 'Crear Producto'}
-            </Button>
-          </div>
-        </>
+        <FormProduct
+          form={form}
+          categories={categories}
+          subcategories={subcategories}
+          selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory}
+          fileList={fileList}
+          handleUploadChange={handleUploadChange}
+          handleRemove={handleRemove}
+          isEditMode={isEditMode}
+          onFinish={handleFormSubmit}
+        />
       )}
     </CustomModalNextUI>
   )

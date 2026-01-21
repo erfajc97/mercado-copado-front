@@ -46,26 +46,28 @@ export const FormProduct = ({
       className="mt-1"
     >
       {/* Fila 1: Nombre del Producto y País */}
-      <div className="grid grid-cols-2 gap-3 mb-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-2">
         <Form.Item
           name="name"
-          label="Nombre del Producto"
+          label={<span className="text-xs sm:text-sm">Nombre del Producto</span>}
           rules={[
             {
               required: true,
-              message: 'Por favor ingresa el nombre del producto',
+              message: 'Ingresa el nombre',
             },
           ]}
+          className="mb-0"
         >
           <Input placeholder="Ej: iPhone 15 Pro" />
         </Form.Item>
 
         <Form.Item
           name="country"
-          label="País"
+          label={<span className="text-xs sm:text-sm">País</span>}
           rules={[
-            { required: true, message: 'Por favor selecciona un país' },
+            { required: true, message: 'Selecciona un país' },
           ]}
+          className="mb-0"
         >
           <Select
             placeholder="Selecciona un país"
@@ -81,16 +83,17 @@ export const FormProduct = ({
       </div>
 
       {/* Fila 2: Categoría y Subcategoría */}
-      <div className="grid grid-cols-2 gap-3 mb-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-2">
         <Form.Item
           name="categoryId"
-          label="Categoría"
+          label={<span className="text-xs sm:text-sm">Categoría</span>}
           rules={[
             {
               required: true,
-              message: 'Por favor selecciona una categoría',
+              message: 'Selecciona una categoría',
             },
           ]}
+          className="mb-0"
         >
           <Select
             placeholder="Selecciona una categoría"
@@ -109,13 +112,14 @@ export const FormProduct = ({
 
         <Form.Item
           name="subcategoryId"
-          label="Subcategoría"
+          label={<span className="text-xs sm:text-sm">Subcategoría</span>}
           rules={[
             {
               required: true,
-              message: 'Por favor selecciona una subcategoría',
+              message: 'Selecciona una subcategoría',
             },
           ]}
+          className="mb-0"
         >
           <Select
             placeholder="Selecciona una subcategoría"
@@ -130,14 +134,15 @@ export const FormProduct = ({
         </Form.Item>
       </div>
 
-      {/* Fila 3: Precio, Descuento y Switch (3 columnas iguales) */}
-      <div className="grid grid-cols-3 gap-3 mb-3">
+      {/* Fila 3: Precio, Descuento y Switch */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-2">
         <Form.Item
           name="price"
-          label="Precio"
+          label={<span className="text-xs sm:text-sm">Precio</span>}
           rules={[
-            { required: true, message: 'Por favor ingresa el precio' },
+            { required: true, message: 'Ingresa el precio' },
           ]}
+          className="mb-0"
         >
           <InputNumber
             min={0}
@@ -150,27 +155,30 @@ export const FormProduct = ({
 
         <Form.Item
           name="discount"
-          label="Descuento (%)"
+          label={<span className="text-xs sm:text-sm">Descuento</span>}
           rules={[
             {
               required: true,
-              message: 'Por favor ingresa el descuento',
+              message: 'Ingresa descuento',
             },
           ]}
+          className="mb-0"
         >
           <InputNumber
             min={0}
             max={100}
             className="w-full"
             placeholder="0"
+            suffix="%"
           />
         </Form.Item>
 
         <Form.Item
           name="isActive"
-          label="Producto Activo"
+          label={<span className="text-xs sm:text-sm">Activo</span>}
           valuePropName="checked"
           initialValue={!isEditMode ? true : undefined}
+          className="mb-0"
         >
           <ConfigProvider
             theme={{
@@ -180,67 +188,63 @@ export const FormProduct = ({
             }}
           >
             <Switch
-              checkedChildren="Activo"
-              unCheckedChildren="Inactivo"
+              checkedChildren="Sí"
+              unCheckedChildren="No"
+              size="small"
             />
           </ConfigProvider>
         </Form.Item>
       </div>
 
-      {/* Fila 4: Descripción e Imágenes (mismo espacio) */}
-      <div className="grid grid-cols-2 gap-3 mb-0">
+      {/* Fila 4: Descripción e Imágenes */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-0">
         <Form.Item
           name="description"
-          label="Descripción"
+          label={<span className="text-xs sm:text-sm">Descripción</span>}
           rules={[
             {
               required: true,
-              message: 'Por favor ingresa la descripción',
+              message: 'Ingresa la descripción',
             },
           ]}
+          className="mb-0"
         >
-          <TextArea rows={4} placeholder="Descripción del producto..." />
+          <TextArea rows={3} placeholder="Descripción del producto..." />
         </Form.Item>
 
         <Form.Item
           name="images"
-          label="Imágenes del Producto"
+          label={<span className="text-xs sm:text-sm">Imágenes</span>}
           rules={
             !isEditMode
               ? [
                   {
                     required: true,
-                    message: 'Por favor sube al menos una imagen',
+                    message: 'Sube al menos una imagen',
                   },
                 ]
               : []
           }
+          className="mb-0"
         >
-          <div className="h-full flex flex-col">
-            <div className="border border-gray-300 rounded-lg p-2">
-              <Upload
-                listType="picture-card"
-                fileList={fileList}
-                onChange={handleUploadChange}
-                onRemove={handleRemove}
-                beforeUpload={() => false}
-                accept="image/*"
-                multiple
-                className="[&_.ant-upload-select]:w-16! [&_.ant-upload-select]:h-16! [&_.ant-upload-list-item]:w-16! [&_.ant-upload-list-item]:h-16! [&_.ant-upload-list]:gap-1!"
-              >
-                {fileList.length < 5 && (
-                  <div>
-                    <UploadIcon size={14} />
-                    <div className="mt-1 text-xs">Subir</div>
-                  </div>
-                )}
-              </Upload>
-            </div>
-            {isEditMode && (
-              <p className="text-xs text-gray-500 mt-1">
-                Puedes agregar nuevas imágenes
-              </p>
-            )}
+          <div className="border border-gray-300 rounded-lg p-2 max-h-[120px] overflow-y-auto">
+            <Upload
+              listType="picture-card"
+              fileList={fileList}
+              onChange={handleUploadChange}
+              onRemove={handleRemove}
+              beforeUpload={() => false}
+              accept="image/*"
+              multiple
+              className="[&_.ant-upload-select]:w-14! [&_.ant-upload-select]:h-14! [&_.ant-upload-list-item]:w-14! [&_.ant-upload-list-item]:h-14! [&_.ant-upload-list]:gap-1!"
+            >
+              {fileList.length < 5 && (
+                <div className="text-center">
+                  <UploadIcon size={12} />
+                  <div className="text-[10px]">Subir</div>
+                </div>
+              )}
+            </Upload>
           </div>
         </Form.Item>
       </div>

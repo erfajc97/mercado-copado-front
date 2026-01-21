@@ -40,11 +40,10 @@ export const PaymentProviderSelector = ({
     <div className="flex flex-col gap-4">
       {isBlockedByVerification && <EmailVerificationBanner email={email} />}
       
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
         {availableProviders.map((provider) => {
           const isSelected = selectedProvider === provider.id
           const isProviderDisabled = !provider.available
-          // Bloquear si está deshabilitado, el proveedor no está disponible, O el usuario no está verificado
           const isDisabled = disabled || isProviderDisabled || isBlockedByVerification
 
           return (
@@ -57,7 +56,7 @@ export const PaymentProviderSelector = ({
               }}
               disabled={isDisabled}
               className={`
-                relative p-8  rounded-lg border-2 transition-all duration-200
+                relative p-4 md:p-6 min-h-[70px] md:min-h-[80px] rounded-lg border-2 transition-all duration-200
                 ${
                   isSelected
                     ? 'border-coffee-medium bg-coffee-light/20 shadow-coffee'
@@ -77,14 +76,14 @@ export const PaymentProviderSelector = ({
               }
             >
               {isDisabled && (
-                <div className="absolute top-2 right-2">
-                  <Lock size={16} className="text-gray-400" />
+                <div className="absolute top-1 right-1 md:top-2 md:right-2">
+                  <Lock size={14} className="text-gray-400" />
                 </div>
               )}
               <div className="text-center">
                 <div
                   className={`
-                    text-lg font-bold mb-1
+                    text-sm md:text-base font-bold mb-0.5
                     ${isSelected ? 'text-coffee-darker' : 'text-gray-700'}
                     ${isDisabled ? 'text-gray-400' : ''}
                   `}
@@ -93,7 +92,7 @@ export const PaymentProviderSelector = ({
                 </div>
                 <div
                   className={`
-                    text-xs
+                    text-[10px] md:text-xs
                     ${isSelected ? 'text-coffee-medium' : 'text-gray-500'}
                     ${isDisabled ? 'text-gray-400' : ''}
                   `}

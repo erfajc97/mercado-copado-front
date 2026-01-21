@@ -43,12 +43,13 @@ export const MercadoPagoPaymentModal = ({
         </div>
       }
       footerContent={
-        <div className="flex gap-3 w-full">
+        <div className="flex gap-2 w-full">
           <Button
             variant="light"
             onPress={onClose}
             isDisabled={isLoading}
             className="flex-1"
+            size="sm"
           >
             Cancelar
           </Button>
@@ -57,9 +58,10 @@ export const MercadoPagoPaymentModal = ({
             onPress={handleConfirm}
             isLoading={isLoading}
             isDisabled={isLoading}
-            className="flex-1 bg-gradient-coffee border-none hover:opacity-90"
+            className="flex-1 bg-gradient-coffee border-none hover:opacity-90 text-sm"
+            size="sm"
           >
-            {isLoading ? 'Procesando...' : 'Continuar a Mercado Pago'}
+            {isLoading ? 'Procesando...' : 'Ir a Mercado Pago'}
           </Button>
         </div>
       }

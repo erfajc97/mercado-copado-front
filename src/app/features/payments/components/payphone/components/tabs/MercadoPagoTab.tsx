@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Button } from '@heroui/react'
-import { CreditCard, ExternalLink } from 'lucide-react'
+import { ExternalLink, Shield } from 'lucide-react'
 import { useRegenerateTransactionMutation } from '@/app/features/payments/mutations/useRegenerateTransactionMutation'
 import { sonnerResponse } from '@/app/helpers/sonnerResponse'
 import { useCurrency } from '@/app/hooks/useCurrency'
@@ -31,7 +31,6 @@ export const MercadoPagoTab = ({
         paymentProvider: 'MERCADOPAGO',
       })
 
-      // Extract initPoint from the response
       const initPoint =
         response?.content?.initPoint ||
         response?.initPoint ||
@@ -54,7 +53,6 @@ export const MercadoPagoTab = ({
     }
   }
 
-  // Solo mostrar para usuarios de Argentina
   if (!isArgentina) {
     return (
       <div className="py-4 text-center text-gray-500">
@@ -65,37 +63,47 @@ export const MercadoPagoTab = ({
 
   return (
     <div className="py-4 space-y-4">
-      <div className="text-center">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-linear-to-br from-blue-400 to-blue-600 rounded-full mb-4">
-          <CreditCard className="w-8 h-8 text-white" />
+      {/* Card con info de pago */}
+      <div className="bg-linear-to-br from-sky-50 to-cyan-50 border border-sky-200 rounded-xl p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm text-gray-600 mb-1">Total a pagar</p>
+            <p className="text-2xl font-bold text-gray-900">
+              {formatPrice(orderAmount)}
+            </p>
+          </div>
+          <div className="w-12 h-12 bg-sky-100 rounded-full flex items-center justify-center">
+            <img
+              src="https://http2.mlstatic.com/frontend-assets/mp-web-navigation/ui-navigation/6.6.73/mercadopago/logo__large@2x.png"
+              alt="Mercado Pago"
+              className="w-8 h-8 object-contain"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none'
+              }}
+            />
+          </div>
         </div>
-        <h3 className="text-lg font-semibold text-coffee-darker mb-2">
-          Pagar con Mercado Pago
-        </h3>
-        <p className="text-sm text-gray-600 mb-2">
-          Serás redirigido a Mercado Pago para completar el pago de forma
-          segura.
-        </p>
-        <p className="text-lg font-bold text-green-600">
-          {formatPrice(orderAmount)}
-        </p>
       </div>
 
+      {/* Boton de pago */}
       <Button
-        color="primary"
         size="lg"
         onPress={handlePayWithMercadoPago}
         isLoading={isPending || isProcessing}
         isDisabled={isPending || isProcessing}
-        className="w-full bg-blue-500 hover:bg-blue-600"
+        className="w-full bg-[#00b1ea] hover:bg-[#009ed6] text-white font-semibold"
         startContent={
           !isPending && !isProcessing ? <ExternalLink size={18} /> : null
         }
       >
-        {isPending || isProcessing
-          ? 'Generando enlace...'
-          : 'Pagar con Mercado Pago'}
+        {isPending || isProcessing ? 'Generando enlace...' : 'Pagar ahora'}
       </Button>
+
+      {/* Info de seguridad */}
+      <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
+        <Shield size={14} />
+        <span>Pago seguro con Mercado Pago</span>
+      </div>
     </div>
   )
 }
