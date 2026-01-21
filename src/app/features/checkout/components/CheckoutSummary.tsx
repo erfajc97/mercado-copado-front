@@ -129,13 +129,16 @@ export const CheckoutSummary = ({ checkout }: CheckoutSummaryProps) => {
           </div>
         </div>
 
-        {checkout.selectedPaymentProvider === 'PAYPHONE' ? (
+        {checkout.selectedPaymentProvider === 'PAYPHONE' ||
+        checkout.selectedPaymentProvider === 'MERCADOPAGO' ? (
           <div className="space-y-4">
             <p className="text-coffee-darker font-semibold text-center">
               Selecciona una opción de pago arriba
             </p>
             <p className="text-sm text-gray-600 text-center">
-              Elige entre pagar con link o con teléfono para continuar
+              {checkout.selectedPaymentProvider === 'MERCADOPAGO'
+                ? 'Haz clic en el botón de Mercado Pago para continuar'
+                : 'Elige entre pagar con link o con teléfono para continuar'}
             </p>
           </div>
         ) : !checkout.clientTransactionId ? (
@@ -146,8 +149,7 @@ export const CheckoutSummary = ({ checkout }: CheckoutSummaryProps) => {
               checkout.isPending ||
               !checkout.selectedAddressId ||
               !checkout.selectedPaymentProvider ||
-              (checkout.selectedPaymentProvider === 'CASH_DEPOSIT' &&
-                !checkout.depositImage)
+              !checkout.depositImage
             }
             isLoading={checkout.isPending}
             className="w-full bg-gradient-coffee border-none hover:opacity-90 font-semibold mb-4 shadow-coffee hover:shadow-coffee-md"

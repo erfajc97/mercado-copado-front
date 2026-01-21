@@ -6,6 +6,7 @@ import { buildPayphoneLinkBody } from '../helpers/buildPayphoneLinkBody'
 import { useLinkPayphoneMutation } from '../../mutations/usePayPhoneMutation'
 import { useCreateTransactionAndOrderMutation } from '@/app/features/payments/mutations/useCreateTransactionAndOrderMutation'
 import { useRegenerateTransactionMutation } from '@/app/features/payments/mutations/useRegenerateTransactionMutation'
+import { useCartSyncContext } from '@/app/features/cart/context/CartSyncContext'
 import { sonnerResponse } from '@/app/helpers/sonnerResponse'
 
 interface UseButtonPayPhoneLinkHookProps {
@@ -25,6 +26,7 @@ export const useButtonPayPhoneLinkHook = ({
   onSuccess,
   orderId,
 }: UseButtonPayPhoneLinkHookProps) => {
+  const { syncAndWait } = useCartSyncContext()
   const { mutateAsync: linkPayphone, isPending: isPendingLink } =
     useLinkPayphoneMutation()
   const { mutateAsync: createTransactionAndOrder } =
@@ -56,6 +58,8 @@ export const useButtonPayPhoneLinkHook = ({
     }
 
     try {
+      if (syncAndWait) await syncAndWait()
+
       // 1. Generar clientTransactionId
       const transactionId = orderId
         ? propClientTransactionId || generateTransactionId()

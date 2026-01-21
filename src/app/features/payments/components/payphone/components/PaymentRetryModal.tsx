@@ -36,6 +36,11 @@ export const PaymentRetryModal = ({
     handleCashDepositSubmit,
     handleTabChange,
     handleSuccess,
+    cryptoDepositImage,
+    setCryptoDepositImage,
+    isCryptoDepositPending,
+    handleCryptoDepositSubmit,
+    showMercadoPago,
   } = usePaymentRetryModalHook({
     orderId,
     addressId,
@@ -80,6 +85,11 @@ export const PaymentRetryModal = ({
           setDepositImage={setDepositImage}
           isCashDepositPending={isCashDepositPending}
           onCashDepositSubmit={handleCashDepositSubmit}
+          cryptoDepositImage={cryptoDepositImage}
+          setCryptoDepositImage={setCryptoDepositImage}
+          isCryptoDepositPending={isCryptoDepositPending}
+          onCryptoDepositSubmit={handleCryptoDepositSubmit}
+          showMercadoPago={showMercadoPago}
         />
       </div>
     </CustomModalNextUI>

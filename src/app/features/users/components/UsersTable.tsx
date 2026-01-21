@@ -1,5 +1,5 @@
-import { Button } from '@heroui/react'
-import { Edit, Trash2 } from 'lucide-react'
+import { Button, Tooltip } from '@heroui/react'
+import { CheckCircle, Edit, Mail, Trash2 } from 'lucide-react'
 import type { Column } from '@/components/UI/table-nextui/CustomTableNextUi'
 import type { UserData } from '../hooks/useUsersHook'
 import CustomTableNextUi from '@/components/UI/table-nextui/CustomTableNextUi'
@@ -13,6 +13,8 @@ interface UsersTableProps {
   onPageChange: (page: number) => void
   onEditClick: (user: UserData) => void
   onDeleteClick: (userId: string) => void
+  onResendVerification: (email: string) => void
+  isResendingVerification: boolean
   formatTotalSpent: (amount: number) => string
   formatDate: (date: string) => string
 }
@@ -25,6 +27,8 @@ export const UsersTable = ({
   onPageChange,
   onEditClick,
   onDeleteClick,
+  onResendVerification,
+  isResendingVerification,
   formatTotalSpent,
   formatDate,
 }: UsersTableProps) => {
@@ -41,6 +45,12 @@ export const UsersTable = ({
     {
       name: 'Email',
       uid: 'email',
+    },
+    {
+      name: 'Verificado',
+      uid: 'isVerified',
+      align: 'center',
+      width: 130,
     },
     {
       name: 'Documento',
@@ -90,6 +100,27 @@ export const UsersTable = ({
         return `${user.firstName} ${user.lastName || ''}`.trim()
       case 'email':
         return user.email
+      case 'isVerified':
+        if (user.isVerified) {
+          return (
+            <Tooltip content="Email verificado">
+              <CheckCircle className="h-5 w-5 text-green-500 mx-auto" />
+            </Tooltip>
+          )
+        }
+        return (
+          <Button
+            color="warning"
+            variant="flat"
+            size="sm"
+            startContent={<Mail className="h-3 w-3" />}
+            onPress={() => onResendVerification(user.email)}
+            isLoading={isResendingVerification}
+            disabled={isResendingVerification}
+          >
+            Reenviar
+          </Button>
+        )
       case 'documentId':
         return user.documentId || '-'
       case 'country':

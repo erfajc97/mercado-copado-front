@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Button } from '@heroui/react'
 import { Home } from 'lucide-react'
 import { PaymentProviderSelector } from './PaymentProviderSelector'
@@ -7,7 +8,10 @@ import { AddressModal } from '@/app/features/addresses/components/modals/Address
 import { PaymentMethodFormModal } from '@/app/features/payment-cards/components/modals/PaymentMethodFormModal'
 import { usePaymentMethodFormHook } from '@/app/features/payment-cards/hooks/usePaymentMethodFormHook'
 import { CashDepositUpload } from '@/app/features/payments/components/CashDepositUpload'
+import { CryptoPaymentDetails } from '@/app/features/payments/components/CryptoPaymentDetails'
 import { PayPhoneButtonsContainer } from '@/app/features/payments/components/payphone/shared/components/PayPhoneButtonsContainer'
+import { useMercadoPagoButtonHook } from '@/app/features/payments/components/mercadopago/hooks/useMercadoPagoButtonHook'
+import { MercadoPagoPaymentModal } from '@/app/features/payments/components/mercadopago/components/modals/MercadoPagoPaymentModal'
 import AuthModal from '@/app/features/auth/components/AuthModal'
 
 interface CheckoutFormProps {
@@ -16,6 +20,27 @@ interface CheckoutFormProps {
 
 export const CheckoutForm = ({ checkout }: CheckoutFormProps) => {
   const paymentMethodFormHook = usePaymentMethodFormHook()
+
+  const addressId =
+    checkout.selectedAddressId || checkout.defaultAddress?.id || ''
+  const {
+    showModal,
+    handleOpenModal,
+    handleCloseModal,
+    handlePay,
+    isPending,
+  } = useMercadoPagoButtonHook({
+    amount: checkout.total,
+    addressId,
+    clientTransactionId: checkout.clientTransactionId || undefined,
+    onSuccess: () => {},
+  })
+
+  useEffect(() => {
+    if (checkout.selectedPaymentProvider !== 'MERCADOPAGO') {
+      handleCloseModal()
+    }
+  }, [checkout.selectedPaymentProvider, handleCloseModal])
 
   return (
     <div className="space-y-6">
@@ -119,8 +144,8 @@ export const CheckoutForm = ({ checkout }: CheckoutFormProps) => {
         onClose={() => checkout.setShowAddressSelector(false)}
         addresses={checkout.addresses}
         selectedAddressId={checkout.selectedAddressId}
-        onSelectAddress={(addressId) => {
-          checkout.setSelectedAddressId(addressId)
+        onSelectAddress={(id) => {
+          checkout.setSelectedAddressId(id)
         }}
         onAddNewAddress={checkout.handleAddAddressClick}
       />
@@ -163,9 +188,16 @@ export const CheckoutForm = ({ checkout }: CheckoutFormProps) => {
         <div className="mb-6">
           <PaymentProviderSelector
             selectedProvider={checkout.selectedPaymentProvider}
-            onSelectProvider={(provider) =>
+            onSelectProvider={(provider) => {
               checkout.setSelectedPaymentProvider(provider)
-            }
+              if (
+                provider === 'MERCADOPAGO' &&
+                checkout.cartItems.length > 0 &&
+                (checkout.selectedAddressId || checkout.defaultAddress)
+              ) {
+                handleOpenModal()
+              }
+            }}
             disabled={!checkout.selectedAddressId && !checkout.defaultAddress}
           />
         </div>
@@ -217,6 +249,25 @@ export const CheckoutForm = ({ checkout }: CheckoutFormProps) => {
             />
           </div>
         )}
+
+        {/* Mostrar componente de pago crypto cuando está seleccionado */}
+        {checkout.selectedPaymentProvider === 'CRYPTO' && (
+          <div className="mt-6 pt-6 border-t border-coffee-medium">
+            {!checkout.selectedAddressId && !checkout.defaultAddress ? (
+              <div className="p-4 bg-yellow-50 border-2 border-yellow-200 rounded-lg mb-4">
+                <p className="text-sm text-yellow-800">
+                  Por favor, selecciona una dirección de envío antes de subir el
+                  comprobante.
+                </p>
+              </div>
+            ) : null}
+            <CryptoPaymentDetails
+              onImageSelect={checkout.setDepositImage}
+              selectedImage={checkout.depositImage}
+              disabled={!checkout.selectedAddressId && !checkout.defaultAddress}
+            />
+          </div>
+        )}
       </div>
 
       {/* Payment Method Form Modal */}
@@ -243,6 +294,16 @@ export const CheckoutForm = ({ checkout }: CheckoutFormProps) => {
           }
         }}
         initialMode="login"
+      />
+
+      {/* Modal de Mercado Pago: se abre al elegir Mercado Pago en el selector */}
+      <MercadoPagoPaymentModal
+        isOpen={showModal}
+        onClose={handleCloseModal}
+        onConfirm={handlePay}
+        total={checkout.total}
+        formatPrice={checkout.formatPrice}
+        isLoading={isPending}
       />
     </div>
   )

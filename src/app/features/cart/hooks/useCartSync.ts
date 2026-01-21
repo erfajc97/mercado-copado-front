@@ -26,6 +26,7 @@ export function useCartSync() {
   // Sincronizar items de localStorage a BD sin duplicar
   const syncLocalCartToDB = useCallback(async () => {
     if (localCartItems.length === 0) return
+    if (hasSyncedRef.current) return
 
     // Si dbCartItems no está disponible aún, esperar a que se cargue
     // o proceder con los items del localStorage
@@ -112,5 +113,6 @@ export function useCartSync() {
 
   return {
     isSyncing: false,
+    syncAndWait: syncLocalCartToDB,
   }
 }

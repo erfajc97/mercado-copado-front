@@ -4,7 +4,6 @@ export const getStatusLabel = (status: string): string => {
     created: 'Creada',
     processing: 'Procesando',
     shipping: 'En Envío',
-    completed: 'Completada',
     delivered: 'Entregada',
     cancelled: 'Cancelada',
     paid_pending_review: 'Pago en Revisión',

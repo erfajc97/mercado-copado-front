@@ -15,6 +15,7 @@ import { Route as UnauthenticatedRouteImport } from './routes/_unauthenticated'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PayResponseIndexRouteImport } from './routes/pay-response/index'
+import { Route as VerifyEmailTokenRouteImport } from './routes/verify-email/$token'
 import { Route as ProductsProductIdRouteImport } from './routes/products.$productId'
 import { Route as PaymentTransactionIdRouteImport } from './routes/payment.$transactionId'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
@@ -55,6 +56,11 @@ const IndexRoute = IndexRouteImport.update({
 const PayResponseIndexRoute = PayResponseIndexRouteImport.update({
   id: '/pay-response/',
   path: '/pay-response/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VerifyEmailTokenRoute = VerifyEmailTokenRouteImport.update({
+  id: '/verify-email/$token',
+  path: '/verify-email/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProductsProductIdRoute = ProductsProductIdRouteImport.update({
@@ -140,6 +146,7 @@ export interface FileRoutesByFullPath {
   '/auth/callback': typeof AuthCallbackRoute
   '/payment/$transactionId': typeof PaymentTransactionIdRoute
   '/products/$productId': typeof ProductsProductIdRoute
+  '/verify-email/$token': typeof VerifyEmailTokenRoute
   '/pay-response': typeof PayResponseIndexRoute
   '/dashboard/dashboard': typeof AuthenticatedDashboardDashboardRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
@@ -159,6 +166,7 @@ export interface FileRoutesByTo {
   '/auth/callback': typeof AuthCallbackRoute
   '/payment/$transactionId': typeof PaymentTransactionIdRoute
   '/products/$productId': typeof ProductsProductIdRoute
+  '/verify-email/$token': typeof VerifyEmailTokenRoute
   '/pay-response': typeof PayResponseIndexRoute
   '/dashboard/dashboard': typeof AuthenticatedDashboardDashboardRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
@@ -181,6 +189,7 @@ export interface FileRoutesById {
   '/auth/callback': typeof AuthCallbackRoute
   '/payment/$transactionId': typeof PaymentTransactionIdRoute
   '/products/$productId': typeof ProductsProductIdRoute
+  '/verify-email/$token': typeof VerifyEmailTokenRoute
   '/pay-response/': typeof PayResponseIndexRoute
   '/_authenticated/dashboard/dashboard': typeof AuthenticatedDashboardDashboardRoute
   '/_authenticated/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
@@ -202,6 +211,7 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/payment/$transactionId'
     | '/products/$productId'
+    | '/verify-email/$token'
     | '/pay-response'
     | '/dashboard/dashboard'
     | '/orders/$orderId'
@@ -221,6 +231,7 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/payment/$transactionId'
     | '/products/$productId'
+    | '/verify-email/$token'
     | '/pay-response'
     | '/dashboard/dashboard'
     | '/orders/$orderId'
@@ -242,6 +253,7 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/payment/$transactionId'
     | '/products/$productId'
+    | '/verify-email/$token'
     | '/pay-response/'
     | '/_authenticated/dashboard/dashboard'
     | '/_authenticated/orders/$orderId'
@@ -262,6 +274,7 @@ export interface RootRouteChildren {
   AuthCallbackRoute: typeof AuthCallbackRoute
   PaymentTransactionIdRoute: typeof PaymentTransactionIdRoute
   ProductsProductIdRoute: typeof ProductsProductIdRoute
+  VerifyEmailTokenRoute: typeof VerifyEmailTokenRoute
   PayResponseIndexRoute: typeof PayResponseIndexRoute
 }
 
@@ -307,6 +320,13 @@ declare module '@tanstack/react-router' {
       path: '/pay-response'
       fullPath: '/pay-response'
       preLoaderRoute: typeof PayResponseIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/verify-email/$token': {
+      id: '/verify-email/$token'
+      path: '/verify-email/$token'
+      fullPath: '/verify-email/$token'
+      preLoaderRoute: typeof VerifyEmailTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/products/$productId': {
@@ -455,6 +475,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthCallbackRoute: AuthCallbackRoute,
   PaymentTransactionIdRoute: PaymentTransactionIdRoute,
   ProductsProductIdRoute: ProductsProductIdRoute,
+  VerifyEmailTokenRoute: VerifyEmailTokenRoute,
   PayResponseIndexRoute: PayResponseIndexRoute,
 }
 export const routeTree = rootRouteImport

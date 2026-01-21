@@ -8,6 +8,7 @@ import { formatPhoneNumber } from '../helpers/formatPhoneNumber'
 import { usePhonePayphoneMutation } from '../../mutations/usePayPhoneMutation'
 import { useCreateTransactionAndOrderMutation } from '@/app/features/payments/mutations/useCreateTransactionAndOrderMutation'
 import { useRegenerateTransactionMutation } from '@/app/features/payments/mutations/useRegenerateTransactionMutation'
+import { useCartSyncContext } from '@/app/features/cart/context/CartSyncContext'
 import { useAuthStore } from '@/app/store/auth/authStore'
 import { userInfoService } from '@/app/features/auth/login/services/userInfoService'
 import { sonnerResponse } from '@/app/helpers/sonnerResponse'
@@ -30,6 +31,7 @@ export const useButtonPayPhonePhoneHook = ({
   orderId,
 }: UseButtonPayPhonePhoneHookProps) => {
   const navigate = useNavigate()
+  const { syncAndWait } = useCartSyncContext()
   const { token } = useAuthStore()
   const isAuthenticated = !!token
 
@@ -69,6 +71,8 @@ export const useButtonPayPhonePhoneHook = ({
     const phoneNumberToSend = formatPhoneNumber(phoneNumber)
 
     try {
+      if (syncAndWait) await syncAndWait()
+
       // 1. Generar clientTransactionId
       const transactionId = orderId
         ? propClientTransactionId || generateTransactionId()

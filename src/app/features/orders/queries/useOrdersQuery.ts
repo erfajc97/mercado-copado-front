@@ -18,10 +18,10 @@ export const useMyOrdersQuery = (params?: UseMyOrdersQueryParams) => {
   })
 }
 
-export const useOrderQuery = (orderId: string) => {
+export const useOrderQuery = (orderId: string, isAdmin: boolean = false) => {
   return useQuery({
-    queryKey: ['order', orderId],
-    queryFn: () => getOrderService(orderId),
+    queryKey: ['order', orderId, isAdmin],
+    queryFn: () => getOrderService(orderId, isAdmin),
     enabled: !!orderId,
   })
 }

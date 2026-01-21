@@ -52,6 +52,23 @@ export const Route = createFileRoute('/pay-response/')({
     id = String(id)
     clientTransactionId = String(clientTransactionId)
 
-    return <PayResponsePage id={id} clientTransactionId={clientTransactionId} />
+    // Mercado Pago: from=mercadopago, status, external_reference, payment_id
+    const from = (search as { from?: string }).from
+    const mpStatus = (search as { status?: string }).status
+    const externalReference = (search as { external_reference?: string })
+      .external_reference
+    // payment_id es el ID del pago en Mercado Pago (se agrega automáticamente en la redirección)
+    const mpPaymentId = (search as { payment_id?: string }).payment_id
+
+    return (
+      <PayResponsePage
+        id={id}
+        clientTransactionId={clientTransactionId}
+        from={from}
+        mpStatus={mpStatus}
+        externalReference={externalReference}
+        mpPaymentId={mpPaymentId}
+      />
+    )
   },
 })

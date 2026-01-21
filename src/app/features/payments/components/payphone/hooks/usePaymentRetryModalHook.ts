@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { generateTransactionId } from '../shared/helpers/generateTransactionId'
 import { sonnerResponse } from '@/app/helpers/sonnerResponse'
 import { useCashDepositMutation } from '@/app/features/payments/mutations/useCashDepositMutation'
+import { useCryptoDepositMutation } from '@/app/features/payments/mutations/useCryptoDepositMutation'
+import { useCurrency } from '@/app/hooks/useCurrency'
 
 interface UsePaymentRetryModalHookProps {
   orderId: string
@@ -18,14 +20,21 @@ export const usePaymentRetryModalHook = ({
 }: UsePaymentRetryModalHookProps) => {
   const { mutateAsync: cashDeposit, isPending: isCashDepositPending } =
     useCashDepositMutation()
+  const { mutateAsync: cryptoDeposit, isPending: isCryptoDepositPending } =
+    useCryptoDepositMutation()
+  const { isArgentina } = useCurrency()
 
   const [activeTab, setActiveTab] = useState('payphone')
   const [depositImage, setDepositImage] = useState<File | null>(null)
+  const [cryptoDepositImage, setCryptoDepositImage] = useState<File | null>(
+    null,
+  )
 
   const handleSuccess = () => {
     onSuccess?.()
     onCancel()
     setDepositImage(null)
+    setCryptoDepositImage(null)
   }
 
   const handleCashDepositSubmit = async () => {
@@ -52,6 +61,30 @@ export const usePaymentRetryModalHook = ({
     }
   }
 
+  const handleCryptoDepositSubmit = async () => {
+    if (!cryptoDepositImage) {
+      sonnerResponse(
+        'Por favor, sube una imagen del comprobante de transferencia crypto',
+        'error',
+      )
+      return
+    }
+
+    try {
+      const randomIdClientTransaction = generateTransactionId()
+
+      await cryptoDeposit({
+        addressId,
+        clientTransactionId: randomIdClientTransaction,
+        depositImage: cryptoDepositImage,
+        orderId,
+      } as any)
+      handleSuccess()
+    } catch (error) {
+      console.error('Error processing crypto deposit:', error)
+    }
+  }
+
   const handleTabChange = (key: string) => {
     setActiveTab(key)
   }
@@ -64,5 +97,12 @@ export const usePaymentRetryModalHook = ({
     handleSuccess,
     handleCashDepositSubmit,
     handleTabChange,
+    // Crypto
+    cryptoDepositImage,
+    setCryptoDepositImage,
+    isCryptoDepositPending,
+    handleCryptoDepositSubmit,
+    // MercadoPago visibility
+    showMercadoPago: isArgentina,
   }
 }

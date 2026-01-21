@@ -3,7 +3,6 @@ export const allStatusOptions = [
   { label: 'Creada', value: 'created' },
   { label: 'Procesando', value: 'processing' },
   { label: 'En Envío', value: 'shipping' },
-  { label: 'Completada', value: 'completed' },
   { label: 'Entregada', value: 'delivered' },
   { label: 'Cancelada', value: 'cancelled' },
   { label: 'Pago en Revisión', value: 'paid_pending_review' },
@@ -11,12 +10,11 @@ export const allStatusOptions = [
 
 export const getValidStatusOptions = (currentStatus: string) => {
   const statusFlow: Record<string, Array<string>> = {
-    pending: ['shipping', 'completed', 'cancelled'],
-    created: ['shipping', 'completed', 'cancelled'],
-    processing: ['shipping', 'completed', 'cancelled'],
-    shipping: ['completed', 'delivered', 'cancelled'],
-    paid_pending_review: ['shipping', 'completed', 'cancelled'],
-    completed: ['delivered'],
+    pending: ['shipping', 'delivered', 'cancelled'],
+    created: ['shipping', 'delivered', 'cancelled'],
+    processing: ['shipping', 'delivered', 'cancelled'],
+    shipping: ['delivered', 'cancelled'],
+    paid_pending_review: ['shipping', 'delivered', 'cancelled'],
     delivered: [],
     cancelled: [],
   }
@@ -37,7 +35,6 @@ export const statusColors: Record<string, string> = {
   created: 'bg-blue-100 text-blue-800',
   processing: 'bg-purple-100 text-purple-800',
   shipping: 'bg-indigo-100 text-indigo-800',
-  completed: 'bg-green-100 text-green-800',
   delivered: 'bg-green-100 text-green-800',
   cancelled: 'bg-red-100 text-red-800',
   paid_pending_review: 'bg-orange-100 text-orange-800',

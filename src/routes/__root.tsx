@@ -11,6 +11,7 @@ import { Toaster } from 'sonner'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import { useCartSync } from '../app/features/cart/hooks/useCartSync'
+import { CartSyncContext } from '../app/features/cart/context/CartSyncContext'
 
 // import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 
@@ -44,10 +45,11 @@ function NotFoundComponent() {
 
 function RootComponent() {
   // Sincronizar carrito cuando el usuario inicia sesión
-  useCartSync()
+  const { syncAndWait } = useCartSync()
 
   return (
-    <HeroUIProvider>
+    <CartSyncContext.Provider value={{ syncAndWait }}>
+      <HeroUIProvider>
       <div className="min-h-screen flex flex-col">
         <Header />
         <ToastProvider placement="top-right" />
@@ -69,6 +71,7 @@ function RootComponent() {
           TanStackQueryDevtools,
         ]}
       /> */}
-    </HeroUIProvider>
+      </HeroUIProvider>
+    </CartSyncContext.Provider>
   )
 }

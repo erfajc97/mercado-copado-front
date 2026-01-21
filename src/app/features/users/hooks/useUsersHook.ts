@@ -3,6 +3,7 @@ import { Form } from 'antd'
 import { useAdminUsersQuery } from '../queries/useAdminUsersQuery'
 import { useDeleteUserMutation } from '../mutations/useDeleteUserMutation'
 import { useUpdateUserAdminMutation } from '../mutations/useUpdateUserAdminMutation'
+import { useAdminResendVerificationMutation } from '../mutations/useAdminResendVerificationMutation'
 import { extractItems, extractPagination } from '@/app/helpers/parsePaginatedResponse'
 import { useUsersStore } from '@/app/store/users/usersStore'
 
@@ -14,6 +15,7 @@ export interface UserData {
   documentId?: string
   country?: string
   phoneNumber?: string
+  isVerified: boolean
   totalOrders: number
   totalSpent: number
   createdAt: string
@@ -48,6 +50,9 @@ export const useUsersHook = () => {
 
   const { mutateAsync: updateUser, isPending: isUpdating } =
     useUpdateUserAdminMutation()
+
+  const { mutate: resendVerification, isPending: isResendingVerification } =
+    useAdminResendVerificationMutation()
 
   // El helper parsePaginatedResponse normaliza usuarios para usar 'content' en lugar de 'users'
   // Extraer usando extractItems y extractPagination
@@ -143,6 +148,10 @@ export const useUsersHook = () => {
     })
   }
 
+  const handleResendVerification = (email: string) => {
+    resendVerification(email)
+  }
+
   return {
     users,
     isLoading,
@@ -159,11 +168,13 @@ export const useUsersHook = () => {
     form,
     isDeleting,
     isUpdating,
+    isResendingVerification,
     handleDeleteClick,
     handleConfirmDelete,
     handleEditClick,
     handleEditCancel,
     handleEditSubmit,
+    handleResendVerification,
     formatTotalSpent,
     formatDate,
   }

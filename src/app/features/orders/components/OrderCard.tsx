@@ -3,6 +3,7 @@ import { Button } from '@heroui/react'
 import { Eye } from 'lucide-react'
 import { getStatusLabel } from '../helpers/getStatusLabel'
 import { getStatusColor } from '../helpers/getStatusColor'
+import { getPaymentProviderLabel } from '../helpers/getPaymentProviderLabel'
 import { formatOrderDateShort } from '../helpers/formatOrderDate'
 import { formatUSD } from '@/app/services/currencyService'
 
@@ -45,6 +46,13 @@ export const OrderCard = ({
             <p className="text-sm text-gray-500 mt-1">
               {order.items.length} producto(s)
             </p>
+            {order.status !== 'pending' &&
+              order.payments?.[0]?.paymentProvider && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Método de pago:{' '}
+                  {getPaymentProviderLabel(order.payments[0].paymentProvider)}
+                </p>
+              )}
           </Link>
         </div>
         <div className="flex items-center gap-4">

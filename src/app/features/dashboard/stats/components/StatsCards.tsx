@@ -66,7 +66,7 @@ export const StatsCards = ({ stats }: StatsCardsProps) => {
               }).format(stats.totalRevenue)
             : '$0.00'}
         </p>
-        <p className="text-xs text-gray-500 mt-1">Solo órdenes completadas</p>
+        <p className="text-xs text-gray-500 mt-1">Solo órdenes entregadas</p>
       </div>
     </div>
   )

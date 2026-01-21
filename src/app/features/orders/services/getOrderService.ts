@@ -2,9 +2,12 @@ import { AxiosError } from 'axios'
 import { API_ENDPOINTS } from '@/app/api/endpoints'
 import axiosInstance from '@/app/config/axiosConfig'
 
-export const getOrderService = async (id: string) => {
+export const getOrderService = async (id: string, isAdmin: boolean = false) => {
   try {
-    const response = await axiosInstance.get(`${API_ENDPOINTS.ORDER}/${id}`)
+    const params = isAdmin ? { admin: 'true' } : {}
+    const response = await axiosInstance.get(`${API_ENDPOINTS.ORDER}/${id}`, {
+      params,
+    })
     return response.data.content
   } catch (error: unknown) {
     if (error instanceof AxiosError && error.response?.data?.message) {

@@ -3,6 +3,7 @@ import { Eye } from 'lucide-react'
 import { Button } from '@heroui/react'
 import { getStatusColor } from '../helpers/getStatusColor'
 import { getStatusLabel } from '../helpers/getStatusLabel'
+import { getPaymentProviderLabel } from '../helpers/getPaymentProviderLabel'
 import type { Column } from '@/components/UI/table-nextui/CustomTableNextUi'
 import { formatUSD } from '@/app/services/currencyService'
 import CustomTableNextUi from '@/components/UI/table-nextui/CustomTableNextUi'
@@ -22,6 +23,7 @@ interface OrderData {
   payments?: Array<{
     clientTransactionId?: string
     status: string
+    paymentProvider?: string
     payphoneData?: { paymentId?: string } | string
   }>
 }
@@ -73,6 +75,10 @@ export const OrdersTable = ({
     {
       name: 'Estado',
       uid: 'status',
+    },
+    {
+      name: 'Método de pago',
+      uid: 'paymentMethod',
     },
     {
       name: 'Productos',
@@ -127,6 +133,14 @@ export const OrdersTable = ({
             {getStatusLabel(order.status)}
           </span>
         )
+      case 'paymentMethod':
+        return (
+          <span className="text-sm text-gray-600">
+            {order.status === 'pending'
+              ? '—'
+              : getPaymentProviderLabel(order.payments?.[0]?.paymentProvider)}
+          </span>
+        )
       case 'items':
         return (
           <span className="text-sm text-gray-600">
@@ -145,6 +159,13 @@ export const OrdersTable = ({
 
         // Detectar si es un pago por link (no se puede verificar manualmente)
         let isLinkPayment = false
+        const isMercadoPago = (() => {
+          if (!hasPendingPayment || !order.payments) return false
+          const p = order.payments.find(
+            (x) => x.clientTransactionId && x.status === 'pending',
+          )
+          return p?.paymentProvider === 'MERCADOPAGO'
+        })()
         if (hasPendingPayment && order.payments) {
           const payment = order.payments.find(
             (p) => p.clientTransactionId && p.status === 'pending',
@@ -164,8 +185,8 @@ export const OrdersTable = ({
           }
         }
 
-        // Solo mostrar el botón de verificación para pagos por teléfono (no link)
-        const canVerify = hasPendingPayment && !isLinkPayment
+        // Solo mostrar el botón de verificación para pagos por teléfono (no link, no Mercado Pago)
+        const canVerify = hasPendingPayment && !isLinkPayment && !isMercadoPago
 
         return (
           <div className="flex gap-2">

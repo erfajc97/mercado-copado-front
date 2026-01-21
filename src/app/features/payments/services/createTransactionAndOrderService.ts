@@ -33,6 +33,7 @@ export const createTransactionAndOrderService = async (
       )
     }
 
+    // Para MERCADOPAGO el backend devuelve content.initPoint y content.preferenceId
     return response.data
   } catch (error: unknown) {
     console.error('[createTransactionAndOrderService] Error:', error)

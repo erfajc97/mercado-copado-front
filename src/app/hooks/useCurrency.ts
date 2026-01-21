@@ -13,6 +13,10 @@ interface UseCurrencyReturn {
   convertPrice: (amount: number) => number
   currency: 'USD' | 'ARS'
   isLoading: boolean
+  /** Indica si el usuario está en Argentina */
+  isArgentina: boolean
+  /** País del usuario */
+  userCountry: string
 }
 
 /**
@@ -68,5 +72,7 @@ export function useCurrency(): UseCurrencyReturn {
     currency: isArgentina ? 'ARS' : 'USD',
     isLoading:
       (isAuthenticated && isLoadingUser) || (isArgentina && isLoadingRate),
+    isArgentina,
+    userCountry,
   }
 }

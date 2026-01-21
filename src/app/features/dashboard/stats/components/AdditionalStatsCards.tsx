@@ -143,7 +143,7 @@ export const AdditionalStatsCards = ({
         </div>
       </div>
 
-      {/* Cuarta fila: Ingresos por período (solo órdenes completadas) */}
+      {/* Cuarta fila: Ingresos por período (solo órdenes entregadas) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow border-l-4 border-l-emerald-500 p-6">
           <div className="flex items-center justify-between">
@@ -157,7 +157,7 @@ export const AdditionalStatsCards = ({
                   : '$0.00'}
               </p>
               <p className="text-xs text-gray-500 mt-1">
-                Solo órdenes completadas
+                Solo órdenes entregadas
               </p>
             </div>
             <DollarSign className="text-emerald-500" size={32} />
@@ -176,7 +176,7 @@ export const AdditionalStatsCards = ({
                   : '$0.00'}
               </p>
               <p className="text-xs text-gray-500 mt-1">
-                Solo órdenes completadas
+                Solo órdenes entregadas
               </p>
             </div>
             <DollarSign className="text-teal-500" size={32} />
@@ -195,7 +195,7 @@ export const AdditionalStatsCards = ({
                   : '$0.00'}
               </p>
               <p className="text-xs text-gray-500 mt-1">
-                Solo órdenes completadas
+                Solo órdenes entregadas
               </p>
             </div>
             <DollarSign className="text-amber-500" size={32} />

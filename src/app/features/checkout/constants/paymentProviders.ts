@@ -23,13 +23,13 @@ export const PAYMENT_PROVIDERS: Array<PaymentProviderOption> = [
   {
     id: 'MERCADOPAGO',
     name: 'Mercado Pago',
-    available: false,
-    description: 'Próximamente',
+    available: true,
+    description: 'Pago con Mercado Pago',
   },
   {
     id: 'CRYPTO',
     name: 'Crypto USDT',
-    available: false,
-    description: 'Próximamente',
+    available: true,
+    description: 'USDT BEP-20 / TRC-20',
   },
 ]

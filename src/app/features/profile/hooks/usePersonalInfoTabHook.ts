@@ -1,9 +1,12 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { Form } from 'antd'
 import { useProfileQuery } from '../queries/useProfileQuery'
 import { useUpdateUserProfileMutation } from '../mutations/useProfileMutations'
 import { useProfileStore } from '@/app/store/profile/profileStore'
 import { PHONE_COUNTRY_CODES } from '@/app/constants/phoneCountryCodes'
+import { useResendVerificationMutation } from '@/app/features/auth/verify-email/mutations/useResendVerificationMutation'
+
+export type ResendState = 'idle' | 'sending' | 'sent' | 'error'
 
 export const usePersonalInfoTabHook = () => {
   const [form] = Form.useForm()
@@ -11,10 +14,14 @@ export const usePersonalInfoTabHook = () => {
   const { mutateAsync: updateProfile, isPending: isUpdatingProfile } =
     useUpdateUserProfileMutation()
   const { phoneCountryCode, setPhoneCountryCode } = useProfileStore()
-  const previousUserInfoRef = useRef<any>(null)
+  const previousUserInfoRef = useRef<unknown>(null)
+  
+  // Resend verification state
+  const [resendState, setResendState] = useState<ResendState>('idle')
+  const resendMutation = useResendVerificationMutation()
 
   // Inicializar formulario cuando userInfo cambia
-  if (userInfo && previousUserInfoRef.current?.id !== userInfo.id) {
+  if (userInfo && previousUserInfoRef.current && (previousUserInfoRef.current as any).id !== userInfo.id) {
     form.setFieldsValue({
       firstName: userInfo.firstName,
       lastName: userInfo.lastName,
@@ -61,6 +68,20 @@ export const usePersonalInfoTabHook = () => {
     }
   }
 
+  const handleResendVerification = () => {
+    if (!userInfo?.email) return
+
+    setResendState('sending')
+    resendMutation.mutate(userInfo.email, {
+      onSuccess: () => {
+        setResendState('sent')
+      },
+      onError: () => {
+        setResendState('error')
+      },
+    })
+  }
+
   return {
     form,
     userInfo,
@@ -68,5 +89,11 @@ export const usePersonalInfoTabHook = () => {
     setPhoneCountryCode,
     handleUpdateProfile,
     isUpdatingProfile,
+    // Verification
+    isVerified: userInfo?.isVerified ?? false,
+    email: userInfo?.email,
+    resendState,
+    handleResendVerification,
+    resetResendState: () => setResendState('idle'),
   }
 }

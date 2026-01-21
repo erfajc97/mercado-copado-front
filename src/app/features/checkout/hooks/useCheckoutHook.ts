@@ -11,13 +11,16 @@ import { usePaymentMethodsQuery } from '@/app/features/payment-cards/queries/use
 import { useCreatePaymentMethodMutation } from '@/app/features/payment-cards/mutations/usePaymentMethodMutations'
 import { useCreatePaymentTransactionWithoutOrderMutation } from '@/app/features/payments/mutations/useCreatePaymentTransactionWithoutOrderMutation'
 import { useCashDepositMutation } from '@/app/features/payments/mutations/useCashDepositMutation'
+import { useCryptoDepositMutation } from '@/app/features/payments/mutations/useCryptoDepositMutation'
 import { useCurrency } from '@/app/hooks/useCurrency'
 import { sonnerResponse } from '@/app/helpers/sonnerResponse'
 import { useAuthStore } from '@/app/store/auth/authStore'
 import { useCartStore } from '@/app/store/cart/cartStore'
+import { useCartSyncContext } from '@/app/features/cart/context/CartSyncContext'
 import { formatUSD } from '@/app/services/currencyService'
 
 export const useCheckoutHook = () => {
+  const { syncAndWait } = useCartSyncContext()
   const { roles, token, getToken } = useAuthStore()
   const isAuthenticated = Boolean(token || getToken())
   
@@ -80,6 +83,8 @@ export const useCheckoutHook = () => {
     useCreatePaymentTransactionWithoutOrderMutation()
   const { mutateAsync: cashDeposit, isPending: isProcessingDeposit } =
     useCashDepositMutation()
+  const { mutateAsync: cryptoDeposit, isPending: isProcessingCrypto } =
+    useCryptoDepositMutation()
   const { mutateAsync: createAddress, isPending: isCreatingAddress } =
     useCreateAddressMutation()
   const {
@@ -230,6 +235,8 @@ export const useCheckoutHook = () => {
       return
     }
 
+    if (syncAndWait) await syncAndWait()
+
     // Si es depósito en efectivo, usar el método específico
     if (selectedPaymentProvider === 'CASH_DEPOSIT') {
       if (!depositImage) {
@@ -252,6 +259,33 @@ export const useCheckoutHook = () => {
         })
       } catch (error) {
         console.error('Error processing cash deposit:', error)
+        // El error ya se maneja en la mutación con sonner
+      }
+      return
+    }
+
+    // Si es pago crypto, usar el método específico
+    if (selectedPaymentProvider === 'CRYPTO') {
+      if (!depositImage) {
+        sonnerResponse(
+          'Por favor, sube una imagen del comprobante de transferencia crypto',
+          'error',
+        )
+        return
+      }
+
+      try {
+        const randomIdClientTransaction = Math.random()
+          .toString(36)
+          .substring(2, 15)
+
+        await cryptoDeposit({
+          addressId: selectedAddressId,
+          clientTransactionId: randomIdClientTransaction,
+          depositImage,
+        })
+      } catch (error) {
+        console.error('Error processing crypto deposit:', error)
         // El error ya se maneja en la mutación con sonner
       }
       return
@@ -348,7 +382,7 @@ export const useCheckoutHook = () => {
     currency,
     isAdmin,
     isAuthenticated,
-    isPending: isPending || isProcessingDeposit,
+    isPending: isPending || isProcessingDeposit || isProcessingCrypto,
     isCreatingAddress,
     isCreatingPaymentMethod,
     refetchAddresses,

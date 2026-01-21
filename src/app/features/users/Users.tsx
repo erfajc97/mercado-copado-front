@@ -20,11 +20,13 @@ export function Users() {
     form,
     isDeleting,
     isUpdating,
+    isResendingVerification,
     handleDeleteClick,
     handleConfirmDelete,
     handleEditClick,
     handleEditCancel,
     handleEditSubmit,
+    handleResendVerification,
     formatTotalSpent,
     formatDate,
   } = useUsersHook()
@@ -57,6 +59,8 @@ export function Users() {
         onPageChange={setPage}
         onEditClick={handleEditClick}
         onDeleteClick={handleDeleteClick}
+        onResendVerification={handleResendVerification}
+        isResendingVerification={isResendingVerification}
         formatTotalSpent={formatTotalSpent}
         formatDate={formatDate}
       />

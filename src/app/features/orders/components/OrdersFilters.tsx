@@ -8,7 +8,6 @@ const ORDER_STATUSES = [
   { value: 'created', label: 'Creada' },
   { value: 'processing', label: 'Procesando' },
   { value: 'shipping', label: 'En Envío' },
-  { value: 'completed', label: 'Completada' },
   { value: 'delivered', label: 'Entregada' },
   { value: 'cancelled', label: 'Cancelada' },
   { value: 'paid_pending_review', label: 'Pago en Revisión' },

@@ -17,7 +17,7 @@ interface AdminOrderDetailProps {
 
 export function AdminOrderDetail({ orderId }: AdminOrderDetailProps) {
   const navigate = useNavigate()
-  const { data: order, isLoading, refetch } = useOrderQuery(orderId)
+  const { data: order, isLoading, refetch } = useOrderQuery(orderId, true)
   const { mutateAsync: updateStatus, isPending: isUpdating } =
     useUpdateOrderStatusMutation()
   const [selectedStatus, setSelectedStatus] = useState<string>('')

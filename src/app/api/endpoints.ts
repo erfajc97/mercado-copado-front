@@ -56,7 +56,9 @@ export const API_ENDPOINTS = {
   PHONE_PAYMENT: '/payments/phone-payment',
   CREATE_ORDER_FROM_TRANSACTION: '/payments/create-order-from-transaction',
   CASH_DEPOSIT: '/payments/cash-deposit',
+  CRYPTO_DEPOSIT: '/payments/crypto-deposit',
   REGENERATE_TRANSACTION: '/payments/regenerate-transaction',
+  VERIFY_MERCADOPAGO_PAYMENT: '/payments/verify-mercadopago-payment',
 
   // Dashboard
   DASHBOARD_STATS: '/dashboard/stats',
