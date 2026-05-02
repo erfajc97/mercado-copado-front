@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { UploadFile } from 'antd'
 import type { Product } from '@/app/features/products/types'
 import type { Category } from '@/app/features/categories/types'
@@ -42,31 +42,37 @@ export const useProductModalHook = (
   const [fileList, setFileList] = useState<Array<ExtendedUploadFile>>([])
 
   // Inicializar cuando el producto cambia o se abre el modal (solo en modo edición)
-  if (isEditMode && typedProduct && isOpen && previousProductIdRef.current !== productId) {
-    setSelectedCategory(typedProduct.categoryId)
+  useEffect(() => {
+    if (isEditMode && typedProduct && isOpen && previousProductIdRef.current !== productId) {
+      setSelectedCategory(typedProduct.categoryId)
 
-    // Cargar imágenes existentes
-    if (typedProduct.images.length > 0) {
-      const existingImages: Array<ExtendedUploadFile> =
-        typedProduct.images.map((img: any, index: number) => ({
-          uid: img.id || `existing-${index}`,
-          name: `imagen-${index + 1}`,
-          status: 'done' as const,
-          url: img.url,
-          isExisting: true,
-          imageId: img.id,
-        }))
-      setFileList(existingImages)
-    } else {
-      setFileList([])
+      // Cargar imágenes existentes
+      if (typedProduct.images.length > 0) {
+        const existingImages: Array<ExtendedUploadFile> =
+          typedProduct.images.map((img: any, index: number) => ({
+            uid: img.id || `existing-${index}`,
+            name: `imagen-${index + 1}`,
+            status: 'done' as const,
+            url: img.url,
+            isExisting: true,
+            imageId: img.id,
+          }))
+        setFileList(existingImages)
+      } else {
+        setFileList([])
+      }
+      previousProductIdRef.current = productId
     }
-    previousProductIdRef.current = productId
-  }
+  }, [isEditMode, typedProduct, isOpen, productId])
 
   // Resetear cuando se cierra el modal
-  if (!isOpen && previousProductIdRef.current !== null) {
-    previousProductIdRef.current = null
-  }
+  useEffect(() => {
+    if (!isOpen && previousProductIdRef.current !== null) {
+      previousProductIdRef.current = null
+      setFileList([])
+      setSelectedCategory('')
+    }
+  }, [isOpen])
 
   // Obtener subcategorías basadas en la categoría seleccionada
   const subcategories =
@@ -84,6 +90,8 @@ export const useProductModalHook = (
       categoryId: typedProduct.categoryId,
       subcategoryId: typedProduct.subcategoryId,
       country: typedProduct.country || '',
+      isInternational: typedProduct.isInternational || false,
+      isFeatured: typedProduct.isFeatured || false,
       isActive: typedProduct.isActive,
     }
   }
@@ -110,6 +118,8 @@ export const useProductModalHook = (
             categoryId: values.categoryId,
             subcategoryId: values.subcategoryId,
             country: values.country,
+            isInternational: values.isInternational !== undefined ? values.isInternational : false,
+            isFeatured: values.isFeatured !== undefined ? values.isFeatured : false,
             isActive: values.isActive !== undefined ? values.isActive : true,
           },
           files: newImages.length > 0 ? newImages : undefined,
@@ -128,6 +138,8 @@ export const useProductModalHook = (
           categoryId: values.categoryId,
           subcategoryId: values.subcategoryId,
           country: values.country,
+          isInternational: values.isInternational !== undefined ? values.isInternational : false,
+          isFeatured: values.isFeatured !== undefined ? values.isFeatured : false,
           isActive: values.isActive !== undefined ? values.isActive : true,
           images,
         })

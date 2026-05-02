@@ -196,6 +196,53 @@ export const FormProduct = ({
         </Form.Item>
       </div>
 
+      {/* Fila 3.5: Internacional y Destacado */}
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-2">
+        <Form.Item
+          name="isInternational"
+          label={<span className="text-xs sm:text-sm">Producto Internacional</span>}
+          valuePropName="checked"
+          initialValue={false}
+          className="mb-0"
+        >
+          <ConfigProvider
+            theme={{
+              token: {
+                colorPrimary: '#D4A574',
+              },
+            }}
+          >
+            <Switch
+              checkedChildren="Sí"
+              unCheckedChildren="No"
+              size="small"
+            />
+          </ConfigProvider>
+        </Form.Item>
+
+        <Form.Item
+          name="isFeatured"
+          label={<span className="text-xs sm:text-sm">Producto Destacado</span>}
+          valuePropName="checked"
+          initialValue={false}
+          className="mb-0"
+        >
+          <ConfigProvider
+            theme={{
+              token: {
+                colorPrimary: '#D4A574',
+              },
+            }}
+          >
+            <Switch
+              checkedChildren="Sí"
+              unCheckedChildren="No"
+              size="small"
+            />
+          </ConfigProvider>
+        </Form.Item>
+      </div>
+
       {/* Fila 4: Descripción e Imágenes */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-0">
         <Form.Item

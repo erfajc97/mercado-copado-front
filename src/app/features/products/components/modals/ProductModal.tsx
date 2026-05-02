@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { Button } from '@heroui/react'
 import { Form } from 'antd'
 import { useProductModalHook } from '../../hooks/useProductModalHook'
@@ -17,7 +17,7 @@ export default function ProductModal({
   productId,
 }: ProductModalProps) {
   const [form] = Form.useForm()
-  const previousIsOpenRef = useRef(false)
+  const previousProductIdRef = useRef<string | null>(null)
   const {
     categories,
     subcategories,
@@ -34,21 +34,27 @@ export default function ProductModal({
     isEditMode,
   } = useProductModalHook(productId, isOpen)
 
-  // Inicializar el formulario cuando la modal se abre (solo una vez)
-  if (isOpen && !previousIsOpenRef.current) {
-    if (isEditMode) {
-      const initialValues = getInitialValues()
-      if (Object.keys(initialValues).length > 0) {
+  // Inicializar el formulario cuando se abre o cambia productId
+  useEffect(() => {
+    if (isOpen && productId !== previousProductIdRef.current) {
+      if (isEditMode && !isLoadingProduct) {
+        const initialValues = getInitialValues()
         form.setFieldsValue(initialValues)
+      } else {
+        form.resetFields()
       }
+      resetForm()
+      previousProductIdRef.current = productId
     }
-    previousIsOpenRef.current = true
-  }
-
-  // Resetear la referencia cuando la modal se cierra
-  if (!isOpen && previousIsOpenRef.current) {
-    previousIsOpenRef.current = false
-  }
+  }, [
+    isOpen,
+    productId,
+    isEditMode,
+    isLoadingProduct,
+    form,
+    getInitialValues,
+    resetForm,
+  ])
 
   const handleFormSubmit = async (values: any) => {
     const success = await handleSubmit(values)
@@ -60,6 +66,7 @@ export default function ProductModal({
   const handleCancel = () => {
     form.resetFields()
     resetForm()
+    previousProductIdRef.current = null
     onClose()
   }
 
