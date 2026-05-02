@@ -10,9 +10,5 @@ export const Route = createFileRoute('/_authenticated/dashboard/categories/')({
       })
     }
   },
-  component: () => (
-    <DashboardLayout>
-      <Categories />
-    </DashboardLayout>
-  ),
+  component: () => <DashboardLayout children={<Categories />} />,
 })
